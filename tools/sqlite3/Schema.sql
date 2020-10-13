@@ -41,7 +41,7 @@ UUID UID number image_number
 user_progress_video
 UUID UID number video_second */
 
-CREATE TABLE user(
+CREATE TABLE IF NOT EXISTS user(
 	UID INTEGER PRIMARY KEY, 
 	permission_level INTEGER DEFAULT 0 NOT NULL, 
 	name TEXT NOT NULL
@@ -52,7 +52,7 @@ INSERT INTO user VALUES(4004, 4, 'BlackReader');
 INSERT INTO user VALUES(4002, 2, 'BlackWriter');
 INSERT INTO user VALUES(4000, 0, 'BlackNoPermissions');
 
-CREATE TABLE entry_type(
+CREATE TABLE IF NOT EXISTS entry_type(
     name TEXT NOT NULL
 );
 
@@ -60,15 +60,15 @@ INSERT INTO entry_type VALUES('document');
 INSERT INTO entry_type VALUES('image_gallery');
 INSERT INTO entry_type VALUES('video');
 
-CREATE TABLE document_subtype(
+CREATE TABLE IF NOT EXISTS document_subtype(
 	name TEXT NOT NULL PRIMARY KEY
 );
 
-CREATE TABLE image_gallery_subtype(
+CREATE TABLE IF NOT EXISTS image_gallery_subtype(
 	name TEXT NOT NULL
 );
 
-CREATE TABLE video_subtype(
+CREATE TABLE IF NOT EXISTS video_subtype(
 	name TEXT NOT NULL
 );
 
@@ -81,21 +81,21 @@ INSERT INTO video_subtype VALUES('movie');
 INSERT INTO video_subtype VALUES('tvShow');
 INSERT INTO video_subtype VALUES('youtube');
 
-CREATE TABLE book_genre(
+CREATE TABLE IF NOT EXISTS book_genre(
 	name TEXT NOT NULL
 );
 
-CREATE TABLE document_tag(
+CREATE TABLE IF NOT EXISTS document_tag(
 	name TEXT NOT NULL
 );
 
-CREATE TABLE source(
+CREATE TABLE IF NOT EXISTS source(
 	name TEXT NOT NULL, 
 	type TEXT,
 	FOREIGN KEY(type) REFERENCES entry_type(name)
 );
 
-CREATE TABLE staging_entry(
+CREATE TABLE IF NOT EXISTS staging_entry(
 	UUID VARCHAR(36) PRIMARY KEY NOT NULL, 
 	name TEXT NOT NULL, 
 	nickname TEXT, 
@@ -109,7 +109,7 @@ CREATE TABLE staging_entry(
 	FOREIGN KEY(source) REFERENCES source(name)
 );
 
-CREATE TABLE black_entry(
+CREATE TABLE IF NOT EXISTS black_entry(
 	UUID VARCHAR(36) PRIMARY KEY NOT NULL, 
 	name TEXT NOT NULL, 
 	nickname TEXT, 
@@ -123,7 +123,7 @@ CREATE TABLE black_entry(
 	FOREIGN KEY(source) REFERENCES source(name)
 );
 
-CREATE TABLE rating(
+CREATE TABLE IF NOT EXISTS rating(
 	UUID INTEGER, 
 	UID INTEGER, 
 	rating INTEGER NOT NULL,
@@ -131,7 +131,7 @@ CREATE TABLE rating(
 	FOREIGN KEY(UID) REFERENCES user(UID)
 );
 
-CREATE TABLE entry_history(
+CREATE TABLE IF NOT EXISTS entry_history(
 	UUID INTEGER, 
 	version INTEGER DEFAULT 1 NOT NULL, 
 	path TEXT NOT NULL, 
@@ -139,7 +139,7 @@ CREATE TABLE entry_history(
 	FOREIGN KEY(UUID) REFERENCES blackEntry(UUID)
 );
 
-CREATE TABLE user_progress_document(
+CREATE TABLE IF NOT EXISTS user_progress_document(
 	UUID INTEGER, 
 	UID INTEGER, 
 	number INTEGER NOT NULL, 
@@ -149,7 +149,7 @@ CREATE TABLE user_progress_document(
 	FOREIGN KEY(UID) REFERENCES user(UID)
 );
 
-CREATE TABLE user_progress_image_gallery(
+CREATE TABLE IF NOT EXISTS user_progress_image_gallery(
 	UUID INTEGER,
 	UID INTEGER,
 	number INTEGER NOT NULL,
@@ -158,7 +158,7 @@ CREATE TABLE user_progress_image_gallery(
 	FOREIGN KEY(UID) REFERENCES user(UID)
 );
 
-CREATE TABLE user_progress_video(
+CREATE TABLE IF NOT EXISTS user_progress_video(
 	UUID INTEGER,
 	UID INTEGER,
 	number INTEGER NOT NULL,

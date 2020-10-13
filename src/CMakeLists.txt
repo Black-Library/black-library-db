@@ -4,7 +4,7 @@ message("SQLite3 include dir: ${SQLite3_INCLUDE_DIRS}")
 
 include(GNUInstallDirs)
 
-add_library(BlackLibraryDB BlackLibraryDB.cpp)
+add_library(BlackLibraryDB BlackLibraryDB.cc)
 target_link_libraries(BlackLibraryDB ${SQLite3_LIBRARY})
 target_include_directories(BlackLibraryDB PUBLIC ${SQLite3_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/include)
 
@@ -14,7 +14,7 @@ install(
   RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
-add_executable(blacklibrarydb blacklibrarydb.cpp)
+add_executable(blacklibrarydb blacklibrarydb.cc)
 
 target_link_libraries(blacklibrarydb BlackLibraryDB)
 
