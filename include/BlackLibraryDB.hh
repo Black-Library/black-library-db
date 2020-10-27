@@ -3,9 +3,11 @@
 
 #include <string>
 
-#include <sqlite3.h>
+#include <BlackLibraryDBConnectionInterface.hh>
 
 namespace librarycore {
+
+namespace librarydb {
 
 class BlackLibraryDB {
 public:
@@ -13,9 +15,12 @@ public:
     ~BlackLibraryDB();
 
 private:
-    sqlite3 *database_connection_;
+    std::string GetUUID();
+
+    BlackLibraryDBConnectionInterface db_connection_interface_;
 };
 
+} // namespace librarydb
 } // namespace librarycore
 
 #endif
