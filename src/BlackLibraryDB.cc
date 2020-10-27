@@ -6,4 +6,7 @@
 
 namespace librarycore {
 
+namespace librarydb {
+
+} // namespace librarydb
 } // namespace librarycore
