@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS source(
 
 CREATE TABLE IF NOT EXISTS staging_entry(
 	UUID VARCHAR(36) PRIMARY KEY NOT NULL, 
-	name TEXT NOT NULL, 
+	title TEXT NOT NULL, 
 	nickname TEXT, 
 	source TEXT, 
 	URL TEXT, 
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS staging_entry(
 
 CREATE TABLE IF NOT EXISTS black_entry(
 	UUID VARCHAR(36) PRIMARY KEY NOT NULL, 
-	name TEXT NOT NULL, 
+	title TEXT NOT NULL, 
 	nickname TEXT, 
 	source TEXT, 
 	URL TEXT, 
