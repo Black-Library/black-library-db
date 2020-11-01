@@ -1,26 +1,30 @@
-#ifndef __LIBRARYCORE_BLACKLIBRARYDB_HH__
-#define __LIBRARYCORE_BLACKLIBRARYDB_HH__
+#ifndef __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDB_HH__
+#define __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDB_HH__
 
+#include <memory>
 #include <string>
 
 #include <BlackLibraryDBConnectionInterface.hh>
 
-namespace librarycore {
+namespace black_library {
 
-namespace librarydb {
+namespace core {
+
+namespace db {
 
 class BlackLibraryDB {
 public:
-    explicit BlackLibraryDB(const std::string &database_path);
-    ~BlackLibraryDB();
+    explicit BlackLibraryDB(const std::string &database_url);
 
 private:
     std::string GetUUID();
 
-    BlackLibraryDBConnectionInterface db_connection_interface_;
+    std::unique_ptr<BlackLibraryDBConnectionInterface> database_connection_interface_;
+    std::string database_url_;
 };
 
-} // namespace librarydb
-} // namespace librarycore
+} // namespace db
+} // namespace core
+} // namespace black_library
 
 #endif

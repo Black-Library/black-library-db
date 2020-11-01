@@ -19,5 +19,9 @@ int main(int argc, char* argv[])
         std::cout << std::endl;
     }
 
+    std::cout << "Starting db" << std::endl;
+    black_library::core::db::BlackLibraryDB("");
+    std::cout << "Ending db" << std::endl;
+
     return 0;
 }

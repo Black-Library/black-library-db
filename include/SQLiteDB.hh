@@ -2,34 +2,42 @@
  * SQLiteDB.hh
  */
 
-#ifndef __LIBRARYCORE_SQLITEDB_HH__
-#define __LIBRARYCORE_SQLITEDB_HH__
+#ifndef __BLACK_LIBRARY_CORE_DB_SQLITEDB_HH__
+#define __BLACK_LIBRARY_CORE_DB_SQLITEDB_HH__
+
+#include <vector>
 
 #include <sqlite3.h>
 
 #include <BlackLibraryDBConnectionInterface.hh>
 
-namespace librarycore {
+namespace black_library {
 
-namespace librarydb {
+namespace core {
 
-class SQLiteDB : BlackLibraryDBConnectionInterface
+namespace db {
+
+class SQLiteDB : public BlackLibraryDBConnectionInterface
 {
 public:
-    explicit SQLiteDB();
+    explicit SQLiteDB(const std::string &database_url);
     ~SQLiteDB();
 
-    int CreateStagingDoc(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
-    DBEntry ReadStagingDoc(std::string UUID);
-    int UpdateStagingDoc(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
-    int DeleteStagingDoc(std::string UUID);
+    int CreateStagingDoc(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "") const override;
+    // DBEntry ReadStagingDoc(std::string UUID);
+    // int UpdateStagingDoc(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
+    // int DeleteStagingDoc(std::string UUID);
 
 private:
-    sqlite3 *db_conn_;
-    std::string uri_;
+    int PrepareStatements();
+
+    sqlite3 *database_conn_;
+    std::vector<sqlite3_stmt *> prepared_statements_;
+    std::string database_url_;
 };
 
-} // namespace librarydb
-} // namespace librarycore
+} // namespace db
+} // namespace core
+} // namespace black_library
 
 #endif
