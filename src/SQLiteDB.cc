@@ -20,7 +20,7 @@ SQLiteDB::SQLiteDB(const std::string &database_url) :
     //     database_url_ = "file:/localhost/mnt/db/catalog.db";
 
     if (database_url_.empty())
-        database_url_ = "/home/benjamin/bl-parsers/BlackLibraryDB/tools/sqlite3/catalog.db";
+        database_url_ = "/mnt/db/catalog.db";
 
     int res = sqlite3_open(database_url_.c_str(), &database_conn_);
     
