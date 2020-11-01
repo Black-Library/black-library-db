@@ -2,14 +2,16 @@
  * BlackLibraryDBConnectionInterface.hh
  */
 
-#ifndef __LIBRARYCORE_BLACKLIBRARYDBCONNECTIONINTERFACE_HH__
-#define __LIBRARYCORE_BLACKLIBRARYDBCONNECTIONINTERFACE_HH__
+#ifndef __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDBCONNECTIONINTERFACE_HH__
+#define __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDBCONNECTIONINTERFACE_HH__
 
 #include <string>
 
-namespace librarycore {
+namespace black_library {
 
-namespace librarydb {
+namespace core {
+
+namespace db {
 
 typedef uint16_t UID_rep;
 
@@ -57,12 +59,14 @@ struct DBUserProgress {
 class BlackLibraryDBConnectionInterface
 {
 public:
+    virtual ~BlackLibraryDBConnectionInterface() {}
     // virtual dbUser ReadUser();
 
-    virtual int CreateStagingDoc(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
-    virtual DBEntry ReadStagingDoc(std::string UUID);
-    virtual int UpdateStagingDoc(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
-    virtual int DeleteStagingDoc(std::string UUID);
+    virtual int CreateStagingDoc(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "") const = 0;
+
+    // virtual DBEntry ReadStagingDoc(std::string UUID);
+    // virtual int UpdateStagingDoc(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
+    // virtual int DeleteStagingDoc(std::string UUID);
 
     // virtual int CreateDoc();
     // virtual int ReadDoc();
@@ -73,7 +77,8 @@ private:
 
 };
 
-} // namespace librarydb
-} // namespace librarycore
+} // namespace db
+} // namespace core
+} // namespace black_library
 
 #endif
