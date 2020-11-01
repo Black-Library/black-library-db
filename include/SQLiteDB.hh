@@ -17,18 +17,27 @@ namespace core {
 
 namespace db {
 
+namespace black_library_sqlite3 {
+
 class SQLiteDB : public BlackLibraryDBConnectionInterface
 {
 public:
     explicit SQLiteDB(const std::string &database_url);
     ~SQLiteDB();
 
-    int CreateStagingDoc(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "") const override;
+    int CreateStagingEntry(const DBEntry &entry) const override;
     // DBEntry ReadStagingDoc(std::string UUID);
     // int UpdateStagingDoc(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
     // int DeleteStagingDoc(std::string UUID);
 
 private:
+    int BeginTransaction() const;
+    int EndTransaction() const;
+    int ResetStatement(sqlite3_stmt *smt) const;
+
+    int BindInt(sqlite3_stmt* stmt, const std::string &parameter_name, const int &bind_int) const;
+    int BindText(sqlite3_stmt* stmt, const std::string &parameter_name, const std::string &bind_text) const;
+
     int PrepareStatements();
 
     sqlite3 *database_conn_;
@@ -36,6 +45,7 @@ private:
     std::string database_url_;
 };
 
+} // black_library_sqlite3
 } // namespace db
 } // namespace core
 } // namespace black_library

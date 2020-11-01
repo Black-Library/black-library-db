@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS user(
 	name TEXT NOT NULL
 );
 
+INSERT INTO user VALUES(4008, 8, 'BlackLibrarianAdmin');
 INSERT INTO user VALUES(4006, 6, 'BlackLibrarian');
 INSERT INTO user VALUES(4004, 4, 'BlackReader');
 INSERT INTO user VALUES(4002, 2, 'BlackWriter');
@@ -103,7 +104,7 @@ CREATE TABLE IF NOT EXISTS staging_entry(
 	URL TEXT, 
 	version INTEGER, 
 	media_path TEXT NOT NULL, 
-	birth_date INTEGER NOT NULL, 
+	birth_date TEXT NOT NULL, 
 	user_contributed INTEGER NOT NULL, 
 	FOREIGN KEY(user_contributed) REFERENCES user(UID)
 	FOREIGN KEY(source) REFERENCES source(name)
@@ -117,7 +118,7 @@ CREATE TABLE IF NOT EXISTS black_entry(
 	URL TEXT, 
 	version INTEGER, 
 	media_path TEXT NOT NULL, 
-	birth_date INTEGER NOT NULL, 
+	birth_date TEXT NOT NULL, 
 	user_contributed INTEGER NOT NULL, 
 	FOREIGN KEY(user_contributed) REFERENCES user(UID)
 	FOREIGN KEY(source) REFERENCES source(name)

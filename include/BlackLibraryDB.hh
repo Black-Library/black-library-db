@@ -12,9 +12,12 @@ namespace core {
 
 namespace db {
 
-class BlackLibraryDB {
+class BlackLibraryDB : public BlackLibraryDBConnectionInterface {
 public:
     explicit BlackLibraryDB(const std::string &database_url);
+    ~BlackLibraryDB();
+
+    int CreateStagingEntry(const DBEntry &entry) const override;
 
 private:
     std::string GetUUID();

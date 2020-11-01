@@ -13,10 +13,10 @@ namespace core {
 
 namespace db {
 
-typedef uint16_t UID_rep;
+typedef uint16_t UID_rep_t;
 
 struct DBUser {
-    UID_rep UID;
+    UID_rep_t UID;
     uint8_t permission_level = 0;
     std::string name = "";
 };
@@ -32,25 +32,25 @@ struct DBSource {
 
 struct DBEntry {
     std::string UUID;
-    std::string name;
-    std::string nickname;
+    std::string title;
+    std::string nickname = "";
     std::string source;
     std::string URL;
     uint16_t version;
     std::string media_path;
-    int birth_date;
-    UID_rep user_contributed;
+    std::string birth_date;
+    UID_rep_t user_contributed = 6;
 };
 
 struct DBRating {
     std::string UUID;
-    UID_rep UID;
+    UID_rep_t UID;
     uint16_t rating;
 };
 
 struct DBUserProgress {
     std::string UUID;
-    UID_rep UID;
+    UID_rep_t UID;
     uint16_t number;
     uint16_t chapter;
     uint32_t page;
@@ -60,9 +60,9 @@ class BlackLibraryDBConnectionInterface
 {
 public:
     virtual ~BlackLibraryDBConnectionInterface() {}
-    // virtual dbUser ReadUser();
+    // virtual DBUser ReadUser();
 
-    virtual int CreateStagingDoc(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "") const = 0;
+    virtual int CreateStagingEntry(const DBEntry &entry) const = 0;
 
     // virtual DBEntry ReadStagingDoc(std::string UUID);
     // virtual int UpdateStagingDoc(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
