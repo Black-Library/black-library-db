@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
     black_library::core::db::DBEntry staging_entry;
 
     std::cout << "Starting db" << std::endl;
-    black_library::core::db::BlackLibraryDB *blacklibrarydb = new black_library::core::db::BlackLibraryDB("");
+    black_library::core::db::BlackLibraryDB *blacklibrarydb = new black_library::core::db::BlackLibraryDB("/mnt/db/catalog.db");
 
     staging_entry.UUID = "55ee59ad-2feb-4196-960b-3226c65c80f5";
     staging_entry.title = "foo2";

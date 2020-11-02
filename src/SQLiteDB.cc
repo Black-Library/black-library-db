@@ -70,21 +70,21 @@ int SQLiteDB::CreateStagingEntry(const DBEntry &entry) const
 
     std::cout << "test1" << std::endl;
 
-    const char *sql1 = "INSERT INTO MyTable(ID, Name) VALUES (5, 'Bob')";
+    const char *sql1 = "INSERT INTO MyTable(ID, Name) VALUES (6, 'Robert')";
     char *error_msg = 0;
     ret = sqlite3_exec(database_conn_, sql1, 0, 0, &error_msg);
     if (ret != SQLITE_OK)
     {
-        std::cout << "Error, end transaction  failed - " << error_msg << " - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error, exec failed - " << error_msg << " - " << sqlite3_errmsg(database_conn_) << std::endl;
         return -1;
     }
 
     std::cout << "test2" << std::endl;
-    const char *sql = "INSERT INTO MyTable(ID, Name) VALUES (?, ?)";
+    const char *sql2 = "INSERT INTO MyTable(ID, Name) VALUES (?, ?);";
     sqlite3_stmt *stmt;
     int err;
 
-    err = sqlite3_prepare_v2(database_conn_, sql, -1, &stmt, nullptr);
+    err = sqlite3_prepare_v2(database_conn_, sql2, -1, &stmt, nullptr);
     if (err != SQLITE_OK) {
         printf("prepare failed: %s\n", sqlite3_errmsg(database_conn_));
         return -1;
@@ -94,14 +94,14 @@ int SQLiteDB::CreateStagingEntry(const DBEntry &entry) const
     ret = sqlite3_bind_int(stmt, 1, 3);
     if (ret != SQLITE_OK)
     {
-        std::cout << "Error, bind of der failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error, bind of ID failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
         return -1;
     }
     ret = sqlite3_bind_text(stmt, 2, "timmy", -1, SQLITE_STATIC);
     if (ret != SQLITE_OK)
     {
-        std::cout << "Error, bind of der failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error, bind of Name failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
         return -1;
     }
