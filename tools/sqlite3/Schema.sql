@@ -47,11 +47,11 @@ CREATE TABLE IF NOT EXISTS user(
 	name TEXT NOT NULL
 );
 
-INSERT INTO user VALUES(4008, 8, 'BlackLibrarianAdmin');
-INSERT INTO user VALUES(4006, 6, 'BlackLibrarian');
-INSERT INTO user VALUES(4004, 4, 'BlackReader');
-INSERT INTO user VALUES(4002, 2, 'BlackWriter');
-INSERT INTO user VALUES(4000, 0, 'BlackNoPermissions');
+INSERT INTO user VALUES(4007, 7, 'BlackLibraryAdmin');
+INSERT INTO user VALUES(4004, 4, 'BlackLibraryLibrarian');
+INSERT INTO user VALUES(4003, 3, 'BlackLibraryWriter');
+INSERT INTO user VALUES(4001, 1, 'BlackLibraryReader');
+INSERT INTO user VALUES(4000, 0, 'BlackLibraryNoPermissions');
 
 CREATE TABLE IF NOT EXISTS entry_type(
     name TEXT NOT NULL
@@ -80,7 +80,7 @@ INSERT INTO image_gallery_subtype VALUES('image_album');
 INSERT INTO image_gallery_subtype VALUES('manga');
 INSERT INTO video_subtype VALUES('movie');
 INSERT INTO video_subtype VALUES('tvShow');
-INSERT INTO video_subtype VALUES('youtube');
+INSERT INTO video_subtype VALUES('internet_video');
 
 CREATE TABLE IF NOT EXISTS book_genre(
 	name TEXT NOT NULL
@@ -95,6 +95,8 @@ CREATE TABLE IF NOT EXISTS source(
 	type TEXT,
 	FOREIGN KEY(type) REFERENCES entry_type(name)
 );
+
+INSERT INTO source VALUES('youtube', 'video');
 
 CREATE TABLE IF NOT EXISTS staging_entry(
 	UUID VARCHAR(36) PRIMARY KEY NOT NULL, 

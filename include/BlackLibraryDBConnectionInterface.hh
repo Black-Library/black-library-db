@@ -13,11 +13,26 @@ namespace core {
 
 namespace db {
 
+
+typedef enum {
+    NO_PERMISSIONS,
+    READ_PERMISSIONS,
+    WRITE_PERMISSIONS,
+    READ_WRITE_PERMISSIONS,
+    EXECUTE_PERMISSIONS,
+    READ_EXECUTE_PERMISSIONS,
+    WRITE_EXECUTE_PERMISSIONS,
+    READ_WRITE_EXECUTE_PERMISSIONS,
+    _NUM_PERMSSIONS
+} permissions_t;
+
+typedef uint8_t permissions_rep_t;
+
 typedef uint16_t UID_rep_t;
 
 struct DBUser {
     UID_rep_t UID;
-    uint8_t permission_level = 0;
+    permissions_rep_t permission_level = NO_PERMISSIONS;
     std::string name = "";
 };
 

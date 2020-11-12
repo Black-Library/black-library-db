@@ -14,22 +14,48 @@ namespace db {
 
 namespace black_library_sqlite3 {
 
-static constexpr const char CreateStagingEntryStatement[] = "INSERT INTO staging_entry(UUID, title, nickname, source, URL, version, media_path, birth_date, user_contributed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-static constexpr const char TestStatement[] = "INSERT INTO MyTable(ID, NAME) VALUES (?, ?)";
+static constexpr const char CreateUserTable[]                    = "CREATE TABLE IF NOT EXISTS user(UID INTEGER PRIMARY KEY, permission_level INTEGER DEFAULT 0 NOT NULL, name TEXT NOT NULL)";
+static constexpr const char CreateEntryTypeTable[]               = "CREATE TABLE IF NOT EXISTS entry_type(name TEXT NOT NULL PRIMARY KEY)";
+static constexpr const char CreateDocumentSubtypeTable[]         = "CREATE TABLE IF NOT EXISTS document_subtype(name TEXT NOT NULL PRIMARY KEY)";
+static constexpr const char CreateImageGallerySubtypeTable[]     = "CREATE TABLE IF NOT EXISTS image_gallery_subtype(name TEXT NOT NULL PRIMARY KEY)";
+static constexpr const char CreateVideoSubtypeTable[]            = "CREATE TABLE IF NOT EXISTS video_subtype(name TEXT NOT NULL PRIMARY KEY)";
+static constexpr const char CreateBookGenreTable[]               = "CREATE TABLE IF NOT EXISTS book_genre(name TEXT NOT NULL PRIMARY KEY)";
+static constexpr const char CreateDocumentTagTable[]             = "CREATE TABLE IF NOT EXISTS document_tag(name TEXT NOT NULL PRIMARY KEY)";
+static constexpr const char CreateSourceTable[]                  = "CREATE TABLE IF NOT EXISTS source(name TEXT NOT NULL PRIMARY KEY, type TEXT, FOREIGN KEY(type) REFERENCES entry_type(name))";
+static constexpr const char CreateStagingEntryTable[]            = "CREATE TABLE IF NOT EXISTS staging_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, nickname TEXT, source TEXT, URL TEXT, version INTEGER, media_path TEXT NOT NULL, birth_date TEXT NOT NULL, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
+static constexpr const char CreateBlackEntryTable[]              = "CREATE TABLE IF NOT EXISTS black_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, nickname TEXT, source TEXT, URL TEXT, version INTEGER, media_path TEXT NOT NULL, birth_date TEXT NOT NULL, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
+
+static constexpr const char CreateUserStatement[]                = "INSERT INTO user(UID, permission_level, name) VALUES (:UID, :permission_level, :name)";
+static constexpr const char CreateEntryTypeStatement[]           = "INSERT INTO entry_type(name) VALUES (:name)";
+static constexpr const char CreateDocumentSubtypeStatement[]     = "INSERT INTO document_subtype(name) VALUES (:name)";
+static constexpr const char CreateImageGallerySubtypeStatement[] = "INSERT INTO image_gallery_subtype(name) VALUES (:name)";
+static constexpr const char CreateVideoSubtypeStatement[]        = "INSERT INTO video_subtype(name) VALUES (:name)";
+static constexpr const char CreateSourceStatement[]              = "INSERT INTO source(name, type) VALUES (:name, :type)";
+static constexpr const char CreateStagingEntryStatement[]        = "INSERT INTO staging_entry(UUID, title, nickname, source, URL, version, media_path, birth_date, user_contributed) VALUES (:UUID, :title, :nickname, :source, :URL, :version, :media_path, :birth_date, :user_contributed)";
 
 typedef enum {
-    CREATE_STAGING_DOC_STATEMENT,
-    TEST_STATEMENT,
+    CREATE_USER_STATEMENT,
+    CREATE_ENTRY_TYPE_STATEMENT,
+    CREATE_DOCUMENT_SUBTYPE_STATEMENT,
+    CREATE_IMAGE_GALLERY_SUBTYPE_STATEMENT,
+    CREATE_VIDEO_SUBTYPE_STATEMENT,
+    CREATE_SOURCE_STATEMENT,
+    CREATE_STAGING_ENTRY_STATEMENT,
     _NUM_PREPARED_STATEMENTS
 } prepared_statement_id_t;
 
-SQLiteDB::SQLiteDB(const std::string &database_url) :
+SQLiteDB::SQLiteDB(const std::string &database_url, const bool first_time_setup) :
     database_conn_(),
     prepared_statements_(),
-    database_url_(database_url)
+    database_url_(database_url),
+    first_time_setup_(first_time_setup),
+    intialized_(false)
 {
     if (database_url_.empty())
+    {
         database_url_ = "/mnt/db/catalog.db";
+        std::cout << "Empty database url given, using default: " << database_url_ << std::endl;
+    }
 
     int res = sqlite3_open(database_url_.c_str(), &database_conn_);
     
@@ -41,9 +67,35 @@ SQLiteDB::SQLiteDB(const std::string &database_url) :
 
     std::cout << "Open database at: " << database_url_ << std::endl;
 
-    prepared_statements_.reserve(_NUM_PREPARED_STATEMENTS);
 
-    PrepareStatements();
+    if (SetupTables())
+    {
+        std::cout << "Error, failed to setup database tables" << std::endl;
+        return;
+    }
+
+    if (PrepareStatements())
+    {
+        std::cout << "Error, failed to setup prepare statements" << std::endl;
+        return;
+    }
+
+    if (first_time_setup_)
+    {
+        if (SetupDefaultBlackLibraryUsers())
+        {
+            std::cout << "Error, failed to setup default black library users" << std::endl;
+            return;
+        }
+
+        if (SetupDefaultSubtypes())
+        {
+            std::cout << "Error, failed to setup default subtypes" << std::endl;
+            return;
+        }
+    }
+
+    intialized_ = true;
 }
 
 SQLiteDB::~SQLiteDB()
@@ -58,66 +110,62 @@ SQLiteDB::~SQLiteDB()
     }
 }
 
-int SQLiteDB::CreateStagingEntry(const DBEntry &entry) const
+int SQLiteDB::CreateUser(const DBUser &user) const
 {
-    std::cout << "create staging doc for UUID: " << entry.UUID << std::endl;
+    std::cout << "create user: " << user.name << " with UID: " << user.UID << std::endl;
 
     if (BeginTransaction())
         return -1;
 
     int ret = SQLITE_OK;
-    int statement_id = CREATE_STAGING_DOC_STATEMENT;
-
-    std::cout << "test1" << std::endl;
-
-    const char *sql1 = "INSERT INTO MyTable(ID, Name) VALUES (6, 'Robert')";
-    char *error_msg = 0;
-    ret = sqlite3_exec(database_conn_, sql1, 0, 0, &error_msg);
-    if (ret != SQLITE_OK)
-    {
-        std::cout << "Error, exec failed - " << error_msg << " - " << sqlite3_errmsg(database_conn_) << std::endl;
-        return -1;
-    }
-
-    std::cout << "test2" << std::endl;
-    const char *sql2 = "INSERT INTO MyTable(ID, Name) VALUES (?, ?);";
+    int statement_id = CREATE_USER_STATEMENT;
     sqlite3_stmt *stmt;
-    int err;
 
-    err = sqlite3_prepare_v2(database_conn_, sql2, -1, &stmt, nullptr);
-    if (err != SQLITE_OK) {
-        printf("prepare failed: %s\n", sqlite3_errmsg(database_conn_));
-        return -1;
-    }
-    std::cout << sqlite3_sql(stmt) << std::endl;
-
-    ret = sqlite3_bind_int(stmt, 1, 3);
-    if (ret != SQLITE_OK)
-    {
-        std::cout << "Error, bind of ID failed - " << sqlite3_errmsg(database_conn_) << std::endl;
-        ResetStatement(stmt);
-        return -1;
-    }
-    ret = sqlite3_bind_text(stmt, 2, "timmy", -1, SQLITE_STATIC);
-    if (ret != SQLITE_OK)
-    {
-        std::cout << "Error, bind of Name failed - " << sqlite3_errmsg(database_conn_) << std::endl;
-        ResetStatement(stmt);
-        return -1;
-    }
-
-    ret = sqlite3_step(stmt);
-    if (ret != SQLITE_OK)
-    {
-        std::cout << "Error, step failed - " << sqlite3_errmsg(database_conn_) << std::endl;
-        ResetStatement(stmt);
-        return -1;
-    }
-
-    std::cout << "prep" << std::endl;
     stmt = prepared_statements_[statement_id];
     std::cout << sqlite3_sql(stmt) << std::endl;
 
+    // bind statement variables
+    if (BindInt(prepared_statements_[statement_id], "UID", user.UID))
+        return -1;
+    if (BindInt(prepared_statements_[statement_id], "permission_level", user.permission_level))
+        return -1;
+    if (BindText(prepared_statements_[statement_id], "name", user.name))
+        return -1;
+
+    // run statement
+    ret = sqlite3_step(prepared_statements_[statement_id]);
+    if (ret != SQLITE_DONE)
+    {
+        std::cout << "Error, insert user failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        return -1;
+    }
+
+    ResetStatement(prepared_statements_[statement_id]);
+
+    if (EndTransaction())
+        return -1;
+
+    return 0;
+}
+
+int SQLiteDB::CreateStagingEntry(const DBEntry &entry) const
+{
+    std::cout << "create staging doc for UUID: " << entry.UUID << std::endl;
+
+    if (CheckInitialized())
+        return -1;
+
+    if (BeginTransaction())
+        return -1;
+
+    int ret = SQLITE_OK;
+    int statement_id = CREATE_STAGING_ENTRY_STATEMENT;
+    sqlite3_stmt *stmt;
+
+    stmt = prepared_statements_[statement_id];
+    std::cout << sqlite3_sql(stmt) << std::endl;
+
+    // bind statement variables
     if (BindText(prepared_statements_[statement_id], "UUID", entry.UUID))
         return -1;
     if (BindText(prepared_statements_[statement_id], "title", entry.title))
@@ -130,20 +178,16 @@ int SQLiteDB::CreateStagingEntry(const DBEntry &entry) const
         return -1;
     if (BindInt(prepared_statements_[statement_id], "version", entry.version))
         return -1;
-    if (BindText(prepared_statements_[statement_id], "URL", entry.URL))
+    if (BindText(prepared_statements_[statement_id], "media_path", entry.media_path))
         return -1;
-    if (BindText(prepared_statements_[statement_id], "URL", entry.URL))
+    if (BindText(prepared_statements_[statement_id], "birth_date", entry.birth_date))
         return -1;
     if (BindInt(prepared_statements_[statement_id], "user_contributed", entry.user_contributed))
         return -1;
 
-    std::cout << "prep" << std::endl;
-
-    std::cout << sqlite3_sql(prepared_statements_[statement_id]) << std::endl;
-
     // run statement
     ret = sqlite3_step(prepared_statements_[statement_id]);
-    if (ret != SQLITE_OK)
+    if (ret != SQLITE_DONE)
     {
         std::cout << "Error, insert staging doc failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         return -1;
@@ -174,6 +218,86 @@ int SQLiteDB::CreateStagingEntry(const DBEntry &entry) const
 //     return 0;
 // }
 
+int SQLiteDB::SetupTables()
+{
+    GenerateTable(CreateUserTable);
+    GenerateTable(CreateEntryTypeTable);
+    GenerateTable(CreateDocumentSubtypeTable);
+    GenerateTable(CreateImageGallerySubtypeTable);
+    GenerateTable(CreateVideoSubtypeTable);
+    GenerateTable(CreateBookGenreTable);
+    GenerateTable(CreateDocumentTagTable);
+    GenerateTable(CreateSourceTable);
+    GenerateTable(CreateStagingEntryTable);
+    GenerateTable(CreateBlackEntryTable);
+
+    return 0;
+}
+
+int SQLiteDB::PrepareStatements()
+{
+    if (!database_conn_)
+        return -1;
+
+    PrepareStatement(CreateUserStatement, CREATE_USER_STATEMENT);
+    PrepareStatement(CreateEntryTypeStatement, CREATE_ENTRY_TYPE_STATEMENT);
+    PrepareStatement(CreateDocumentSubtypeStatement, CREATE_DOCUMENT_SUBTYPE_STATEMENT);
+    PrepareStatement(CreateImageGallerySubtypeStatement, CREATE_IMAGE_GALLERY_SUBTYPE_STATEMENT);
+    PrepareStatement(CreateVideoSubtypeStatement, CREATE_VIDEO_SUBTYPE_STATEMENT);
+    PrepareStatement(CreateSourceStatement, CREATE_SOURCE_STATEMENT);
+    PrepareStatement(CreateStagingEntryStatement, CREATE_STAGING_ENTRY_STATEMENT);
+
+    return 0;
+}
+
+int SQLiteDB::SetupDefaultBlackLibraryUsers()
+{
+    DBUser black_library_admin;
+    DBUser black_library_librarian;
+    DBUser black_library_writer;
+    DBUser black_library_reader;
+    DBUser black_library_no_permissions;
+
+    black_library_admin.UID = 4007;
+    black_library_admin.permission_level = READ_WRITE_EXECUTE_PERMISSIONS;
+    black_library_admin.name = "BlackLibraryAdmin";
+
+    black_library_librarian.UID = 4004;
+    black_library_librarian.permission_level = READ_WRITE_PERMISSIONS;
+    black_library_librarian.name = "BlackLibraryLibrarian";
+
+    black_library_writer.UID = 4003;
+    black_library_writer.permission_level = WRITE_PERMISSIONS;
+    black_library_writer.name = "BlackLibraryWriter";
+
+    black_library_reader.UID = 4001;
+    black_library_reader.permission_level = READ_PERMISSIONS;
+    black_library_reader.name = "BlackLibraryReader";
+
+    black_library_no_permissions.UID = 4000;
+    black_library_no_permissions.permission_level = NO_PERMISSIONS;
+    black_library_no_permissions.name = "BlackLibraryNoPermissions";
+
+    if (CreateUser(black_library_admin))
+        return -1;
+    if (CreateUser(black_library_librarian))
+        return -1;
+    if (CreateUser(black_library_writer))
+        return -1;
+    if (CreateUser(black_library_reader))
+        return -1;
+    if (CreateUser(black_library_no_permissions))
+        return -1;
+
+    return 0;
+}
+
+int SQLiteDB::SetupDefaultSubtypes()
+{
+    
+    return 0;
+}
+
 int SQLiteDB::BeginTransaction() const
 {
     char *error_msg = 0;
@@ -182,6 +306,17 @@ int SQLiteDB::BeginTransaction() const
     if (ret != SQLITE_OK)
     {
         std::cout << "Error, begin transaction failed - " << error_msg << " - " << sqlite3_errmsg(database_conn_) << std::endl;
+        return -1;
+    }
+
+    return 0;
+}
+
+int SQLiteDB::CheckInitialized() const
+{
+    if (!intialized_)
+    {
+        std::cout << "Error, db not initialized" << std::endl;
         return -1;
     }
 
@@ -202,13 +337,38 @@ int SQLiteDB::EndTransaction() const
     return 0;
 }
 
+int SQLiteDB::GenerateTable(const std::string &sql)
+{
+    char *error_msg = 0;
+    int ret = sqlite3_exec(database_conn_, sql.c_str(), 0, 0, &error_msg);
+    if (ret != SQLITE_OK)
+    {
+        std::cout << "Error, generate table failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        return -1;
+    }
+    return 0;
+}
+
+int SQLiteDB::PrepareStatement(const std::string &statement, int statement_id)
+{
+    prepared_statements_.emplace_back();
+    int ret = sqlite3_prepare_v2(database_conn_, statement.c_str(), -1, &prepared_statements_[statement_id], nullptr);
+    if (ret != SQLITE_OK)
+    {
+        std::cout << "Error, prepare failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        return -1;
+    }
+
+    return 0;
+}
+
 int SQLiteDB::ResetStatement(sqlite3_stmt* stmt) const
 {
     int ret = sqlite3_reset(stmt);
     std::cout << "Reset statement: " << sqlite3_sql(stmt) << std::endl;
     if (ret != SQLITE_OK)
     {
-        std::cout << "Error, reset failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error, reset statement failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         return -1;
     }
 
@@ -218,7 +378,8 @@ int SQLiteDB::ResetStatement(sqlite3_stmt* stmt) const
 int SQLiteDB::BindInt(sqlite3_stmt* stmt, const std::string &parameter_name, const int &bind_int) const
 {
     std::cout << "BindInt " << parameter_name << ": " << bind_int << std::endl;
-    int ret = sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, parameter_name.c_str()), bind_int);
+    const std::string parameter_index_name = ":" + parameter_name;
+    int ret = sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, parameter_index_name.c_str()), bind_int);
     if (ret != SQLITE_OK)
     {
         std::cout << "Error, bind of " << parameter_name << ": " << bind_int << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
@@ -232,8 +393,8 @@ int SQLiteDB::BindInt(sqlite3_stmt* stmt, const std::string &parameter_name, con
 int SQLiteDB::BindText(sqlite3_stmt* stmt, const std::string &parameter_name, const std::string &bind_text) const
 {
     std::cout << "BindText " << parameter_name << ": " << bind_text << std::endl;
-    int index = sqlite3_bind_parameter_index(stmt, parameter_name.c_str());
-    std::cout << index << std::endl;
+    const std::string parameter_index_name = ":" + parameter_name;
+    int index = sqlite3_bind_parameter_index(stmt, parameter_index_name.c_str());
     int ret = sqlite3_bind_text(stmt, index, bind_text.c_str(), bind_text.length(), SQLITE_STATIC);
     if (ret != SQLITE_OK)
     {
@@ -241,33 +402,6 @@ int SQLiteDB::BindText(sqlite3_stmt* stmt, const std::string &parameter_name, co
         ResetStatement(stmt);
         return -1;
     }
-
-    return 0;
-}
-
-int SQLiteDB::PrepareStatements()
-{
-    if (!database_conn_)
-        return -1;
-
-    int ret;
-
-    prepared_statements_.emplace_back();
-    ret = sqlite3_prepare_v2(database_conn_, CreateStagingEntryStatement, -1, &prepared_statements_[CREATE_STAGING_DOC_STATEMENT], nullptr);
-    if (ret != SQLITE_OK)
-    {
-        std::cout << "Error, prepare failed - " << sqlite3_errmsg(database_conn_) << std::endl;
-        return -1;
-    }
-
-    prepared_statements_.emplace_back();
-    ret = sqlite3_prepare_v2(database_conn_, TestStatement, -1, &prepared_statements_[TEST_STATEMENT], nullptr);
-    if (ret != SQLITE_OK)
-    {
-        std::cout << "Error, prepare failed - " << sqlite3_errmsg(database_conn_) << std::endl;
-        return -1;
-    }
-
 
     return 0;
 }

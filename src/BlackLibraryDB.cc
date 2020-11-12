@@ -17,7 +17,7 @@ BlackLibraryDB::BlackLibraryDB(const std::string &database_url) :
     database_connection_interface_(nullptr),
     database_url_(database_url)
 {
-    database_connection_interface_ = std::make_unique<black_library_sqlite3::SQLiteDB>(database_url_);
+    database_connection_interface_ = std::make_unique<black_library_sqlite3::SQLiteDB>(database_url_, true);
 }
 
 BlackLibraryDB::~BlackLibraryDB()
