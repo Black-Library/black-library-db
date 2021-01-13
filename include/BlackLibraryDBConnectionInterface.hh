@@ -51,6 +51,8 @@ struct DBEntry {
     std::string nickname = "";
     std::string source;
     std::string URL;
+    std::string series;
+    uint16_t series_length;
     uint16_t version;
     std::string media_path;
     std::string birth_date;
@@ -78,10 +80,9 @@ public:
     // virtual DBUser ReadUser();
 
     virtual int CreateStagingEntry(const DBEntry &entry) const = 0;
-
-    // virtual DBEntry ReadStagingDoc(std::string UUID);
-    // virtual int UpdateStagingDoc(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
-    // virtual int DeleteStagingDoc(std::string UUID);
+    virtual DBEntry ReadStagingEntry(std::string UUID) const = 0;
+    // virtual int UpdateStagingEntry(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
+    // virtual int DeleteStagingEntry(std::string UUID);
 
     // virtual int CreateDoc();
     // virtual int ReadDoc();

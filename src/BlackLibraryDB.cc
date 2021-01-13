@@ -35,6 +35,21 @@ int BlackLibraryDB::CreateStagingEntry(const DBEntry &entry) const
     return 0;
 }
 
+DBEntry BlackLibraryDB::ReadStagingEntry(std::string UUID) const
+{
+    DBEntry entry;
+
+    entry = database_connection_interface_->ReadStagingEntry(UUID);
+    if (entry.UUID.empty())
+    {
+        std::cout << "Error, failed to read staging doc" << std::endl;
+        return entry;
+    }
+
+    return entry;
+}
+
+
 } // namespace db
 } // namespace core
 } // namespace black_library

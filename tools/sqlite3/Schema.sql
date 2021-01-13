@@ -1,6 +1,6 @@
 /* Schema */
 /* note: date might be changed to be formed by date --utc +"%Y-%m-%d:%H:%M:%S" instead of date --utc +"%s" */
-
+/* this file is for documentation only, it is deprecated
 /*
 user
 UID permission_level name
@@ -104,6 +104,8 @@ CREATE TABLE IF NOT EXISTS staging_entry(
 	nickname TEXT, 
 	source TEXT, 
 	URL TEXT, 
+	series TEXT,
+	series_length INTEGER DEFAULT 1,
 	version INTEGER, 
 	media_path TEXT NOT NULL, 
 	birth_date TEXT NOT NULL, 
@@ -118,6 +120,8 @@ CREATE TABLE IF NOT EXISTS black_entry(
 	nickname TEXT, 
 	source TEXT, 
 	URL TEXT, 
+	series TEXT,
+	series_length INTEGER DEFAULT 1,
 	version INTEGER, 
 	media_path TEXT NOT NULL, 
 	birth_date TEXT NOT NULL, 

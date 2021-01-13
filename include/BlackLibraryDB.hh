@@ -18,6 +18,7 @@ public:
     ~BlackLibraryDB();
 
     int CreateStagingEntry(const DBEntry &entry) const override;
+    DBEntry ReadStagingEntry(std::string UUID) const override;
 
 private:
     std::string GetUUID();

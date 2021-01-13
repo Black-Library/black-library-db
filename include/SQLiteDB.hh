@@ -32,9 +32,9 @@ public:
     int CreateVideoSubtype(const std::string &video_subtype) const;
 
     int CreateStagingEntry(const DBEntry &entry) const override;
-    // DBEntry ReadStagingDoc(std::string UUID);
-    // int UpdateStagingDoc(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
-    // int DeleteStagingDoc(std::string UUID);
+    DBEntry ReadStagingEntry(std::string UUID) const override;
+    // int UpdateStagingEntry(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
+    // int DeleteStagingEntry(std::string UUID);
 
 private:
     int SetupTables();
