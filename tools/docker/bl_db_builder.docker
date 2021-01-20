@@ -9,14 +9,16 @@ ARG docker_build_user=db_user
 RUN echo test
 
 RUN apt-get update && apt-get install --no-install-recommends --yes\
+    build-essential \
     cmake \
+    gcc \
     git \
+#    libsqlite0-dev \
     libsqlite3-dev \
-    libxml2-dev \
+    make \
     openssh-client \
     python3 \
     sqlite \
-    vim \
 && rm -rf /var/lib/apt/lists/*
 
 # setup build user
@@ -34,3 +36,5 @@ USER $docker_build_user
 # build parser in /build store source files in /source.
 WORKDIR /source
 COPY --chown=1000:1000 . ./blacklibrarydb/
+WORKDIR /source/blacklibrarydb
+RUN mkdir build && cmake -Bbuild -DCMAKE_INSTALL_PREFIX=install .

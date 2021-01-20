@@ -14,7 +14,7 @@ namespace db {
 
 class BlackLibraryDB : public BlackLibraryDBConnectionInterface {
 public:
-    explicit BlackLibraryDB(const std::string &database_url);
+    explicit BlackLibraryDB(const std::string &database_url, bool initialize = false);
     ~BlackLibraryDB();
 
     int CreateStagingEntry(const DBEntry &entry) const override;

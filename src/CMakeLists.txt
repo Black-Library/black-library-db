@@ -1,12 +1,16 @@
-find_package(SQLite3 REQUIRED)
+message(STATUS "Searching for sqlite3.h")
+find_path( SQLite3_INCLUDE_DIR sqlite3.h )
+message(STATUS "Searching for sqlite3.h - ${SQLite3_INCLUDE_DIR}")
 
-message("SQLite3 include dir: ${SQLite3_INCLUDE_DIRS}")
+message(STATUS "Searching for libsqlite3")
+find_library( SQLite3_LIBRARY sqlite3 )
+message(STATUS "Searching for libsqlite3 - ${SQLite3_LIBRARY}")
 
 include(GNUInstallDirs)
 
 add_library(BlackLibraryDB BlackLibraryDB.cc SQLiteDB.cc)
 target_link_libraries(BlackLibraryDB ${SQLite3_LIBRARY})
-target_include_directories(BlackLibraryDB PUBLIC ${SQLite3_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(BlackLibraryDB PUBLIC ${SQLite3_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/include)
 
 install(
   TARGETS BlackLibraryDB
