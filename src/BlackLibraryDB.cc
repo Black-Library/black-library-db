@@ -13,7 +13,7 @@ namespace core {
 
 namespace db {
 
-BlackLibraryDB::BlackLibraryDB(const std::string &database_url, bool initialize = false) :
+BlackLibraryDB::BlackLibraryDB(const std::string &database_url, bool initialize) :
     database_connection_interface_(nullptr),
     database_url_(database_url)
 {

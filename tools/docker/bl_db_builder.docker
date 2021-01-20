@@ -13,11 +13,9 @@ RUN apt-get update && apt-get install --no-install-recommends --yes\
     cmake \
     gcc \
     git \
-#    libsqlite0-dev \
     libsqlite3-dev \
     make \
     openssh-client \
-    python3 \
     sqlite \
 && rm -rf /var/lib/apt/lists/*
 
@@ -37,4 +35,6 @@ USER $docker_build_user
 WORKDIR /source
 COPY --chown=1000:1000 . ./blacklibrarydb/
 WORKDIR /source/blacklibrarydb
-RUN mkdir build && cmake -Bbuild -DCMAKE_INSTALL_PREFIX=install .
+RUN mkdir build \
+    && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install . -Bbuild \
+    && make -Cbuild install
