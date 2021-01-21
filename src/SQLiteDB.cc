@@ -375,7 +375,7 @@ DBUrlCheck SQLiteDB::DoesEntryUrlExist(const std::string &URL, db_entry_type_rep
     return check;
 }
 
-int SQLiteDB::UpdateEntry(std::string UUID, const DBEntry &entry, db_entry_type_rep_t entry_type) const
+int SQLiteDB::UpdateEntry(const std::string &UUID, const DBEntry &entry, db_entry_type_rep_t entry_type) const
 {
     std::cout << "Update " << GetEntryTypeString(entry_type) << " entry for UUID: " << UUID << std::endl;
 

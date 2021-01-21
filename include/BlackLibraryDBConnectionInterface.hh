@@ -99,7 +99,7 @@ public:
     virtual int CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) const = 0;
     virtual DBEntry ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_type) const = 0;
     virtual DBUrlCheck DoesEntryUrlExist(const std::string &URL, db_entry_type_rep_t entry_type) const = 0;
-    virtual int UpdateEntry(std::string UUID, const DBEntry &entry, db_entry_type_rep_t entry_type) const = 0;
+    virtual int UpdateEntry(const std::string &UUID, const DBEntry &entry, db_entry_type_rep_t entry_type) const = 0;
     virtual int DeleteEntry(std::string UUID, db_entry_type_rep_t entry_type) const = 0;
 
 private:
