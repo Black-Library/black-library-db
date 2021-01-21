@@ -12,13 +12,14 @@ namespace core {
 
 namespace db {
 
-class BlackLibraryDB : public BlackLibraryDBConnectionInterface {
+class BlackLibraryDB {
 public:
     explicit BlackLibraryDB(const std::string &database_url, bool initialize = false);
     ~BlackLibraryDB();
 
-    int CreateStagingEntry(const DBEntry &entry) const override;
-    DBEntry ReadStagingEntry(std::string UUID) const override;
+    int CreateStagingEntry(const DBEntry &entry);
+    DBEntry ReadStagingEntry(std::string UUID);
+    DBUrlCheck DoesStagingEntryUrlExist(std::string URL);
 
 private:
     std::string GetUUID();

@@ -21,10 +21,10 @@ source
 name entry_type
 
 staging_entry
-UUID name nickname source URL version media_path birth_date user_contributed(UID)
+UUID name nickname source URL series series_length version media_path birth_date user_contributed(UID)
 
 black_entry
-UUID name nickname source URL version media_path birth_date user_contributed(UID)
+UUID name nickname source URL series series_length version media_path birth_date user_contributed(UID)
 
 entry_history
 UUID version path date
@@ -92,11 +92,11 @@ CREATE TABLE IF NOT EXISTS document_tag(
 
 CREATE TABLE IF NOT EXISTS source(
 	name TEXT NOT NULL, 
-	type TEXT,
+	type INTEGER,
 	FOREIGN KEY(type) REFERENCES entry_type(name)
 );
 
-INSERT INTO source VALUES('youtube', 'video');
+INSERT INTO source VALUES('youtube', 3);
 
 CREATE TABLE IF NOT EXISTS staging_entry(
 	UUID VARCHAR(36) PRIMARY KEY NOT NULL, 

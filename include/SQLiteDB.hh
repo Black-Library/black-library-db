@@ -31,10 +31,11 @@ public:
     int CreateImageGallerySubtype(const std::string &image_gallery_subtype) const;
     int CreateVideoSubtype(const std::string &video_subtype) const;
 
-    int CreateStagingEntry(const DBEntry &entry) const override;
-    DBEntry ReadStagingEntry(std::string UUID) const override;
-    // int UpdateStagingEntry(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
-    // int DeleteStagingEntry(std::string UUID);
+    int CreateEntry(const DBEntry &entry, db_entry_type_rep_t) const override;
+    DBEntry ReadEntry(std::string UUID, db_entry_type_rep_t) const override;
+    DBUrlCheck DoesEntryUrlExist(std::string URL, db_entry_type_rep_t) const override;
+    // int UpdateEntry(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
+    // int DeleteEntry(std::string UUID);
 
 private:
     int SetupTables();

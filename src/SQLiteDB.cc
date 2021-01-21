@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 
+#include <BlackLibraryDBConnectionInterfaceUtils.hh>
 #include <SQLiteDB.hh>
 
 namespace black_library {
@@ -33,8 +34,12 @@ static constexpr const char CreateImageGallerySubtypeStatement[] = "INSERT INTO 
 static constexpr const char CreateVideoSubtypeStatement[]        = "INSERT INTO video_subtype(name) VALUES (:name)";
 static constexpr const char CreateSourceStatement[]              = "INSERT INTO source(name, type) VALUES (:name, :type)";
 static constexpr const char CreateStagingEntryStatement[]        = "INSERT INTO staging_entry(UUID, title, nickname, source, URL, series, series_length, version, media_path, birth_date, user_contributed) VALUES (:UUID, :title, :nickname, :source, :URL, :series, :series_length, :version, :media_path, :birth_date, :user_contributed)";
+static constexpr const char CreateBlackEntryStatement[]          = "INSERT INTO black_entry(UUID, title, nickname, source, URL, series, series_length, version, media_path, birth_date, user_contributed) VALUES (:UUID, :title, :nickname, :source, :URL, :series, :series_length, :version, :media_path, :birth_date, :user_contributed)";
 
 static constexpr const char ReadStagingEntryStatment[]           = "SELECT * FROM staging_entry WHERE UUID = :UUID";
+static constexpr const char ReadStagingEntryUrlStatement[]       = "SELECT * FROM staging_entry WHERE URL = :URL";
+static constexpr const char ReadBlackEntryStatment[]             = "SELECT * FROM black_entry WHERE UUID = :UUID";
+static constexpr const char ReadBlackEntryUrlStatement[]         = "SELECT * FROM black_entry WHERE URL = :URL";
 
 typedef enum {
     CREATE_USER_STATEMENT,
@@ -44,8 +49,13 @@ typedef enum {
     CREATE_VIDEO_SUBTYPE_STATEMENT,
     CREATE_SOURCE_STATEMENT,
     CREATE_STAGING_ENTRY_STATEMENT,
+    CREATE_BLACK_ENTRY_STATEMENT,
 
     READ_STAGING_ENTRY_STATEMENT,
+    READ_STATING_ENTRY_URL_STATEMENT,
+    READ_BLACK_ENTRY_STATEMENT,
+    READ_BLACK_ENTRY_URL_STATEMENT,
+
     _NUM_PREPARED_STATEMENTS
 } prepared_statement_id_t;
 
@@ -150,9 +160,9 @@ int SQLiteDB::CreateUser(const DBUser &user) const
     return 0;
 }
 
-int SQLiteDB::CreateStagingEntry(const DBEntry &entry) const
+int SQLiteDB::CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) const
 {
-    std::cout << "create staging entry for UUID: " << entry.UUID << std::endl;
+    std::cout << "create " << GetEntryTypeString(entry_type) << " entryfor UUID: " << entry.UUID << std::endl;
 
     if (CheckInitialized())
         return -1;
@@ -161,7 +171,20 @@ int SQLiteDB::CreateStagingEntry(const DBEntry &entry) const
         return -1;
 
     int ret = SQLITE_OK;
-    int statement_id = CREATE_STAGING_ENTRY_STATEMENT;
+
+    int statement_id;
+    switch (entry_type)
+    {
+        case BLACK_ENTRY:
+            statement_id = CREATE_STAGING_ENTRY_STATEMENT;
+            break;
+        case STAGING_ENTRY:
+            statement_id = CREATE_BLACK_ENTRY_STATEMENT;
+            break;
+        default:
+            return -1;
+    }
+
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
@@ -189,6 +212,7 @@ int SQLiteDB::CreateStagingEntry(const DBEntry &entry) const
         return -1;
 
     // run statement
+    std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
@@ -206,13 +230,12 @@ int SQLiteDB::CreateStagingEntry(const DBEntry &entry) const
     return 0;
 }
 
-DBEntry SQLiteDB::ReadStagingEntry(std::string UUID) const
+DBEntry SQLiteDB::ReadEntry(std::string UUID, db_entry_type_rep_t entry_type) const
 {
     DBEntry entry;
 
-    std::cout << "Read staging entry for UUID: " << UUID << std::endl;
+    std::cout << "Read staging entries for UUID: " << UUID << std::endl;
 
-    // TODO check if entry is empty in another step
     if (CheckInitialized())
         return entry;
 
@@ -220,7 +243,20 @@ DBEntry SQLiteDB::ReadStagingEntry(std::string UUID) const
         return entry;
 
     int ret = SQLITE_OK;
-    int statement_id = READ_STAGING_ENTRY_STATEMENT;
+
+    int statement_id;
+    switch (entry_type)
+    {
+        case BLACK_ENTRY:
+            statement_id = READ_STAGING_ENTRY_STATEMENT;
+            break;
+        case STAGING_ENTRY:
+            statement_id = READ_BLACK_ENTRY_STATEMENT;
+            break;
+        default:
+            return entry;
+    }
+
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
@@ -231,6 +267,7 @@ DBEntry SQLiteDB::ReadStagingEntry(std::string UUID) const
     }
 
     // run statement
+    std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
@@ -258,6 +295,72 @@ DBEntry SQLiteDB::ReadStagingEntry(std::string UUID) const
         return entry;
 
     return entry;
+}
+
+DBUrlCheck SQLiteDB::DoesEntryUrlExist(std::string URL, db_entry_type_rep_t entry_type) const
+{
+    DBUrlCheck check;
+
+    std::cout << "Check staging entries for URL: " << URL << std::endl;
+
+    if (CheckInitialized())
+    {
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+
+    if (BeginTransaction())
+    {
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+
+    int ret = SQLITE_OK;
+
+    int statement_id;
+    switch (entry_type)
+    {
+        case BLACK_ENTRY:
+            statement_id = READ_STATING_ENTRY_URL_STATEMENT;
+            break;
+        case STAGING_ENTRY:
+            statement_id = READ_BLACK_ENTRY_URL_STATEMENT;
+            break;
+        default:
+            return check;
+    }
+
+    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+
+    // bind statement variables
+    if (BindText(stmt, "URL", URL))
+    {
+        EndTransaction();
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+
+    // run statement
+    std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_ROW)
+    {
+        std::cout << "URL: " << URL << " does not exist" << std::endl;
+        check.exists = false;
+        ResetStatement(stmt);
+        EndTransaction();
+        return check;
+    }
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+    {
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+
+    return check;
 }
 
 // int SQLiteDB::UpdateStagingEntry(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "")
@@ -298,9 +401,12 @@ int SQLiteDB::PrepareStatements()
     PrepareStatement(CreateVideoSubtypeStatement, CREATE_VIDEO_SUBTYPE_STATEMENT);
     PrepareStatement(CreateSourceStatement, CREATE_SOURCE_STATEMENT);
     PrepareStatement(CreateStagingEntryStatement, CREATE_STAGING_ENTRY_STATEMENT);
+    PrepareStatement(CreateBlackEntryStatement, CREATE_BLACK_ENTRY_STATEMENT);
 
     PrepareStatement(ReadStagingEntryStatment, READ_STAGING_ENTRY_STATEMENT);
-
+    PrepareStatement(ReadStagingEntryUrlStatement, READ_STATING_ENTRY_URL_STATEMENT);
+    PrepareStatement(ReadBlackEntryStatment, READ_BLACK_ENTRY_STATEMENT);
+    PrepareStatement(ReadBlackEntryUrlStatement, READ_BLACK_ENTRY_URL_STATEMENT);
     return 0;
 }
 

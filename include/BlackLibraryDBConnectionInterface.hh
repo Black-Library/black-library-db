@@ -13,7 +13,6 @@ namespace core {
 
 namespace db {
 
-
 typedef enum {
     NO_PERMISSIONS,
     READ_PERMISSIONS,
@@ -36,14 +35,27 @@ struct DBUser {
     std::string name = "";
 };
 
-struct DBType {
-    std::string name;
-};
+typedef enum {
+    DOCUMENT,
+    IMAGE_GALLERY,
+    VIDEO,
+    _NUM_DB_ENTRY_MEDIA_TYPES
+} db_entry_media_type;
+
+typedef uint8_t db_entry_media_type_rep_t;
 
 struct DBSource {
     std::string name;
-    DBType type;
+    db_entry_media_type_rep_t type;
 };
+
+typedef enum {
+    BLACK_ENTRY,
+    STAGING_ENTRY,
+    _NUM_ENTRY_TYPES
+} db_entry_type;
+
+typedef uint8_t db_entry_type_rep_t;
 
 struct DBEntry {
     std::string UUID;
@@ -65,6 +77,11 @@ struct DBRating {
     uint16_t rating;
 };
 
+struct DBUrlCheck {
+    int error = 0;
+    bool exists = true;
+};
+
 struct DBUserProgress {
     std::string UUID;
     UID_rep_t UID;
@@ -79,15 +96,11 @@ public:
     virtual ~BlackLibraryDBConnectionInterface() {}
     // virtual DBUser ReadUser();
 
-    virtual int CreateStagingEntry(const DBEntry &entry) const = 0;
-    virtual DBEntry ReadStagingEntry(std::string UUID) const = 0;
+    virtual int CreateEntry(const DBEntry &entry, db_entry_type_rep_t) const = 0;
+    virtual DBEntry ReadEntry(std::string UUID, db_entry_type_rep_t) const = 0;
+    virtual DBUrlCheck DoesEntryUrlExist(std::string URL, db_entry_type_rep_t) const = 0;
     // virtual int UpdateStagingEntry(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
     // virtual int DeleteStagingEntry(std::string UUID);
-
-    // virtual int CreateDoc();
-    // virtual int ReadDoc();
-    // virtual int UpdateDoc();
-    // virtual int DeleteDoc();
 
 private:
 

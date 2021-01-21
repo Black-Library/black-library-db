@@ -24,9 +24,9 @@ BlackLibraryDB::~BlackLibraryDB()
 {
 }
 
-int BlackLibraryDB::CreateStagingEntry(const DBEntry &entry) const
+int BlackLibraryDB::CreateStagingEntry(const DBEntry &entry)
 {
-    if (database_connection_interface_->CreateStagingEntry(entry))
+    if (database_connection_interface_->CreateEntry(entry, STAGING_ENTRY))
     {
         std::cout << "Error, failed to create staging doc" << std::endl;
         return -1;
@@ -35,11 +35,11 @@ int BlackLibraryDB::CreateStagingEntry(const DBEntry &entry) const
     return 0;
 }
 
-DBEntry BlackLibraryDB::ReadStagingEntry(std::string UUID) const
+DBEntry BlackLibraryDB::ReadStagingEntry(std::string UUID)
 {
     DBEntry entry;
 
-    entry = database_connection_interface_->ReadStagingEntry(UUID);
+    entry = database_connection_interface_->ReadEntry(UUID, STAGING_ENTRY);
     if (entry.UUID.empty())
     {
         std::cout << "Error, failed to read staging doc" << std::endl;
@@ -49,6 +49,10 @@ DBEntry BlackLibraryDB::ReadStagingEntry(std::string UUID) const
     return entry;
 }
 
+DBUrlCheck BlackLibraryDB::DoesStagingEntryUrlExist(std::string URL)
+{
+    return database_connection_interface_->DoesEntryUrlExist(URL, STAGING_ENTRY);
+}
 
 } // namespace db
 } // namespace core

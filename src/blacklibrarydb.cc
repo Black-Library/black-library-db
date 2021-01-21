@@ -2,6 +2,7 @@
  * blacklibrarydb.cc
  */
 
+#include <getopt.h>
 #include <iostream>
 
 #include <BlackLibraryDB.hh>
@@ -44,19 +45,25 @@ int main(int argc, char* argv[])
 
     read_staging_entry = blacklibrarydb->ReadStagingEntry("55ee59ad-2feb-4196-960b-3226c65c80d5");
 
-    std::cout << "UUID: " << read_staging_entry.UUID << std::endl;
-    std::cout << "title: " << read_staging_entry.title << std::endl;
-    std::cout << "nickname: " << read_staging_entry.nickname << std::endl;
-    std::cout << "source: " << read_staging_entry.source << std::endl;
-    std::cout << "URL: " << read_staging_entry.URL << std::endl;
-    std::cout << "series: " << read_staging_entry.series << std::endl;
-    std::cout << "series_length: " << read_staging_entry.series_length << std::endl;
-    std::cout << "version: " << read_staging_entry.version << std::endl;
-    std::cout << "media_path: " << read_staging_entry.media_path << std::endl;
-    std::cout << "birth_date: " << read_staging_entry.birth_date << std::endl;
-    std::cout << "user_contributed: " << read_staging_entry.user_contributed << std::endl;
+    std::cout << "\tUUID: " << read_staging_entry.UUID << std::endl;
+    std::cout << "\ttitle: " << read_staging_entry.title << std::endl;
+    std::cout << "\tnickname: " << read_staging_entry.nickname << std::endl;
+    std::cout << "\tsource: " << read_staging_entry.source << std::endl;
+    std::cout << "\tURL: " << read_staging_entry.URL << std::endl;
+    std::cout << "\tseries: " << read_staging_entry.series << std::endl;
+    std::cout << "\tseries_length: " << read_staging_entry.series_length << std::endl;
+    std::cout << "\tversion: " << read_staging_entry.version << std::endl;
+    std::cout << "\tmedia_path: " << read_staging_entry.media_path << std::endl;
+    std::cout << "\tbirth_date: " << read_staging_entry.birth_date << std::endl;
+    std::cout << "\tuser_contributed: " << read_staging_entry.user_contributed << std::endl;
 
-    std::cout << "Stopping db" << std::endl;
+    black_library::core::db::DBUrlCheck check0 = blacklibrarydb->DoesStagingEntryUrlExist("foo5");
+    black_library::core::db::DBUrlCheck check1 = blacklibrarydb->DoesStagingEntryUrlExist("foo6");
+
+    std::cout << "URL foo5 exists: " << check0.exists << std::endl;
+    std::cout << "URL foo6 exists: " << check1.exists << std::endl;
+
+    std::cout << "Closing application" << std::endl;
 
     return 0;
 }
