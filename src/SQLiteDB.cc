@@ -36,10 +36,16 @@ static constexpr const char CreateSourceStatement[]              = "INSERT INTO 
 static constexpr const char CreateStagingEntryStatement[]        = "INSERT INTO staging_entry(UUID, title, nickname, source, URL, series, series_length, version, media_path, birth_date, user_contributed) VALUES (:UUID, :title, :nickname, :source, :URL, :series, :series_length, :version, :media_path, :birth_date, :user_contributed)";
 static constexpr const char CreateBlackEntryStatement[]          = "INSERT INTO black_entry(UUID, title, nickname, source, URL, series, series_length, version, media_path, birth_date, user_contributed) VALUES (:UUID, :title, :nickname, :source, :URL, :series, :series_length, :version, :media_path, :birth_date, :user_contributed)";
 
-static constexpr const char ReadStagingEntryStatment[]           = "SELECT * FROM staging_entry WHERE UUID = :UUID";
+static constexpr const char ReadStagingEntryStatement[]          = "SELECT * FROM staging_entry WHERE UUID = :UUID";
 static constexpr const char ReadStagingEntryUrlStatement[]       = "SELECT * FROM staging_entry WHERE URL = :URL";
-static constexpr const char ReadBlackEntryStatment[]             = "SELECT * FROM black_entry WHERE UUID = :UUID";
+static constexpr const char ReadBlackEntryStatement[]            = "SELECT * FROM black_entry WHERE UUID = :UUID";
 static constexpr const char ReadBlackEntryUrlStatement[]         = "SELECT * FROM black_entry WHERE URL = :URL";
+
+static constexpr const char UpdateStagingEntryStatement[]        = "UPDATE staging_entry SET title = :title, nickname = :nickname, source = :source, URL = :URL, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, user_contributed = :user_contributed WHERE UUID = :UUID";
+static constexpr const char UpdateBlackEntryStatement[]          = "UPDATE black_entry SET title = :title, nickname = :nickname, source = :source, URL = :URL, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, user_contributed = :user_contributed WHERE UUID = :UUID";
+
+static constexpr const char DeleteStagingEntryStatment[]         = "DELETE FROM staging_entry WHERE UUID = :UUID";
+static constexpr const char DeleteBlackEntryStatment[]           = "DELETE FROM black_entry WHERE UUID = :UUID";
 
 typedef enum {
     CREATE_USER_STATEMENT,
@@ -55,6 +61,12 @@ typedef enum {
     READ_STATING_ENTRY_URL_STATEMENT,
     READ_BLACK_ENTRY_STATEMENT,
     READ_BLACK_ENTRY_URL_STATEMENT,
+
+    UPDATE_STAGING_ENTRY_STATEMENT,
+    UPDATE_BLACK_ENTRY_STATEMENT,
+
+    DELETE_STAGING_ENTRY_STATEMENT,
+    DELETE_BLACK_ENTRY_STATEMENT,
 
     _NUM_PREPARED_STATEMENTS
 } prepared_statement_id_t;
@@ -127,7 +139,7 @@ SQLiteDB::~SQLiteDB()
 
 int SQLiteDB::CreateUser(const DBUser &user) const
 {
-    std::cout << "create user: " << user.name << " with UID: " << user.UID << std::endl;
+    std::cout << "Create user: " << user.name << " with UID: " << user.UID << std::endl;
 
     if (BeginTransaction())
         return -1;
@@ -148,7 +160,7 @@ int SQLiteDB::CreateUser(const DBUser &user) const
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
-        std::cout << "Error, insert user failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error, create user failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         return -1;
     }
 
@@ -162,7 +174,7 @@ int SQLiteDB::CreateUser(const DBUser &user) const
 
 int SQLiteDB::CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) const
 {
-    std::cout << "create " << GetEntryTypeString(entry_type) << " entryfor UUID: " << entry.UUID << std::endl;
+    std::cout << "Create " << GetEntryTypeString(entry_type) << " entry for UUID: " << entry.UUID << std::endl;
 
     if (CheckInitialized())
         return -1;
@@ -216,7 +228,7 @@ int SQLiteDB::CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) 
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
-        std::cout << "Error, insert staging doc failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error, create " << GetEntryTypeString(entry_type) << " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
         EndTransaction();
         return -1;
@@ -230,11 +242,11 @@ int SQLiteDB::CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) 
     return 0;
 }
 
-DBEntry SQLiteDB::ReadEntry(std::string UUID, db_entry_type_rep_t entry_type) const
+DBEntry SQLiteDB::ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_type) const
 {
     DBEntry entry;
 
-    std::cout << "Read staging entries for UUID: " << UUID << std::endl;
+    std::cout << "Read " << GetEntryTypeString(entry_type) << " entry with UUID: " << UUID << std::endl;
 
     if (CheckInitialized())
         return entry;
@@ -271,7 +283,7 @@ DBEntry SQLiteDB::ReadEntry(std::string UUID, db_entry_type_rep_t entry_type) co
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
-        std::cout << "Error, read staging entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error, read " << GetEntryTypeString(entry_type) << " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
         EndTransaction();
         return entry;
@@ -301,7 +313,7 @@ DBUrlCheck SQLiteDB::DoesEntryUrlExist(std::string URL, db_entry_type_rep_t entr
 {
     DBUrlCheck check;
 
-    std::cout << "Check staging entries for URL: " << URL << std::endl;
+    std::cout << "Check " << GetEntryTypeString(entry_type) << " entries for URL: " << URL << std::endl;
 
     if (CheckInitialized())
     {
@@ -363,15 +375,128 @@ DBUrlCheck SQLiteDB::DoesEntryUrlExist(std::string URL, db_entry_type_rep_t entr
     return check;
 }
 
-// int SQLiteDB::UpdateStagingEntry(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "")
-// {
-//     return 0;
-// }
+int SQLiteDB::UpdateEntry(std::string UUID, const DBEntry &entry, db_entry_type_rep_t entry_type) const
+{
+    std::cout << "Update " << GetEntryTypeString(entry_type) << " entry for UUID: " << UUID << std::endl;
 
-// int SQLiteDB::DeleteStagingEntry(std::string UUID)
-// {
-//     return 0;
-// }
+    if (CheckInitialized())
+        return -1;
+
+    if (BeginTransaction())
+        return -1;
+
+    int ret = SQLITE_OK;
+
+    int statement_id;
+    switch (entry_type)
+    {
+        case BLACK_ENTRY:
+            statement_id = UPDATE_STAGING_ENTRY_STATEMENT;
+            break;
+        case STAGING_ENTRY:
+            statement_id = UPDATE_BLACK_ENTRY_STATEMENT;
+            break;
+        default:
+            return -1;
+    }
+
+    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+
+    // bind statement variables
+    if (BindText(stmt, "UUID", entry.UUID))
+        return -1;
+    if (BindText(stmt, "title", entry.title))
+        return -1;
+    if (BindText(stmt, "nickname", entry.nickname))
+        return -1;
+    if (BindText(stmt, "source", entry.source))
+        return -1;
+    if (BindText(stmt, "URL", entry.URL))
+        return -1;
+    if (BindText(stmt, "series", entry.series))
+        return -1;
+    if (BindInt(stmt, "series_length", entry.series_length))
+        return -1;
+    if (BindInt(stmt, "version", entry.version))
+        return -1;
+    if (BindText(stmt, "media_path", entry.media_path))
+        return -1;
+    if (BindText(stmt, "birth_date", entry.birth_date))
+        return -1;
+    if (BindInt(stmt, "user_contributed", entry.user_contributed))
+        return -1;
+
+    // run statement
+    std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_DONE)
+    {
+        std::cout << "Error, update " << GetEntryTypeString(entry_type) << " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        ResetStatement(stmt);
+        EndTransaction();
+        return -1;
+    }
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return -1;
+
+    return 0;
+}
+
+int SQLiteDB::DeleteEntry(std::string UUID, db_entry_type_rep_t entry_type) const
+{
+    std::cout << "Delete " << GetEntryTypeString(entry_type) << " UUID: " << UUID << std::endl;
+
+    if (CheckInitialized())
+        return -1;
+
+    if (BeginTransaction())
+        return -1;
+
+    int ret = SQLITE_OK;
+
+    int statement_id;
+    switch (entry_type)
+    {
+        case BLACK_ENTRY:
+            statement_id = DELETE_STAGING_ENTRY_STATEMENT;
+            break;
+        case STAGING_ENTRY:
+            statement_id = DELETE_BLACK_ENTRY_STATEMENT;
+            break;
+        default:
+            return -1;
+    }
+
+    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+
+    // bind statement variables
+    if (BindText(stmt, "UUID", UUID))
+    {
+        EndTransaction();
+        return -1;
+    }
+
+    // run statement
+    std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_DONE)
+    {
+        std::cout << "Error, delete " << GetEntryTypeString(entry_type) <<  " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        ResetStatement(stmt);
+        EndTransaction();
+        return -1;
+    }
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return -1;
+
+    return 0;
+}
 
 int SQLiteDB::SetupTables()
 {
@@ -400,13 +525,21 @@ int SQLiteDB::PrepareStatements()
     PrepareStatement(CreateImageGallerySubtypeStatement, CREATE_IMAGE_GALLERY_SUBTYPE_STATEMENT);
     PrepareStatement(CreateVideoSubtypeStatement, CREATE_VIDEO_SUBTYPE_STATEMENT);
     PrepareStatement(CreateSourceStatement, CREATE_SOURCE_STATEMENT);
+
     PrepareStatement(CreateStagingEntryStatement, CREATE_STAGING_ENTRY_STATEMENT);
     PrepareStatement(CreateBlackEntryStatement, CREATE_BLACK_ENTRY_STATEMENT);
 
-    PrepareStatement(ReadStagingEntryStatment, READ_STAGING_ENTRY_STATEMENT);
+    PrepareStatement(ReadStagingEntryStatement, READ_STAGING_ENTRY_STATEMENT);
     PrepareStatement(ReadStagingEntryUrlStatement, READ_STATING_ENTRY_URL_STATEMENT);
-    PrepareStatement(ReadBlackEntryStatment, READ_BLACK_ENTRY_STATEMENT);
+    PrepareStatement(ReadBlackEntryStatement, READ_BLACK_ENTRY_STATEMENT);
     PrepareStatement(ReadBlackEntryUrlStatement, READ_BLACK_ENTRY_URL_STATEMENT);
+
+    PrepareStatement(UpdateStagingEntryStatement, UPDATE_STAGING_ENTRY_STATEMENT);
+    PrepareStatement(UpdateBlackEntryStatement, UPDATE_BLACK_ENTRY_STATEMENT);
+
+    PrepareStatement(DeleteStagingEntryStatment, DELETE_STAGING_ENTRY_STATEMENT);
+    PrepareStatement(DeleteBlackEntryStatment, DELETE_BLACK_ENTRY_STATEMENT);
+
     return 0;
 }
 

@@ -54,6 +54,29 @@ DBUrlCheck BlackLibraryDB::DoesStagingEntryUrlExist(std::string URL)
     return database_connection_interface_->DoesEntryUrlExist(URL, STAGING_ENTRY);
 }
 
+int BlackLibraryDB::UpdateStagingEntry(std::string UUID, const DBEntry &entry)
+{
+    if (database_connection_interface_->UpdateEntry(UUID, entry, STAGING_ENTRY))
+    {
+        std::cout << "Error, failed to update staging doc" << std::endl;
+        return -1;
+    }
+
+    return 0;
+}
+
+int BlackLibraryDB::DeleteStagingEntry(std::string UUID)
+{
+    if (database_connection_interface_->DeleteEntry(UUID, STAGING_ENTRY))
+    {
+        std::cout << "Error, failed to delete staging doc" << std::endl;
+        return -1;
+    }
+
+    return 0;
+}
+
+
 } // namespace db
 } // namespace core
 } // namespace black_library

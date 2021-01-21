@@ -64,8 +64,8 @@ struct DBEntry {
     std::string source;
     std::string URL;
     std::string series;
-    uint16_t series_length;
-    uint16_t version;
+    uint16_t series_length = 1;
+    uint16_t version = 1;
     std::string media_path;
     std::string birth_date;
     UID_rep_t user_contributed = 6;
@@ -96,11 +96,11 @@ public:
     virtual ~BlackLibraryDBConnectionInterface() {}
     // virtual DBUser ReadUser();
 
-    virtual int CreateEntry(const DBEntry &entry, db_entry_type_rep_t) const = 0;
-    virtual DBEntry ReadEntry(std::string UUID, db_entry_type_rep_t) const = 0;
-    virtual DBUrlCheck DoesEntryUrlExist(std::string URL, db_entry_type_rep_t) const = 0;
-    // virtual int UpdateStagingEntry(std::string UUID, std::string title, std::string source, std::string URL, int uid, std::string nickname = "");
-    // virtual int DeleteStagingEntry(std::string UUID);
+    virtual int CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) const = 0;
+    virtual DBEntry ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_type) const = 0;
+    virtual DBUrlCheck DoesEntryUrlExist(std::string URL, db_entry_type_rep_t entry_type) const = 0;
+    virtual int UpdateEntry(std::string UUID, const DBEntry &entry, db_entry_type_rep_t entry_type) const = 0;
+    virtual int DeleteEntry(std::string UUID, db_entry_type_rep_t entry_type) const = 0;
 
 private:
 

@@ -20,6 +20,8 @@ public:
     int CreateStagingEntry(const DBEntry &entry);
     DBEntry ReadStagingEntry(std::string UUID);
     DBUrlCheck DoesStagingEntryUrlExist(std::string URL);
+    int UpdateStagingEntry(std::string UUID, const DBEntry &entry);
+    int DeleteStagingEntry(std::string UUID);
 
 private:
     std::string GetUUID();
