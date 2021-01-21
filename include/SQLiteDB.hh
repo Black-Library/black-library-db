@@ -33,7 +33,7 @@ public:
 
     int CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) const override;
     DBEntry ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_type) const override;
-    DBUrlCheck DoesEntryUrlExist(std::string URL, db_entry_type_rep_t entry_type) const override;
+    DBUrlCheck DoesEntryUrlExist(const std::string &URL, db_entry_type_rep_t entry_type) const override;
     int UpdateEntry(std::string UUID, const DBEntry &entry, db_entry_type_rep_t entry_type) const override;
     int DeleteEntry(std::string UUID, db_entry_type_rep_t entry_type) const override;
 

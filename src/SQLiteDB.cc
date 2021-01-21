@@ -309,7 +309,7 @@ DBEntry SQLiteDB::ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_t
     return entry;
 }
 
-DBUrlCheck SQLiteDB::DoesEntryUrlExist(std::string URL, db_entry_type_rep_t entry_type) const
+DBUrlCheck SQLiteDB::DoesEntryUrlExist(const std::string &URL, db_entry_type_rep_t entry_type) const
 {
     DBUrlCheck check;
 
