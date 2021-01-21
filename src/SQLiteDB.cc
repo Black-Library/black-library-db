@@ -445,7 +445,7 @@ int SQLiteDB::UpdateEntry(const std::string &UUID, const DBEntry &entry, db_entr
     return 0;
 }
 
-int SQLiteDB::DeleteEntry(std::string UUID, db_entry_type_rep_t entry_type) const
+int SQLiteDB::DeleteEntry(const std::string &UUID, db_entry_type_rep_t entry_type) const
 {
     std::cout << "Delete " << GetEntryTypeString(entry_type) << " UUID: " << UUID << std::endl;
 
