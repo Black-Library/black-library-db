@@ -23,6 +23,12 @@ public:
     int UpdateStagingEntry(std::string UUID, const DBEntry &entry);
     int DeleteStagingEntry(std::string UUID);
 
+    int CreateBlackEntry(const DBEntry &entry);
+    DBEntry ReadBlackEntry(std::string UUID);
+    DBUrlCheck DoesBlackEntryUrlExist(std::string URL);
+    int UpdateBlackEntry(std::string UUID, const DBEntry &entry);
+    int DeleteBlackEntry(std::string UUID);
+
 private:
     std::string GetUUID();
 
