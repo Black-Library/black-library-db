@@ -21,10 +21,10 @@ source
 name entry_type
 
 staging_entry
-UUID name nickname source URL series series_length version media_path birth_date user_contributed(UID)
+UUID name nickname source URL last_url series series_length version media_path birth_date user_contributed(UID)
 
 black_entry
-UUID name nickname source URL series series_length version media_path birth_date user_contributed(UID)
+UUID name nickname source URL last_url series series_length version media_path birth_date user_contributed(UID)
 
 entry_history
 UUID version path date
@@ -104,6 +104,7 @@ CREATE TABLE IF NOT EXISTS staging_entry(
 	nickname TEXT, 
 	source TEXT, 
 	URL TEXT, 
+	last_url TEXT,
 	series TEXT,
 	series_length INTEGER DEFAULT 1,
 	version INTEGER, 
@@ -120,6 +121,7 @@ CREATE TABLE IF NOT EXISTS black_entry(
 	nickname TEXT, 
 	source TEXT, 
 	URL TEXT, 
+	last_url TEXT,
 	series TEXT,
 	series_length INTEGER DEFAULT 1,
 	version INTEGER, 

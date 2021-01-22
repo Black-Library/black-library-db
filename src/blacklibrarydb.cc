@@ -33,6 +33,7 @@ int main(int argc, char* argv[])
     create_staging_entry.nickname = "foo3";
     create_staging_entry.source = "foo4";
     create_staging_entry.URL = "foo5";
+    create_staging_entry.last_url = "foo8";
     create_staging_entry.series = "the foo";
     create_staging_entry.series_length = 2;
     create_staging_entry.version = 1;
@@ -52,6 +53,7 @@ int main(int argc, char* argv[])
     std::cout << "\tnickname: " << read_staging_entry.nickname << std::endl;
     std::cout << "\tsource: " << read_staging_entry.source << std::endl;
     std::cout << "\tURL: " << read_staging_entry.URL << std::endl;
+    std::cout << "\tlast_url: " << read_staging_entry.last_url << std::endl;
     std::cout << "\tseries: " << read_staging_entry.series << std::endl;
     std::cout << "\tseries_length: " << read_staging_entry.series_length << std::endl;
     std::cout << "\tversion: " << read_staging_entry.version << std::endl;
@@ -70,6 +72,7 @@ int main(int argc, char* argv[])
     read_staging_entry.nickname = "3foo";
     read_staging_entry.source = "4foo";
     read_staging_entry.URL = "5foo";
+    read_staging_entry.last_url = "8foo";
     read_staging_entry.series = "the bar";
     read_staging_entry.series_length = 3;
     read_staging_entry.version = 2;
@@ -86,6 +89,7 @@ int main(int argc, char* argv[])
     std::cout << "\tnickname: " << read_staging_entry.nickname << std::endl;
     std::cout << "\tsource: " << read_staging_entry.source << std::endl;
     std::cout << "\tURL: " << read_staging_entry.URL << std::endl;
+    std::cout << "\tlast_url: " << read_staging_entry.last_url << std::endl;
     std::cout << "\tseries: " << read_staging_entry.series << std::endl;
     std::cout << "\tseries_length: " << read_staging_entry.series_length << std::endl;
     std::cout << "\tversion: " << read_staging_entry.version << std::endl;
@@ -103,6 +107,7 @@ int main(int argc, char* argv[])
     std::cout << "\tnickname: " << read_staging_entry.nickname << std::endl;
     std::cout << "\tsource: " << read_staging_entry.source << std::endl;
     std::cout << "\tURL: " << read_staging_entry.URL << std::endl;
+    std::cout << "\tlast_url: " << read_staging_entry.last_url << std::endl;
     std::cout << "\tseries: " << read_staging_entry.series << std::endl;
     std::cout << "\tseries_length: " << read_staging_entry.series_length << std::endl;
     std::cout << "\tversion: " << read_staging_entry.version << std::endl;
