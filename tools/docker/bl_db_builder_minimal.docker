@@ -15,8 +15,7 @@ RUN apk update && apk add --no-cache --upgrade \
     libsqlite3-dev \
     openssh-client \
     python3 \
-    sqlite \
-    vim \
+    sqlite
 
 # setup root user
 RUN echo "root:library" | chpasswd
