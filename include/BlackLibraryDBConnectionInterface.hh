@@ -63,6 +63,7 @@ struct DBEntry {
     std::string nickname = "";
     std::string source;
     std::string URL;
+    std::string last_url;
     std::string series;
     uint16_t series_length = 1;
     uint16_t version = 1;

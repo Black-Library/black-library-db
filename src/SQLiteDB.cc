@@ -24,8 +24,8 @@ static constexpr const char CreateVideoSubtypeTable[]            = "CREATE TABLE
 static constexpr const char CreateBookGenreTable[]               = "CREATE TABLE IF NOT EXISTS book_genre(name TEXT NOT NULL PRIMARY KEY)";
 static constexpr const char CreateDocumentTagTable[]             = "CREATE TABLE IF NOT EXISTS document_tag(name TEXT NOT NULL PRIMARY KEY)";
 static constexpr const char CreateSourceTable[]                  = "CREATE TABLE IF NOT EXISTS source(name TEXT NOT NULL PRIMARY KEY, type TEXT, FOREIGN KEY(type) REFERENCES entry_type(name))";
-static constexpr const char CreateStagingEntryTable[]            = "CREATE TABLE IF NOT EXISTS staging_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, nickname TEXT, source TEXT, URL TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date TEXT NOT NULL, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
-static constexpr const char CreateBlackEntryTable[]              = "CREATE TABLE IF NOT EXISTS black_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, nickname TEXT, source TEXT, URL TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date TEXT NOT NULL, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
+static constexpr const char CreateStagingEntryTable[]            = "CREATE TABLE IF NOT EXISTS staging_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, nickname TEXT, source TEXT, URL TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date TEXT NOT NULL, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
+static constexpr const char CreateBlackEntryTable[]              = "CREATE TABLE IF NOT EXISTS black_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, nickname TEXT, source TEXT, URL TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date TEXT NOT NULL, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
 
 static constexpr const char CreateUserStatement[]                = "INSERT INTO user(UID, permission_level, name) VALUES (:UID, :permission_level, :name)";
 static constexpr const char CreateEntryTypeStatement[]           = "INSERT INTO entry_type(name) VALUES (:name)";
@@ -33,16 +33,16 @@ static constexpr const char CreateDocumentSubtypeStatement[]     = "INSERT INTO 
 static constexpr const char CreateImageGallerySubtypeStatement[] = "INSERT INTO image_gallery_subtype(name) VALUES (:name)";
 static constexpr const char CreateVideoSubtypeStatement[]        = "INSERT INTO video_subtype(name) VALUES (:name)";
 static constexpr const char CreateSourceStatement[]              = "INSERT INTO source(name, type) VALUES (:name, :type)";
-static constexpr const char CreateStagingEntryStatement[]        = "INSERT INTO staging_entry(UUID, title, nickname, source, URL, series, series_length, version, media_path, birth_date, user_contributed) VALUES (:UUID, :title, :nickname, :source, :URL, :series, :series_length, :version, :media_path, :birth_date, :user_contributed)";
-static constexpr const char CreateBlackEntryStatement[]          = "INSERT INTO black_entry(UUID, title, nickname, source, URL, series, series_length, version, media_path, birth_date, user_contributed) VALUES (:UUID, :title, :nickname, :source, :URL, :series, :series_length, :version, :media_path, :birth_date, :user_contributed)";
+static constexpr const char CreateStagingEntryStatement[]        = "INSERT INTO staging_entry(UUID, title, nickname, source, URL, last_url, series, series_length, version, media_path, birth_date, user_contributed) VALUES (:UUID, :title, :nickname, :source, :URL, :last_url, :series, :series_length, :version, :media_path, :birth_date, :user_contributed)";
+static constexpr const char CreateBlackEntryStatement[]          = "INSERT INTO black_entry(UUID, title, nickname, source, URL, last_url, series, series_length, version, media_path, birth_date, user_contributed) VALUES (:UUID, :title, :nickname, :source, :URL, :last_url, :series, :series_length, :version, :media_path, :birth_date, :user_contributed)";
 
 static constexpr const char ReadStagingEntryStatement[]          = "SELECT * FROM staging_entry WHERE UUID = :UUID";
 static constexpr const char ReadStagingEntryUrlStatement[]       = "SELECT * FROM staging_entry WHERE URL = :URL";
 static constexpr const char ReadBlackEntryStatement[]            = "SELECT * FROM black_entry WHERE UUID = :UUID";
 static constexpr const char ReadBlackEntryUrlStatement[]         = "SELECT * FROM black_entry WHERE URL = :URL";
 
-static constexpr const char UpdateStagingEntryStatement[]        = "UPDATE staging_entry SET title = :title, nickname = :nickname, source = :source, URL = :URL, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, user_contributed = :user_contributed WHERE UUID = :UUID";
-static constexpr const char UpdateBlackEntryStatement[]          = "UPDATE black_entry SET title = :title, nickname = :nickname, source = :source, URL = :URL, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, user_contributed = :user_contributed WHERE UUID = :UUID";
+static constexpr const char UpdateStagingEntryStatement[]        = "UPDATE staging_entry SET title = :title, nickname = :nickname, source = :source, URL = :URL, last_url = :last_url, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, user_contributed = :user_contributed WHERE UUID = :UUID";
+static constexpr const char UpdateBlackEntryStatement[]          = "UPDATE black_entry SET title = :title, nickname = :nickname, source = :source, URL = :URL, last_url = :last_url, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, user_contributed = :user_contributed WHERE UUID = :UUID";
 
 static constexpr const char DeleteStagingEntryStatment[]         = "DELETE FROM staging_entry WHERE UUID = :UUID";
 static constexpr const char DeleteBlackEntryStatment[]           = "DELETE FROM black_entry WHERE UUID = :UUID";
@@ -210,6 +210,8 @@ int SQLiteDB::CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) 
         return -1;
     if (BindText(stmt, "URL", entry.URL))
         return -1;
+    if (BindText(stmt, "last_url", entry.URL))
+        return -1;
     if (BindText(stmt, "series", entry.series))
         return -1;
     if (BindInt(stmt, "series_length", entry.series_length))
@@ -294,12 +296,13 @@ DBEntry SQLiteDB::ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_t
     entry.nickname = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
     entry.source = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
     entry.URL = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
-    entry.series = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
-    entry.series_length = sqlite3_column_int(stmt, 6);
-    entry.version = sqlite3_column_int(stmt, 7);
-    entry.media_path = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 8)));
-    entry.birth_date = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 9)));
-    entry.user_contributed = sqlite3_column_int(stmt, 10);
+    entry.last_url = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+    entry.series = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)));
+    entry.series_length = sqlite3_column_int(stmt, 7);
+    entry.version = sqlite3_column_int(stmt, 8);
+    entry.media_path = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 9)));
+    entry.birth_date = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 10)));
+    entry.user_contributed = sqlite3_column_int(stmt, 11);
 
     ResetStatement(stmt);
 
@@ -412,6 +415,8 @@ int SQLiteDB::UpdateEntry(const std::string &UUID, const DBEntry &entry, db_entr
     if (BindText(stmt, "source", entry.source))
         return -1;
     if (BindText(stmt, "URL", entry.URL))
+        return -1;
+    if (BindText(stmt, "last_url", entry.last_url))
         return -1;
     if (BindText(stmt, "series", entry.series))
         return -1;
