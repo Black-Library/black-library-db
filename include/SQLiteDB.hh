@@ -60,7 +60,7 @@ private:
     bool intialized_;
 };
 
-} // black_library_sqlite3
+} // namespace black_library_sqlite3
 } // namespace db
 } // namespace core
 } // namespace black_library
