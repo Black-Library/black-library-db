@@ -24,8 +24,8 @@ static constexpr const char CreateVideoSubtypeTable[]            = "CREATE TABLE
 static constexpr const char CreateBookGenreTable[]               = "CREATE TABLE IF NOT EXISTS book_genre(name TEXT NOT NULL PRIMARY KEY)";
 static constexpr const char CreateDocumentTagTable[]             = "CREATE TABLE IF NOT EXISTS document_tag(name TEXT NOT NULL PRIMARY KEY)";
 static constexpr const char CreateSourceTable[]                  = "CREATE TABLE IF NOT EXISTS source(name TEXT NOT NULL PRIMARY KEY, type TEXT, FOREIGN KEY(type) REFERENCES entry_type(name))";
-static constexpr const char CreateStagingEntryTable[]            = "CREATE TABLE IF NOT EXISTS staging_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, nickname TEXT, source TEXT, URL TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date TEXT NOT NULL, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
-static constexpr const char CreateBlackEntryTable[]              = "CREATE TABLE IF NOT EXISTS black_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, nickname TEXT, source TEXT, URL TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date TEXT NOT NULL, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
+static constexpr const char CreateStagingEntryTable[]            = "CREATE TABLE IF NOT EXISTS staging_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, nickname TEXT, source TEXT, url TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date TEXT NOT NULL, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
+static constexpr const char CreateBlackEntryTable[]              = "CREATE TABLE IF NOT EXISTS black_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, nickname TEXT, source TEXT, url TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date TEXT NOT NULL, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
 
 static constexpr const char CreateUserStatement[]                = "INSERT INTO user(UID, permission_level, name) VALUES (:UID, :permission_level, :name)";
 static constexpr const char CreateEntryTypeStatement[]           = "INSERT INTO entry_type(name) VALUES (:name)";
@@ -33,19 +33,22 @@ static constexpr const char CreateDocumentSubtypeStatement[]     = "INSERT INTO 
 static constexpr const char CreateImageGallerySubtypeStatement[] = "INSERT INTO image_gallery_subtype(name) VALUES (:name)";
 static constexpr const char CreateVideoSubtypeStatement[]        = "INSERT INTO video_subtype(name) VALUES (:name)";
 static constexpr const char CreateSourceStatement[]              = "INSERT INTO source(name, type) VALUES (:name, :type)";
-static constexpr const char CreateStagingEntryStatement[]        = "INSERT INTO staging_entry(UUID, title, nickname, source, URL, last_url, series, series_length, version, media_path, birth_date, user_contributed) VALUES (:UUID, :title, :nickname, :source, :URL, :last_url, :series, :series_length, :version, :media_path, :birth_date, :user_contributed)";
-static constexpr const char CreateBlackEntryStatement[]          = "INSERT INTO black_entry(UUID, title, nickname, source, URL, last_url, series, series_length, version, media_path, birth_date, user_contributed) VALUES (:UUID, :title, :nickname, :source, :URL, :last_url, :series, :series_length, :version, :media_path, :birth_date, :user_contributed)";
+static constexpr const char CreateStagingEntryStatement[]        = "INSERT INTO staging_entry(UUID, title, nickname, source, url, last_url, series, series_length, version, media_path, birth_date, user_contributed) VALUES (:UUID, :title, :nickname, :source, :url, :last_url, :series, :series_length, :version, :media_path, :birth_date, :user_contributed)";
+static constexpr const char CreateBlackEntryStatement[]          = "INSERT INTO black_entry(UUID, title, nickname, source, url, last_url, series, series_length, version, media_path, birth_date, user_contributed) VALUES (:UUID, :title, :nickname, :source, :url, :last_url, :series, :series_length, :version, :media_path, :birth_date, :user_contributed)";
 
 static constexpr const char ReadStagingEntryStatement[]          = "SELECT * FROM staging_entry WHERE UUID = :UUID";
-static constexpr const char ReadStagingEntryUrlStatement[]       = "SELECT * FROM staging_entry WHERE URL = :URL";
+static constexpr const char ReadStagingEntryUrlStatement[]       = "SELECT * FROM staging_entry WHERE url = :url";
 static constexpr const char ReadBlackEntryStatement[]            = "SELECT * FROM black_entry WHERE UUID = :UUID";
-static constexpr const char ReadBlackEntryUrlStatement[]         = "SELECT * FROM black_entry WHERE URL = :URL";
+static constexpr const char ReadBlackEntryUrlStatement[]         = "SELECT * FROM black_entry WHERE url = :url";
 
-static constexpr const char UpdateStagingEntryStatement[]        = "UPDATE staging_entry SET title = :title, nickname = :nickname, source = :source, URL = :URL, last_url = :last_url, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, user_contributed = :user_contributed WHERE UUID = :UUID";
-static constexpr const char UpdateBlackEntryStatement[]          = "UPDATE black_entry SET title = :title, nickname = :nickname, source = :source, URL = :URL, last_url = :last_url, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, user_contributed = :user_contributed WHERE UUID = :UUID";
+static constexpr const char UpdateStagingEntryStatement[]        = "UPDATE staging_entry SET title = :title, nickname = :nickname, source = :source, url = :url, last_url = :last_url, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, user_contributed = :user_contributed WHERE UUID = :UUID";
+static constexpr const char UpdateBlackEntryStatement[]          = "UPDATE black_entry SET title = :title, nickname = :nickname, source = :source, url = :url, last_url = :last_url, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, user_contributed = :user_contributed WHERE UUID = :UUID";
 
 static constexpr const char DeleteStagingEntryStatment[]         = "DELETE FROM staging_entry WHERE UUID = :UUID";
 static constexpr const char DeleteBlackEntryStatment[]           = "DELETE FROM black_entry WHERE UUID = :UUID";
+
+static constexpr const char GetUUIDFromUrlStatment[]             = "SELECT UUID FROM black_entry WHERE url = :url";
+static constexpr const char GetUrlFromUUIDStatment[]             = "SELECT url, last_url FROM black_entry WHERE UUID = :UUID";
 
 typedef enum {
     CREATE_USER_STATEMENT,
@@ -67,6 +70,9 @@ typedef enum {
 
     DELETE_STAGING_ENTRY_STATEMENT,
     DELETE_BLACK_ENTRY_STATEMENT,
+
+    GET_UUID_FROM_URL_STATEMENT,
+    GET_URL_FROM_UUID_STATEMENT,
 
     _NUM_PREPARED_STATEMENTS
 } prepared_statement_id_t;
@@ -208,9 +214,9 @@ int SQLiteDB::CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) 
         return -1;
     if (BindText(stmt, "source", entry.source))
         return -1;
-    if (BindText(stmt, "URL", entry.URL))
+    if (BindText(stmt, "url", entry.url))
         return -1;
-    if (BindText(stmt, "last_url", entry.URL))
+    if (BindText(stmt, "last_url", entry.url))
         return -1;
     if (BindText(stmt, "series", entry.series))
         return -1;
@@ -295,7 +301,7 @@ DBEntry SQLiteDB::ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_t
     entry.title = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
     entry.nickname = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
     entry.source = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-    entry.URL = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
+    entry.url = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
     entry.last_url = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
     entry.series = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)));
     entry.series_length = sqlite3_column_int(stmt, 7);
@@ -312,11 +318,11 @@ DBEntry SQLiteDB::ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_t
     return entry;
 }
 
-DBUrlCheck SQLiteDB::DoesEntryUrlExist(const std::string &URL, db_entry_type_rep_t entry_type) const
+DBUrlCheck SQLiteDB::DoesEntryUrlExist(const std::string &url, db_entry_type_rep_t entry_type) const
 {
     DBUrlCheck check;
 
-    std::cout << "Check " << GetEntryTypeString(entry_type) << " entries for URL: " << URL << std::endl;
+    std::cout << "Check " << GetEntryTypeString(entry_type) << " entries for url: " << url << std::endl;
 
     if (CheckInitialized())
     {
@@ -348,7 +354,7 @@ DBUrlCheck SQLiteDB::DoesEntryUrlExist(const std::string &URL, db_entry_type_rep
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
-    if (BindText(stmt, "URL", URL))
+    if (BindText(stmt, "url", url))
     {
         EndTransaction();
         check.error = sqlite3_errcode(database_conn_);
@@ -360,7 +366,7 @@ DBUrlCheck SQLiteDB::DoesEntryUrlExist(const std::string &URL, db_entry_type_rep
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
-        std::cout << "URL: " << URL << " does not exist" << std::endl;
+        std::cout << "url: " << url << " does not exist" << std::endl;
         check.exists = false;
         ResetStatement(stmt);
         EndTransaction();
@@ -414,7 +420,7 @@ int SQLiteDB::UpdateEntry(const std::string &UUID, const DBEntry &entry, db_entr
         return -1;
     if (BindText(stmt, "source", entry.source))
         return -1;
-    if (BindText(stmt, "URL", entry.URL))
+    if (BindText(stmt, "url", entry.url))
         return -1;
     if (BindText(stmt, "last_url", entry.last_url))
         return -1;
@@ -503,6 +509,108 @@ int SQLiteDB::DeleteEntry(const std::string &UUID, db_entry_type_rep_t entry_typ
     return 0;
 }
 
+std::string SQLiteDB::GetUUIDFromUrl(const std::string &url) const
+{
+    std::cout << "Get UUID from: " << url << std::endl;
+
+    if (CheckInitialized())
+    {
+        return "";
+    }
+
+    if (BeginTransaction())
+    {
+        return "";
+    }
+
+    int ret = SQLITE_OK;
+
+    int statement_id = GET_UUID_FROM_URL_STATEMENT;
+    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+
+    // bind statement variables
+    if (BindText(stmt, "url", url))
+    {
+        EndTransaction();
+        return "";
+    }
+
+    // run statement
+    std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_ROW)
+    {
+        std::cout << "url: " << url << " does not exist" << std::endl;
+        ResetStatement(stmt);
+        EndTransaction();
+        return "";
+    }
+
+    std::string UUID = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+    {
+        return "";
+    }
+
+    return UUID;
+}
+
+std::string SQLiteDB::GetUrlFromUUID(const std::string &UUID) const
+{
+    std::cout << "Get url from: " << UUID << std::endl;
+
+    if (CheckInitialized())
+    {
+        return "";
+    }
+
+    if (BeginTransaction())
+    {
+        return "";
+    }
+
+    int ret = SQLITE_OK;
+
+    int statement_id = GET_URL_FROM_UUID_STATEMENT;
+    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+
+    // bind statement variables
+    if (BindText(stmt, "UUID", UUID))
+    {
+        EndTransaction();
+        return "";
+    }
+
+    // run statement
+    std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_ROW)
+    {
+        std::cout << "UUID: " << UUID << " does not exist" << std::endl;
+        ResetStatement(stmt);
+        EndTransaction();
+        return "";
+    }
+
+    std::string url = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+    std::string last_url = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+    {
+        return "";
+    }
+
+    if (!last_url.empty())
+        return last_url;
+
+    return url;
+}
+
 int SQLiteDB::SetupTables()
 {
     GenerateTable(CreateUserTable);
@@ -544,6 +652,9 @@ int SQLiteDB::PrepareStatements()
 
     PrepareStatement(DeleteStagingEntryStatment, DELETE_STAGING_ENTRY_STATEMENT);
     PrepareStatement(DeleteBlackEntryStatment, DELETE_BLACK_ENTRY_STATEMENT);
+
+    PrepareStatement(GetUUIDFromUrlStatment, GET_UUID_FROM_URL_STATEMENT);
+    PrepareStatement(GetUrlFromUUIDStatment, GET_URL_FROM_UUID_STATEMENT);
 
     return 0;
 }

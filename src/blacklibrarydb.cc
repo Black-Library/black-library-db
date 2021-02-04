@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
     create_staging_entry.title = "foo2";
     create_staging_entry.nickname = "foo3";
     create_staging_entry.source = "foo4";
-    create_staging_entry.URL = "foo5";
+    create_staging_entry.url = "foo5";
     create_staging_entry.last_url = "foo8";
     create_staging_entry.series = "the foo";
     create_staging_entry.series_length = 2;
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
     std::cout << "\ttitle: " << read_staging_entry.title << std::endl;
     std::cout << "\tnickname: " << read_staging_entry.nickname << std::endl;
     std::cout << "\tsource: " << read_staging_entry.source << std::endl;
-    std::cout << "\tURL: " << read_staging_entry.URL << std::endl;
+    std::cout << "\tURL: " << read_staging_entry.url << std::endl;
     std::cout << "\tlast_url: " << read_staging_entry.last_url << std::endl;
     std::cout << "\tseries: " << read_staging_entry.series << std::endl;
     std::cout << "\tseries_length: " << read_staging_entry.series_length << std::endl;
@@ -120,17 +120,17 @@ int main(int argc, char* argv[])
     std::cout << "\tbirth_date: " << read_staging_entry.birth_date << std::endl;
     std::cout << "\tuser_contributed: " << read_staging_entry.user_contributed << std::endl;
 
-    black_library::core::db::DBUrlCheck check0 = blacklibrarydb->DoesStagingEntryUrlExist("foo5");
-    black_library::core::db::DBUrlCheck check1 = blacklibrarydb->DoesStagingEntryUrlExist("foo6");
+    bool check0 = blacklibrarydb->DoesStagingEntryUrlExist("foo5");
+    bool check1 = blacklibrarydb->DoesStagingEntryUrlExist("foo6");
 
-    std::cout << "URL foo5 exists: " << check0.exists << std::endl;
-    std::cout << "URL foo6 exists: " << check1.exists << std::endl;
+    std::cout << "url foo5 exists: " << check0 << std::endl;
+    std::cout << "url foo6 exists: " << check1 << std::endl;
 
     // update read_staging_entry
     read_staging_entry.title = "2foo";
     read_staging_entry.nickname = "3foo";
     read_staging_entry.source = "4foo";
-    read_staging_entry.URL = "5foo";
+    read_staging_entry.url = "5foo";
     read_staging_entry.last_url = "8foo";
     read_staging_entry.series = "the bar";
     read_staging_entry.series_length = 3;
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
     std::cout << "\ttitle: " << read_staging_entry.title << std::endl;
     std::cout << "\tnickname: " << read_staging_entry.nickname << std::endl;
     std::cout << "\tsource: " << read_staging_entry.source << std::endl;
-    std::cout << "\tURL: " << read_staging_entry.URL << std::endl;
+    std::cout << "\tURL: " << read_staging_entry.url << std::endl;
     std::cout << "\tlast_url: " << read_staging_entry.last_url << std::endl;
     std::cout << "\tseries: " << read_staging_entry.series << std::endl;
     std::cout << "\tseries_length: " << read_staging_entry.series_length << std::endl;
@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
     std::cout << "\ttitle: " << read_staging_entry.title << std::endl;
     std::cout << "\tnickname: " << read_staging_entry.nickname << std::endl;
     std::cout << "\tsource: " << read_staging_entry.source << std::endl;
-    std::cout << "\tURL: " << read_staging_entry.URL << std::endl;
+    std::cout << "\tURL: " << read_staging_entry.url << std::endl;
     std::cout << "\tlast_url: " << read_staging_entry.last_url << std::endl;
     std::cout << "\tseries: " << read_staging_entry.series << std::endl;
     std::cout << "\tseries_length: " << read_staging_entry.series_length << std::endl;

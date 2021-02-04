@@ -62,7 +62,7 @@ struct DBEntry {
     std::string title;
     std::string nickname = "";
     std::string source;
-    std::string URL;
+    std::string url;
     std::string last_url;
     std::string series;
     uint16_t series_length = 1;
@@ -99,9 +99,12 @@ public:
 
     virtual int CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) const = 0;
     virtual DBEntry ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_type) const = 0;
-    virtual DBUrlCheck DoesEntryUrlExist(const std::string &URL, db_entry_type_rep_t entry_type) const = 0;
+    virtual DBUrlCheck DoesEntryUrlExist(const std::string &url, db_entry_type_rep_t entry_type) const = 0;
     virtual int UpdateEntry(const std::string &UUID, const DBEntry &entry, db_entry_type_rep_t entry_type) const = 0;
     virtual int DeleteEntry(const std::string &UUID, db_entry_type_rep_t entry_type) const = 0;
+
+    virtual std::string GetUUIDFromUrl(const std::string &url) const = 0;
+    virtual std::string GetUrlFromUUID(const std::string &UUID) const = 0;
 
 private:
 

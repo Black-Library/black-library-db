@@ -18,16 +18,19 @@ public:
     ~BlackLibraryDB();
 
     int CreateStagingEntry(const DBEntry &entry);
-    DBEntry ReadStagingEntry(std::string UUID);
-    DBUrlCheck DoesStagingEntryUrlExist(std::string URL);
-    int UpdateStagingEntry(std::string UUID, const DBEntry &entry);
-    int DeleteStagingEntry(std::string UUID);
+    DBEntry ReadStagingEntry(const std::string &UUID);
+    bool DoesStagingEntryUrlExist(const std::string &url);
+    int UpdateStagingEntry(const std::string &UUID, const DBEntry &entry);
+    int DeleteStagingEntry(const std::string &UUID);
 
     int CreateBlackEntry(const DBEntry &entry);
-    DBEntry ReadBlackEntry(std::string UUID);
-    DBUrlCheck DoesBlackEntryUrlExist(std::string URL);
-    int UpdateBlackEntry(std::string UUID, const DBEntry &entry);
-    int DeleteBlackEntry(std::string UUID);
+    DBEntry ReadBlackEntry(const std::string &UUID);
+    bool DoesBlackEntryUrlExist(const std::string &url);
+    int UpdateBlackEntry(const std::string &UUID, const DBEntry &entry);
+    int DeleteBlackEntry(const std::string &UUID);
+
+    std::string GetUUIDFromUrl(const std::string &url);
+    std::string GetUrlFromUUID(const std::string &UUID);
 
 private:
     std::string GetUUID();
