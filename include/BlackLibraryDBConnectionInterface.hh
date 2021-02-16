@@ -49,6 +49,13 @@ struct DBSource {
     db_entry_media_type_rep_t type;
 };
 
+struct DBStringResult {
+    std::string result = "";
+    std::string error_string = "";
+    bool does_not_exist = false;
+    bool error = true;
+};
+
 typedef enum {
     BLACK_ENTRY,
     STAGING_ENTRY,
@@ -78,6 +85,7 @@ struct DBRating {
     uint16_t rating;
 };
 
+// TODO: double check this for fail-safeness
 struct DBUrlCheck {
     int error = 0;
     bool exists = true;
@@ -103,8 +111,8 @@ public:
     virtual int UpdateEntry(const std::string &UUID, const DBEntry &entry, db_entry_type_rep_t entry_type) const = 0;
     virtual int DeleteEntry(const std::string &UUID, db_entry_type_rep_t entry_type) const = 0;
 
-    virtual std::string GetUUIDFromUrl(const std::string &url) const = 0;
-    virtual std::string GetUrlFromUUID(const std::string &UUID) const = 0;
+    virtual DBStringResult GetEntryUUIDFromUrl(const std::string &url, db_entry_type_rep_t entry_type) const = 0;
+    virtual DBStringResult GetEntryUrlFromUUID(const std::string &UUID, db_entry_type_rep_t entry_type) const = 0;
 
 private:
 

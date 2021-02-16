@@ -47,8 +47,10 @@ static constexpr const char UpdateBlackEntryStatement[]          = "UPDATE black
 static constexpr const char DeleteStagingEntryStatment[]         = "DELETE FROM staging_entry WHERE UUID = :UUID";
 static constexpr const char DeleteBlackEntryStatment[]           = "DELETE FROM black_entry WHERE UUID = :UUID";
 
-static constexpr const char GetUUIDFromUrlStatment[]             = "SELECT UUID FROM black_entry WHERE url = :url";
-static constexpr const char GetUrlFromUUIDStatment[]             = "SELECT url, last_url FROM black_entry WHERE UUID = :UUID";
+static constexpr const char GetStagingEntryUUIDFromUrlStatment[] = "SELECT UUID FROM staging_entry WHERE url = :url";
+static constexpr const char GetBlackEntryUUIDFromUrlStatment[]   = "SELECT UUID FROM black_entry WHERE url = :url";
+static constexpr const char GetStagingEntryUrlFromUUIDStatment[] = "SELECT url, last_url FROM staging_entry WHERE UUID = :UUID";
+static constexpr const char GetBlackEntryUrlFromUUIDStatment[]   = "SELECT url, last_url FROM black_entry WHERE UUID = :UUID";
 
 typedef enum {
     CREATE_USER_STATEMENT,
@@ -61,7 +63,7 @@ typedef enum {
     CREATE_BLACK_ENTRY_STATEMENT,
 
     READ_STAGING_ENTRY_STATEMENT,
-    READ_STATING_ENTRY_URL_STATEMENT,
+    READ_STAGING_ENTRY_URL_STATEMENT,
     READ_BLACK_ENTRY_STATEMENT,
     READ_BLACK_ENTRY_URL_STATEMENT,
 
@@ -71,8 +73,10 @@ typedef enum {
     DELETE_STAGING_ENTRY_STATEMENT,
     DELETE_BLACK_ENTRY_STATEMENT,
 
-    GET_UUID_FROM_URL_STATEMENT,
-    GET_URL_FROM_UUID_STATEMENT,
+    GET_STAGING_ENTRY_UUID_FROM_URL_STATEMENT,
+    GET_BLACK_ENTRY_UUID_FROM_URL_STATEMENT,
+    GET_STAGING_ENTRY_URL_FROM_UUID_STATEMENT,
+    GET_BLACK_ENTRY_URL_FROM_UUID_STATEMENT,
 
     _NUM_PREPARED_STATEMENTS
 } prepared_statement_id_t;
@@ -194,10 +198,10 @@ int SQLiteDB::CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) 
     switch (entry_type)
     {
         case BLACK_ENTRY:
-            statement_id = CREATE_STAGING_ENTRY_STATEMENT;
+            statement_id = CREATE_BLACK_ENTRY_STATEMENT;
             break;
         case STAGING_ENTRY:
-            statement_id = CREATE_BLACK_ENTRY_STATEMENT;
+            statement_id = CREATE_STAGING_ENTRY_STATEMENT;
             break;
         default:
             return -1;
@@ -268,10 +272,10 @@ DBEntry SQLiteDB::ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_t
     switch (entry_type)
     {
         case BLACK_ENTRY:
-            statement_id = READ_STAGING_ENTRY_STATEMENT;
+            statement_id = READ_BLACK_ENTRY_STATEMENT;
             break;
         case STAGING_ENTRY:
-            statement_id = READ_BLACK_ENTRY_STATEMENT;
+            statement_id = READ_STAGING_ENTRY_STATEMENT;
             break;
         default:
             return entry;
@@ -342,10 +346,10 @@ DBUrlCheck SQLiteDB::DoesEntryUrlExist(const std::string &url, db_entry_type_rep
     switch (entry_type)
     {
         case BLACK_ENTRY:
-            statement_id = READ_STATING_ENTRY_URL_STATEMENT;
+            statement_id = READ_BLACK_ENTRY_URL_STATEMENT;
             break;
         case STAGING_ENTRY:
-            statement_id = READ_BLACK_ENTRY_URL_STATEMENT;
+            statement_id = READ_STAGING_ENTRY_URL_STATEMENT;
             break;
         default:
             return check;
@@ -400,10 +404,10 @@ int SQLiteDB::UpdateEntry(const std::string &UUID, const DBEntry &entry, db_entr
     switch (entry_type)
     {
         case BLACK_ENTRY:
-            statement_id = UPDATE_STAGING_ENTRY_STATEMENT;
+            statement_id = UPDATE_BLACK_ENTRY_STATEMENT;
             break;
         case STAGING_ENTRY:
-            statement_id = UPDATE_BLACK_ENTRY_STATEMENT;
+            statement_id = UPDATE_STAGING_ENTRY_STATEMENT;
             break;
         default:
             return -1;
@@ -472,10 +476,10 @@ int SQLiteDB::DeleteEntry(const std::string &UUID, db_entry_type_rep_t entry_typ
     switch (entry_type)
     {
         case BLACK_ENTRY:
-            statement_id = DELETE_STAGING_ENTRY_STATEMENT;
+            statement_id = DELETE_BLACK_ENTRY_STATEMENT;
             break;
         case STAGING_ENTRY:
-            statement_id = DELETE_BLACK_ENTRY_STATEMENT;
+            statement_id = DELETE_STAGING_ENTRY_STATEMENT;
             break;
         default:
             return -1;
@@ -509,30 +513,45 @@ int SQLiteDB::DeleteEntry(const std::string &UUID, db_entry_type_rep_t entry_typ
     return 0;
 }
 
-std::string SQLiteDB::GetUUIDFromUrl(const std::string &url) const
+DBStringResult SQLiteDB::GetEntryUUIDFromUrl(const std::string &url, db_entry_type_rep_t entry_type) const
 {
     std::cout << "Get UUID from: " << url << std::endl;
 
+    DBStringResult res;
+
     if (CheckInitialized())
     {
-        return "";
+        return res;
     }
 
     if (BeginTransaction())
     {
-        return "";
+        return res;
     }
 
     int ret = SQLITE_OK;
 
-    int statement_id = GET_UUID_FROM_URL_STATEMENT;
+    int statement_id;
+    switch (entry_type)
+    {
+        case BLACK_ENTRY:
+            statement_id = GET_BLACK_ENTRY_UUID_FROM_URL_STATEMENT;
+            break;
+        case STAGING_ENTRY:
+            statement_id = GET_STAGING_ENTRY_UUID_FROM_URL_STATEMENT;
+            break;
+        default:
+            res.error = true;
+            return res;
+    }
+
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
     if (BindText(stmt, "url", url))
     {
         EndTransaction();
-        return "";
+        return res;
     }
 
     // run statement
@@ -543,45 +562,64 @@ std::string SQLiteDB::GetUUIDFromUrl(const std::string &url) const
         std::cout << "url: " << url << " does not exist" << std::endl;
         ResetStatement(stmt);
         EndTransaction();
-        return "";
+        res.does_not_exist = true;
+        res.error = false;
+        return res;
     }
 
-    std::string UUID = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+    res.result = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
 
     ResetStatement(stmt);
 
     if (EndTransaction())
     {
-        return "";
+        return res;
     }
 
-    return UUID;
+    res.error = false;
+
+    return res;
 }
 
-std::string SQLiteDB::GetUrlFromUUID(const std::string &UUID) const
+DBStringResult SQLiteDB::GetEntryUrlFromUUID(const std::string &UUID, db_entry_type_rep_t entry_type) const
 {
     std::cout << "Get url from: " << UUID << std::endl;
 
+    DBStringResult res;
+
     if (CheckInitialized())
     {
-        return "";
+        return res;
     }
 
     if (BeginTransaction())
     {
-        return "";
+        return res;
     }
 
     int ret = SQLITE_OK;
 
-    int statement_id = GET_URL_FROM_UUID_STATEMENT;
+    int statement_id;
+    switch (entry_type)
+    {
+        case BLACK_ENTRY:
+            statement_id = GET_BLACK_ENTRY_URL_FROM_UUID_STATEMENT;
+            break;
+        case STAGING_ENTRY:
+            statement_id = GET_STAGING_ENTRY_URL_FROM_UUID_STATEMENT;
+            break;
+        default:
+            res.error = true;
+            return res;
+    }
+
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
     if (BindText(stmt, "UUID", UUID))
     {
         EndTransaction();
-        return "";
+        return res;
     }
 
     // run statement
@@ -592,7 +630,9 @@ std::string SQLiteDB::GetUrlFromUUID(const std::string &UUID) const
         std::cout << "UUID: " << UUID << " does not exist" << std::endl;
         ResetStatement(stmt);
         EndTransaction();
-        return "";
+        res.does_not_exist = true;
+        res.error = false;
+        return res;
     }
 
     std::string url = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
@@ -602,13 +642,21 @@ std::string SQLiteDB::GetUrlFromUUID(const std::string &UUID) const
 
     if (EndTransaction())
     {
-        return "";
+        return res;
     }
 
     if (!last_url.empty())
-        return last_url;
+    {
+        res.result = last_url;
+    }
+    else
+    {
+        res.result = url;
+    } 
 
-    return url;
+    res.error = false;
+
+    return res;
 }
 
 int SQLiteDB::SetupTables()
@@ -643,7 +691,7 @@ int SQLiteDB::PrepareStatements()
     PrepareStatement(CreateBlackEntryStatement, CREATE_BLACK_ENTRY_STATEMENT);
 
     PrepareStatement(ReadStagingEntryStatement, READ_STAGING_ENTRY_STATEMENT);
-    PrepareStatement(ReadStagingEntryUrlStatement, READ_STATING_ENTRY_URL_STATEMENT);
+    PrepareStatement(ReadStagingEntryUrlStatement, READ_STAGING_ENTRY_URL_STATEMENT);
     PrepareStatement(ReadBlackEntryStatement, READ_BLACK_ENTRY_STATEMENT);
     PrepareStatement(ReadBlackEntryUrlStatement, READ_BLACK_ENTRY_URL_STATEMENT);
 
@@ -653,8 +701,10 @@ int SQLiteDB::PrepareStatements()
     PrepareStatement(DeleteStagingEntryStatment, DELETE_STAGING_ENTRY_STATEMENT);
     PrepareStatement(DeleteBlackEntryStatment, DELETE_BLACK_ENTRY_STATEMENT);
 
-    PrepareStatement(GetUUIDFromUrlStatment, GET_UUID_FROM_URL_STATEMENT);
-    PrepareStatement(GetUrlFromUUIDStatment, GET_URL_FROM_UUID_STATEMENT);
+    PrepareStatement(GetStagingEntryUUIDFromUrlStatment, GET_STAGING_ENTRY_UUID_FROM_URL_STATEMENT);
+    PrepareStatement(GetBlackEntryUUIDFromUrlStatment, GET_BLACK_ENTRY_UUID_FROM_URL_STATEMENT);
+    PrepareStatement(GetStagingEntryUrlFromUUIDStatment, GET_STAGING_ENTRY_URL_FROM_UUID_STATEMENT);
+    PrepareStatement(GetBlackEntryUrlFromUUIDStatment, GET_BLACK_ENTRY_URL_FROM_UUID_STATEMENT);
 
     return 0;
 }

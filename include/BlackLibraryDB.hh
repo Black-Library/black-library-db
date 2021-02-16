@@ -29,8 +29,11 @@ public:
     int UpdateBlackEntry(const std::string &UUID, const DBEntry &entry);
     int DeleteBlackEntry(const std::string &UUID);
 
-    std::string GetUUIDFromUrl(const std::string &url);
-    std::string GetUrlFromUUID(const std::string &UUID);
+    DBStringResult GetStagingEntryUUIDFromUrl(const std::string &url);
+    DBStringResult GetStagingEntryUrlFromUUID(const std::string &UUID);
+
+    DBStringResult GetBlackEntryUUIDFromUrl(const std::string &url);
+    DBStringResult GetBlackEntryUrlFromUUID(const std::string &UUID);
 
 private:
     std::string GetUUID();

@@ -37,8 +37,8 @@ public:
     int UpdateEntry(const std::string &UUID, const DBEntry &entry, db_entry_type_rep_t entry_type) const override;
     int DeleteEntry(const std::string &UUID, db_entry_type_rep_t entry_type) const override;
 
-    std::string GetUUIDFromUrl(const std::string &url) const;
-    std::string GetUrlFromUUID(const std::string &UUID) const;
+    DBStringResult GetEntryUUIDFromUrl(const std::string &url, db_entry_type_rep_t entry_type) const;
+    DBStringResult GetEntryUrlFromUUID(const std::string &UUID, db_entry_type_rep_t entry_type) const;
 
 private:
     int SetupTables();

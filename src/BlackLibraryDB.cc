@@ -138,14 +138,32 @@ int BlackLibraryDB::DeleteBlackEntry(const std::string &UUID)
     return 0;
 }
 
-std::string BlackLibraryDB::GetUUIDFromUrl(const std::string &url)
+DBStringResult BlackLibraryDB::GetStagingEntryUUIDFromUrl(const std::string &url)
 {
-    return database_connection_interface_->GetUUIDFromUrl(url);
+    DBStringResult res = database_connection_interface_->GetEntryUUIDFromUrl(url, STAGING_ENTRY);
+    if (res.error)
+        std::cout << "Error, failed to get staging UUID from url" << std::endl;
+
+    return res;
 }
 
-std::string BlackLibraryDB::GetUrlFromUUID(const std::string &UUID)
+DBStringResult BlackLibraryDB::GetStagingEntryUrlFromUUID(const std::string &UUID)
 {
-    return database_connection_interface_->GetUrlFromUUID(UUID);
+    return database_connection_interface_->GetEntryUrlFromUUID(UUID, STAGING_ENTRY);
+}
+
+DBStringResult BlackLibraryDB::GetBlackEntryUUIDFromUrl(const std::string &url)
+{
+    DBStringResult res = database_connection_interface_->GetEntryUUIDFromUrl(url, BLACK_ENTRY);
+    if (res.error)
+        std::cout << "Error, failed to get black UUID from url" << std::endl;
+
+    return res;
+}
+
+DBStringResult BlackLibraryDB::GetBlackEntryUrlFromUUID(const std::string &UUID)
+{
+    return database_connection_interface_->GetEntryUrlFromUUID(UUID, BLACK_ENTRY);
 }
 
 } // namespace db
