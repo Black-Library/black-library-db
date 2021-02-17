@@ -114,6 +114,8 @@ public:
     virtual DBStringResult GetEntryUUIDFromUrl(const std::string &url, db_entry_type_rep_t entry_type) const = 0;
     virtual DBStringResult GetEntryUrlFromUUID(const std::string &UUID, db_entry_type_rep_t entry_type) const = 0;
 
+    virtual bool IsReady() const = 0;
+
 private:
 
 };

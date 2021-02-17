@@ -40,6 +40,8 @@ public:
     DBStringResult GetEntryUUIDFromUrl(const std::string &url, db_entry_type_rep_t entry_type) const;
     DBStringResult GetEntryUrlFromUUID(const std::string &UUID, db_entry_type_rep_t entry_type) const;
 
+    bool IsReady() const;
+
 private:
     int SetupTables();
     int PrepareStatements();

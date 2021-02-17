@@ -35,6 +35,8 @@ public:
     DBStringResult GetBlackEntryUUIDFromUrl(const std::string &url);
     DBStringResult GetBlackEntryUrlFromUUID(const std::string &UUID);
 
+    bool IsReady();
+
 private:
     std::string GetUUID();
 

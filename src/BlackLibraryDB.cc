@@ -166,6 +166,11 @@ DBStringResult BlackLibraryDB::GetBlackEntryUrlFromUUID(const std::string &UUID)
     return database_connection_interface_->GetEntryUrlFromUUID(UUID, BLACK_ENTRY);
 }
 
+bool BlackLibraryDB::IsReady()
+{
+    return database_connection_interface_->IsReady();
+}
+
 } // namespace db
 } // namespace core
 } // namespace black_library
