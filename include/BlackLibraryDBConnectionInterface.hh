@@ -6,6 +6,7 @@
 #define __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDBCONNECTIONINTERFACE_HH__
 
 #include <string>
+#include <sstream>
 
 namespace black_library {
 
@@ -49,13 +50,6 @@ struct DBSource {
     db_entry_media_type_rep_t type;
 };
 
-struct DBStringResult {
-    std::string result = "";
-    std::string error_string = "";
-    bool does_not_exist = false;
-    bool error = true;
-};
-
 typedef enum {
     BLACK_ENTRY,
     STAGING_ENTRY,
@@ -85,18 +79,25 @@ struct DBRating {
     uint16_t rating;
 };
 
-// TODO: double check this for fail-safeness
-struct DBUrlCheck {
-    int error = 0;
-    bool exists = true;
-};
-
 struct DBUserProgress {
     std::string UUID;
     UID_rep_t UID;
     uint16_t number;
     uint16_t chapter;
     uint32_t page;
+};
+
+struct DBStringResult {
+    std::string result = "";
+    std::string error_string = "";
+    bool does_not_exist = false;
+    int error = 0;
+};
+
+struct DBBoolResult {
+    bool result = false;
+    bool does_not_exist = false;
+    int error = 0;
 };
 
 class BlackLibraryDBConnectionInterface
@@ -107,9 +108,11 @@ public:
 
     virtual int CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) const = 0;
     virtual DBEntry ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_type) const = 0;
-    virtual DBUrlCheck DoesEntryUrlExist(const std::string &url, db_entry_type_rep_t entry_type) const = 0;
     virtual int UpdateEntry(const std::string &UUID, const DBEntry &entry, db_entry_type_rep_t entry_type) const = 0;
     virtual int DeleteEntry(const std::string &UUID, db_entry_type_rep_t entry_type) const = 0;
+
+    virtual DBBoolResult DoesEntryUrlExist(const std::string &url, db_entry_type_rep_t entry_type) const = 0;
+    virtual DBBoolResult DoesEntryUUIDExist(const std::string &UUID, db_entry_type_rep_t entry_type) const = 0;
 
     virtual DBStringResult GetEntryUUIDFromUrl(const std::string &url, db_entry_type_rep_t entry_type) const = 0;
     virtual DBStringResult GetEntryUrlFromUUID(const std::string &UUID, db_entry_type_rep_t entry_type) const = 0;

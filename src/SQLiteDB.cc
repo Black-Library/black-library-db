@@ -38,8 +38,10 @@ static constexpr const char CreateBlackEntryStatement[]          = "INSERT INTO 
 
 static constexpr const char ReadStagingEntryStatement[]          = "SELECT * FROM staging_entry WHERE UUID = :UUID";
 static constexpr const char ReadStagingEntryUrlStatement[]       = "SELECT * FROM staging_entry WHERE url = :url";
+static constexpr const char ReadStagingEntryUUIDStatement[]      = "SELECT * FROM staging_entry WHERE UUID = :UUID";
 static constexpr const char ReadBlackEntryStatement[]            = "SELECT * FROM black_entry WHERE UUID = :UUID";
 static constexpr const char ReadBlackEntryUrlStatement[]         = "SELECT * FROM black_entry WHERE url = :url";
+static constexpr const char ReadBlackEntryUUIDStatement[]        = "SELECT * FROM black_entry WHERE UUID = :UUID";
 
 static constexpr const char UpdateStagingEntryStatement[]        = "UPDATE staging_entry SET title = :title, nickname = :nickname, source = :source, url = :url, last_url = :last_url, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, user_contributed = :user_contributed WHERE UUID = :UUID";
 static constexpr const char UpdateBlackEntryStatement[]          = "UPDATE black_entry SET title = :title, nickname = :nickname, source = :source, url = :url, last_url = :last_url, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, user_contributed = :user_contributed WHERE UUID = :UUID";
@@ -64,8 +66,10 @@ typedef enum {
 
     READ_STAGING_ENTRY_STATEMENT,
     READ_STAGING_ENTRY_URL_STATEMENT,
+    READ_STAGING_ENTRY_UUID_STATEMENT,
     READ_BLACK_ENTRY_STATEMENT,
     READ_BLACK_ENTRY_URL_STATEMENT,
+    READ_BLACK_ENTRY_UUID_STATEMENT,
 
     UPDATE_STAGING_ENTRY_STATEMENT,
     UPDATE_BLACK_ENTRY_STATEMENT,
@@ -322,9 +326,9 @@ DBEntry SQLiteDB::ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_t
     return entry;
 }
 
-DBUrlCheck SQLiteDB::DoesEntryUrlExist(const std::string &url, db_entry_type_rep_t entry_type) const
+DBBoolResult SQLiteDB::DoesEntryUrlExist(const std::string &url, db_entry_type_rep_t entry_type) const
 {
-    DBUrlCheck check;
+    DBBoolResult check;
 
     std::cout << "Check " << GetEntryTypeString(entry_type) << " entries for url: " << url << std::endl;
 
@@ -371,11 +375,87 @@ DBUrlCheck SQLiteDB::DoesEntryUrlExist(const std::string &url, db_entry_type_rep
     if (ret != SQLITE_ROW)
     {
         std::cout << "url: " << url << " does not exist" << std::endl;
-        check.exists = false;
+        check.result = false;
         ResetStatement(stmt);
         EndTransaction();
         return check;
     }
+    else
+    {
+        check.result = true;
+    }
+    
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+    {
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+
+    return check;
+}
+
+DBBoolResult SQLiteDB::DoesEntryUUIDExist(const std::string &UUID, db_entry_type_rep_t entry_type) const
+{
+    DBBoolResult check;
+
+    std::cout << "Check " << GetEntryTypeString(entry_type) << " entries for UUID: " << UUID << std::endl;
+
+    if (CheckInitialized())
+    {
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+
+    if (BeginTransaction())
+    {
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+
+    int ret = SQLITE_OK;
+
+    int statement_id;
+    switch (entry_type)
+    {
+        case BLACK_ENTRY:
+            statement_id = READ_BLACK_ENTRY_UUID_STATEMENT;
+            break;
+        case STAGING_ENTRY:
+            statement_id = READ_STAGING_ENTRY_UUID_STATEMENT;
+            break;
+        default:
+            return check;
+    }
+
+    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+
+    // bind statement variables
+    if (BindText(stmt, "UUID", UUID))
+    {
+        EndTransaction();
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+
+    // run statement
+    std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_ROW)
+    {
+        std::cout << "UUID: " << UUID << " does not exist" << std::endl;
+        check.result = false;
+        ResetStatement(stmt);
+        EndTransaction();
+        return check;
+    }
+    else
+    {
+        check.result = true;
+    }
+    
 
     ResetStatement(stmt);
 
@@ -697,8 +777,11 @@ int SQLiteDB::PrepareStatements()
 
     PrepareStatement(ReadStagingEntryStatement, READ_STAGING_ENTRY_STATEMENT);
     PrepareStatement(ReadStagingEntryUrlStatement, READ_STAGING_ENTRY_URL_STATEMENT);
+    PrepareStatement(ReadStagingEntryUUIDStatement, READ_STAGING_ENTRY_UUID_STATEMENT);
+
     PrepareStatement(ReadBlackEntryStatement, READ_BLACK_ENTRY_STATEMENT);
     PrepareStatement(ReadBlackEntryUrlStatement, READ_BLACK_ENTRY_URL_STATEMENT);
+    PrepareStatement(ReadBlackEntryUUIDStatement, READ_BLACK_ENTRY_UUID_STATEMENT);
 
     PrepareStatement(UpdateStagingEntryStatement, UPDATE_STAGING_ENTRY_STATEMENT);
     PrepareStatement(UpdateBlackEntryStatement, UPDATE_BLACK_ENTRY_STATEMENT);

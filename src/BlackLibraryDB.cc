@@ -49,16 +49,6 @@ DBEntry BlackLibraryDB::ReadStagingEntry(const std::string &UUID)
     return entry;
 }
 
-bool BlackLibraryDB::DoesStagingEntryUrlExist(const std::string &url)
-{
-    DBUrlCheck check = database_connection_interface_->DoesEntryUrlExist(url, STAGING_ENTRY);
-    
-    if (check.error)
-        return false;
-
-    return check.exists;
-}
-
 int BlackLibraryDB::UpdateStagingEntry(const std::string &UUID, const DBEntry &entry)
 {
     if (database_connection_interface_->UpdateEntry(UUID, entry, STAGING_ENTRY))
@@ -106,16 +96,6 @@ DBEntry BlackLibraryDB::ReadBlackEntry(const std::string &UUID)
     return entry;
 }
 
-bool BlackLibraryDB::DoesBlackEntryUrlExist(const std::string &url)
-{
-    DBUrlCheck check = database_connection_interface_->DoesEntryUrlExist(url, BLACK_ENTRY);
-    
-    if (check.error)
-        return false;
-
-    return check.exists;
-}
-
 int BlackLibraryDB::UpdateBlackEntry(const std::string &UUID, const DBEntry &entry)
 {
     if (database_connection_interface_->UpdateEntry(UUID, entry, BLACK_ENTRY))
@@ -136,6 +116,58 @@ int BlackLibraryDB::DeleteBlackEntry(const std::string &UUID)
     }
 
     return 0;
+}
+
+bool BlackLibraryDB::DoesStagingEntryUrlExist(const std::string &url)
+{
+    DBBoolResult check = database_connection_interface_->DoesEntryUrlExist(url, STAGING_ENTRY);
+    
+    if (check.error != 0)
+    {
+        std::cout << "Error: database returned " << check.error << std::endl;
+        return false;
+    }
+
+    return check.result;
+}
+
+bool BlackLibraryDB::DoesBlackEntryUrlExist(const std::string &url)
+{
+    DBBoolResult check = database_connection_interface_->DoesEntryUrlExist(url, BLACK_ENTRY);
+    
+    if (check.error != 0)
+    {
+        std::cout << "Error: database returned " << check.error << std::endl;
+        return false;
+    }
+
+    return check.result;
+}
+
+bool BlackLibraryDB::DoesStagingEntryUUIDExist(const std::string &UUID)
+{
+    DBBoolResult check = database_connection_interface_->DoesEntryUUIDExist(UUID, STAGING_ENTRY);
+    
+    if (check.error != 0)
+    {
+        std::cout << "Error: database returned " << check.error << std::endl;
+        return false;
+    }
+
+    return check.result;
+}
+
+bool BlackLibraryDB::DoesBlackEntryUUIDExist(const std::string &UUID)
+{
+    DBBoolResult check = database_connection_interface_->DoesEntryUUIDExist(UUID, BLACK_ENTRY);
+    
+    if (check.error != 0)
+    {
+        std::cout << "Error: database returned " << check.error << std::endl;
+        return false;
+    }
+
+    return check.result;
 }
 
 DBStringResult BlackLibraryDB::GetStagingEntryUUIDFromUrl(const std::string &url)

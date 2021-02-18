@@ -19,15 +19,19 @@ public:
 
     int CreateStagingEntry(const DBEntry &entry);
     DBEntry ReadStagingEntry(const std::string &UUID);
-    bool DoesStagingEntryUrlExist(const std::string &url);
     int UpdateStagingEntry(const std::string &UUID, const DBEntry &entry);
     int DeleteStagingEntry(const std::string &UUID);
 
     int CreateBlackEntry(const DBEntry &entry);
     DBEntry ReadBlackEntry(const std::string &UUID);
-    bool DoesBlackEntryUrlExist(const std::string &url);
     int UpdateBlackEntry(const std::string &UUID, const DBEntry &entry);
     int DeleteBlackEntry(const std::string &UUID);
+
+    bool DoesStagingEntryUrlExist(const std::string &url);
+    bool DoesBlackEntryUrlExist(const std::string &url);
+
+    bool DoesStagingEntryUUIDExist(const std::string &UUID);
+    bool DoesBlackEntryUUIDExist(const std::string &UUID);
 
     DBStringResult GetStagingEntryUUIDFromUrl(const std::string &url);
     DBStringResult GetStagingEntryUrlFromUUID(const std::string &UUID);
