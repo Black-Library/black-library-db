@@ -1,4 +1,4 @@
-macro(add_docker_targets)
+macro(add_db_docker_targets)
     add_custom_target(bl-db-builder
         COMMAND docker build --force-rm --tag bl/db/builder --file tools/docker/bl_db_builder.docker .
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
