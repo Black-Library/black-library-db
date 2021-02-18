@@ -357,9 +357,6 @@ DBUrlCheck SQLiteDB::DoesEntryUrlExist(const std::string &url, db_entry_type_rep
 
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
-    std::cout << "bar" << std::endl;
-    std::cout << "\t" << sqlite3_sql(stmt) << std::endl;
-
     // bind statement variables
     if (BindText(stmt, "url", url))
     {
@@ -859,7 +856,7 @@ int SQLiteDB::BindInt(sqlite3_stmt* stmt, const std::string &parameter_name, con
 
 int SQLiteDB::BindText(sqlite3_stmt* stmt, const std::string &parameter_name, const std::string &bind_text) const
 {
-    std::cout << "BindText " << parameter_name << ": " << bind_text << std::endl;
+    // std::cout << "BindText " << parameter_name << ": " << bind_text << std::endl;
     const std::string parameter_index_name = ":" + parameter_name;
     int index = sqlite3_bind_parameter_index(stmt, parameter_index_name.c_str());
     int ret = sqlite3_bind_text(stmt, index, bind_text.c_str(), bind_text.length(), SQLITE_STATIC);
