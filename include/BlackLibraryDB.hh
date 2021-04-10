@@ -1,3 +1,7 @@
+/**
+ * BlackLibraryDB.hh
+ */
+
 #ifndef __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDB_HH__
 #define __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDB_HH__
 
