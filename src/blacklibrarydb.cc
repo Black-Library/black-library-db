@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string.h>
 
-#include <BlackLibraryDB.hh>
+#include <BlackLibraryDB.h>
 
 struct options
 {

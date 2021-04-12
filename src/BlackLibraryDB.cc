@@ -4,8 +4,8 @@
 
 #include <iostream>
 
-#include <BlackLibraryDB.hh>
-#include <SQLiteDB.hh>
+#include <BlackLibraryDB.h>
+#include <SQLiteDB.h>
 
 namespace black_library {
 

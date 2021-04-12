@@ -1,15 +1,15 @@
 /**
- * SQLiteDB.hh
+ * SQLiteDB.h
  */
 
-#ifndef __BLACK_LIBRARY_CORE_DB_SQLITEDB_HH__
-#define __BLACK_LIBRARY_CORE_DB_SQLITEDB_HH__
+#ifndef __BLACK_LIBRARY_CORE_DB_SQLITEDB_H__
+#define __BLACK_LIBRARY_CORE_DB_SQLITEDB_H__
 
 #include <vector>
 
 #include <sqlite3.h>
 
-#include <BlackLibraryDBConnectionInterface.hh>
+#include <BlackLibraryDBConnectionInterface.h>
 
 namespace black_library {
 

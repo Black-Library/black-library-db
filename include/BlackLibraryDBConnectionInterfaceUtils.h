@@ -1,11 +1,11 @@
 /**
- * BlackLibraryDBConnectionInterfaceUtils.hh
+ * BlackLibraryDBConnectionInterfaceUtils.h
  */
 
-#ifndef __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDBCONNECTIONINTERFACEUTILS_HH__
-#define __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDBCONNECTIONINTERFACEUTILS_HH__
+#ifndef __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDBCONNECTIONINTERFACEUTILS_H__
+#define __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDBCONNECTIONINTERFACEUTILS_H__
 
-#include <BlackLibraryDBConnectionInterface.hh>
+#include <BlackLibraryDBConnectionInterface.h>
 
 namespace black_library {
 
