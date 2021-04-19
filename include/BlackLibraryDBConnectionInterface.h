@@ -70,6 +70,7 @@ struct DBEntry {
     uint16_t version = 1;
     std::string media_path;
     std::string birth_date;
+    std::string update_date;
     UID_rep_t user_contributed = 6;
 };
 
