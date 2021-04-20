@@ -61,6 +61,7 @@ typedef uint8_t db_entry_type_rep_t;
 struct DBEntry {
     std::string UUID;
     std::string title;
+    std::string author;
     std::string nickname = "";
     std::string source;
     std::string url;
