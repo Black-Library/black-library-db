@@ -21,10 +21,10 @@ source
 name entry_type
 
 staging_entry
-UUID name nickname source URL last_url series series_length version media_path birth_date user_contributed(UID)
+UUID title author nickname source URL last_url series series_length version media_path birth_date user_contributed(UID)
 
 black_entry
-UUID name nickname source URL last_url series series_length version media_path birth_date user_contributed(UID)
+UUID title author nickname source URL last_url series series_length version media_path birth_date user_contributed(UID)
 
 entry_history
 UUID version path date

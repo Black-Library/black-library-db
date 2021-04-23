@@ -26,6 +26,21 @@ std::string GetEntryTypeString(db_entry_type_rep_t type)
     }
 }
 
+std::string GetMediaTypeString(db_entry_media_type_rep_t type)
+{
+    switch (type)
+    {
+    case DOCUMENT:
+        return "document";
+    case IMAGE_GALLERY:
+        return "image-gallery";
+    case VIDEO:
+        return "video";
+    default:
+        return "Error";
+    }
+}
+
 } // namespace db
 } // namespace core
 } // namespace black_library

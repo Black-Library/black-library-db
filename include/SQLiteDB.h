@@ -26,10 +26,9 @@ public:
     ~SQLiteDB();
 
     int CreateUser(const DBUser &user) const;
-    int CreateEntryType(const std::string &entry_type) const;
-    int CreateDocumentSubtype(const std::string &document_subtype) const;
-    int CreateImageGallerySubtype(const std::string &image_gallery_subtype) const;
-    int CreateVideoSubtype(const std::string &video_subtype) const;
+    int CreateEntryType(const std::string &entry_type_name) const;
+    int CreateSubtype(const std::string &subtype_name, db_entry_media_type_rep_t entry_type) const;
+    int CreateSource(const DBSource &source) const;
 
     int CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) const override;
     DBEntry ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_type) const override;
@@ -46,6 +45,10 @@ public:
 
 private:
     int SetupTables();
+    int SetupDefaultEntryTypeTable();
+    int SetupDefaultSubtypeTable();
+    int SetupDefaultSourceTable();
+
     int PrepareStatements();
     int SetupDefaultBlackLibraryUsers();
     int SetupDefaultSubtypes();

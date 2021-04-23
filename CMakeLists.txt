@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 include(cmake/docker.cmake)
 
+add_subdirectory(ext)
 add_subdirectory(src)
 
 add_db_docker_targets()

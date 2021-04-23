@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 
+#include <SourceInformation.h>
+
 #include <BlackLibraryDBConnectionInterfaceUtils.h>
 #include <SQLiteDB.h>
 
@@ -108,13 +110,6 @@ SQLiteDB::SQLiteDB(const std::string &database_url, const bool first_time_setup)
 
     std::cout << "Open database at: " << database_url_ << std::endl;
 
-
-    if (SetupTables())
-    {
-        std::cout << "Error, failed to setup database tables" << std::endl;
-        return;
-    }
-
     if (PrepareStatements())
     {
         std::cout << "Error, failed to setup prepare statements" << std::endl;
@@ -123,6 +118,12 @@ SQLiteDB::SQLiteDB(const std::string &database_url, const bool first_time_setup)
 
     if (first_time_setup_)
     {
+        if (SetupTables())
+        {
+            std::cout << "Error, failed to setup database tables" << std::endl;
+            return;
+        }
+
         if (SetupDefaultBlackLibraryUsers())
         {
             std::cout << "Error, failed to setup default black library users" << std::endl;
@@ -158,7 +159,6 @@ int SQLiteDB::CreateUser(const DBUser &user) const
     if (BeginTransaction())
         return -1;
 
-    int ret = SQLITE_OK;
     int statement_id = CREATE_USER_STATEMENT;
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
@@ -171,10 +171,138 @@ int SQLiteDB::CreateUser(const DBUser &user) const
         return -1;
 
     // run statement
+    int ret = SQLITE_OK;
+
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
         std::cout << "Error, create user failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        return -1;
+    }
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return -1;
+
+    return 0;
+}
+
+int SQLiteDB::CreateEntryType(const std::string &entry_type_name) const
+{
+    if (CheckInitialized())
+        return -1;
+
+    if (BeginTransaction())
+        return -1;
+
+    int statement_id = CREATE_ENTRY_TYPE_STATEMENT;
+    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+
+    // bind statement variables
+    if (BindText(stmt, "name", entry_type_name))
+        return -1;
+
+    // run statement
+    int ret = SQLITE_OK;
+
+    std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_DONE)
+    {
+        std::cout << "Error, create entry type: " << entry_type_name << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        ResetStatement(stmt);
+        EndTransaction();
+        return -1;
+    }
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return -1;
+
+    return 0;
+}
+
+int SQLiteDB::CreateSubtype(const std::string &subtype_name, db_entry_media_type_rep_t entry_type) const
+{
+    if (CheckInitialized())
+        return -1;
+
+    if (BeginTransaction())
+        return -1;
+
+    int statement_id;
+
+    switch (entry_type)
+    {
+    case DOCUMENT:
+        statement_id = CREATE_DOCUMENT_SUBTYPE_STATEMENT;
+        break;
+    case IMAGE_GALLERY:
+        statement_id = CREATE_IMAGE_GALLERY_SUBTYPE_STATEMENT;
+        break;
+    case VIDEO:
+        statement_id = CREATE_VIDEO_SUBTYPE_STATEMENT;
+        break;
+    default:
+        break;
+    }
+
+    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+
+    // bind statement variables
+    if (BindText(stmt, "name", subtype_name))
+        return -1;
+
+    // run statement
+    int ret = SQLITE_OK;
+
+    std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_DONE)
+    {
+        std::cout << "Error, create subtype: " << subtype_name << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        ResetStatement(stmt);
+        EndTransaction();
+        return -1;
+    }
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return -1;
+
+    return 0;
+}
+
+int SQLiteDB::CreateSource(const DBSource &source) const
+{
+    if (CheckInitialized())
+        return -1;
+
+    if (BeginTransaction())
+        return -1;
+
+    int statement_id = CREATE_SOURCE_STATEMENT;
+    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+
+    // bind statement variables
+    if (BindText(stmt, "name", source.name))
+        return -1;
+    if (BindText(stmt, "type", GetMediaTypeString(source.type)))
+        return -1;
+
+    // run statement
+    int ret = SQLITE_OK;
+
+    std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_DONE)
+    {
+        std::cout << "Error, create source: " << source.name << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        ResetStatement(stmt);
+        EndTransaction();
         return -1;
     }
 
@@ -195,8 +323,6 @@ int SQLiteDB::CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) 
 
     if (BeginTransaction())
         return -1;
-
-    int ret = SQLITE_OK;
 
     int statement_id;
     switch (entry_type)
@@ -244,6 +370,8 @@ int SQLiteDB::CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) 
         return -1;
 
     // run statement
+    int ret = SQLITE_OK;
+
     std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
@@ -274,8 +402,6 @@ DBEntry SQLiteDB::ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_t
     if (BeginTransaction())
         return entry;
 
-    int ret = SQLITE_OK;
-
     int statement_id;
     switch (entry_type)
     {
@@ -299,6 +425,8 @@ DBEntry SQLiteDB::ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_t
     }
 
     // run statement
+    int ret = SQLITE_OK;
+
     std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
@@ -350,8 +478,6 @@ DBBoolResult SQLiteDB::DoesEntryUrlExist(const std::string &url, db_entry_type_r
         return check;
     }
 
-    int ret = SQLITE_OK;
-
     int statement_id;
     switch (entry_type)
     {
@@ -376,6 +502,8 @@ DBBoolResult SQLiteDB::DoesEntryUrlExist(const std::string &url, db_entry_type_r
     }
 
     // run statement
+    int ret = SQLITE_OK;
+
     std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
@@ -421,8 +549,6 @@ DBBoolResult SQLiteDB::DoesEntryUUIDExist(const std::string &UUID, db_entry_type
         return check;
     }
 
-    int ret = SQLITE_OK;
-
     int statement_id;
     switch (entry_type)
     {
@@ -447,6 +573,8 @@ DBBoolResult SQLiteDB::DoesEntryUUIDExist(const std::string &UUID, db_entry_type
     }
 
     // run statement
+    int ret = SQLITE_OK;
+
     std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
@@ -483,8 +611,6 @@ int SQLiteDB::UpdateEntry(const std::string &UUID, const DBEntry &entry, db_entr
 
     if (BeginTransaction())
         return -1;
-
-    int ret = SQLITE_OK;
 
     int statement_id;
     switch (entry_type)
@@ -532,6 +658,8 @@ int SQLiteDB::UpdateEntry(const std::string &UUID, const DBEntry &entry, db_entr
         return -1;
 
     // run statement
+    int ret = SQLITE_OK;
+
     std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
@@ -560,8 +688,6 @@ int SQLiteDB::DeleteEntry(const std::string &UUID, db_entry_type_rep_t entry_typ
     if (BeginTransaction())
         return -1;
 
-    int ret = SQLITE_OK;
-
     int statement_id;
     switch (entry_type)
     {
@@ -585,6 +711,8 @@ int SQLiteDB::DeleteEntry(const std::string &UUID, db_entry_type_rep_t entry_typ
     }
 
     // run statement
+    int ret = SQLITE_OK;
+
     std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
@@ -619,8 +747,6 @@ DBStringResult SQLiteDB::GetEntryUUIDFromUrl(const std::string &url, db_entry_ty
         return res;
     }
 
-    int ret = SQLITE_OK;
-
     int statement_id;
     switch (entry_type)
     {
@@ -645,6 +771,8 @@ DBStringResult SQLiteDB::GetEntryUUIDFromUrl(const std::string &url, db_entry_ty
     }
 
     // run statement
+    int ret = SQLITE_OK;
+
     std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
@@ -687,8 +815,6 @@ DBStringResult SQLiteDB::GetEntryUrlFromUUID(const std::string &UUID, db_entry_t
         return res;
     }
 
-    int ret = SQLITE_OK;
-
     int statement_id;
     switch (entry_type)
     {
@@ -713,6 +839,8 @@ DBStringResult SQLiteDB::GetEntryUrlFromUUID(const std::string &UUID, db_entry_t
     }
 
     // run statement
+    int ret = SQLITE_OK;
+
     std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
@@ -756,16 +884,84 @@ bool SQLiteDB::IsReady() const
 
 int SQLiteDB::SetupTables()
 {
-    GenerateTable(CreateUserTable);
-    GenerateTable(CreateEntryTypeTable);
-    GenerateTable(CreateDocumentSubtypeTable);
-    GenerateTable(CreateImageGallerySubtypeTable);
-    GenerateTable(CreateVideoSubtypeTable);
-    GenerateTable(CreateBookGenreTable);
-    GenerateTable(CreateDocumentTagTable);
-    GenerateTable(CreateSourceTable);
-    GenerateTable(CreateStagingEntryTable);
-    GenerateTable(CreateBlackEntryTable);
+    int res = 0;
+
+    res += GenerateTable(CreateUserTable);
+    res += GenerateTable(CreateEntryTypeTable);
+    res += GenerateTable(CreateDocumentSubtypeTable);
+    res += GenerateTable(CreateImageGallerySubtypeTable);
+    res += GenerateTable(CreateVideoSubtypeTable);
+    res += GenerateTable(CreateBookGenreTable);
+    res += GenerateTable(CreateDocumentTagTable);
+    res += GenerateTable(CreateSourceTable);
+    res += GenerateTable(CreateStagingEntryTable);
+    res += GenerateTable(CreateBlackEntryTable);
+
+    res += SetupDefaultEntryTypeTable();
+    res += SetupDefaultSubtypeTable();
+    res += SetupDefaultSourceTable();
+
+    return res;
+}
+
+int SQLiteDB::SetupDefaultEntryTypeTable()
+{
+    int res = 0;
+
+    res += CreateEntryType(GetMediaTypeString(DOCUMENT));
+    res += CreateEntryType(GetMediaTypeString(IMAGE_GALLERY));
+    res += CreateEntryType(GetMediaTypeString(VIDEO));
+
+    return res;
+}
+
+int SQLiteDB::SetupDefaultSubtypeTable()
+{
+    int res = 0;
+
+    res += CreateSubtype("blog", DOCUMENT);
+    res += CreateSubtype("book", DOCUMENT);
+    res += CreateSubtype("news-article", DOCUMENT);
+    res += CreateSubtype("paper", DOCUMENT);
+    res += CreateSubtype("webnovel", DOCUMENT);
+
+    res += CreateSubtype("manga", IMAGE_GALLERY);
+    res += CreateSubtype("photo-album", IMAGE_GALLERY);
+
+    res += CreateSubtype("movie", VIDEO);
+    res += CreateSubtype("tv-show", VIDEO);
+    res += CreateSubtype("youtube", VIDEO);
+
+    return res;
+}
+
+int SQLiteDB::SetupDefaultSourceTable()
+{
+    DBSource ao3_source;
+    DBSource ffn_source;
+    DBSource rr_source;
+    DBSource sbf_source;
+
+    ao3_source.name = black_library::core::common::AO3::name;
+    ao3_source.type = DOCUMENT;
+
+    ffn_source.name = black_library::core::common::FFN::name;
+    ffn_source.type = DOCUMENT;
+
+    rr_source.name = black_library::core::common::RR::name;
+    rr_source.type = DOCUMENT;
+
+    sbf_source.name = black_library::core::common::SBF::name;
+    sbf_source.type = DOCUMENT;
+
+    if (CreateSource(ao3_source))
+        return -1;
+    if (CreateSource(ffn_source))
+        return -1;
+    if (CreateSource(rr_source))
+        return -1;
+    if (CreateSource(sbf_source))
+        return -1;
 
     return 0;
 }
