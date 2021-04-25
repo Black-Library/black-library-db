@@ -18,6 +18,9 @@ install(
   RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
+set_target_properties(BlackLibraryDB PROPERTIES INSTALL_RPATH
+    "$LD_LIBRARY_PATH:${CMAKE_INSTALL_PREFIX}/lib")
+
 add_executable(blacklibrarydb blacklibrarydb.cc)
 
 target_link_libraries(blacklibrarydb BlackLibraryDB)
