@@ -103,7 +103,8 @@ SQLiteDB::SQLiteDB(const std::string &database_url, const bool first_time_setup)
 
     if (!black_library::core::common::CheckFilePermission(database_url_))
     {
-        std::cout << "Error: invoking user cannot write to: " << database_url_ << std::endl; 
+        std::cout << "Error: invoking user cannot write to: " << database_url_ << std::endl;
+        return;
     }
 
     int res = sqlite3_open(database_url_.c_str(), &database_conn_);
