@@ -28,7 +28,7 @@ int BlackLibraryDB::CreateStagingEntry(const DBEntry &entry)
 {
     if (database_connection_interface_->CreateEntry(entry, STAGING_ENTRY))
     {
-        std::cout << "Error, failed to create staging entry" << std::endl;
+        std::cout << "Error: failed to create staging entry" << std::endl;
         return -1;
     }
 
@@ -42,7 +42,7 @@ DBEntry BlackLibraryDB::ReadStagingEntry(const std::string &UUID)
     entry = database_connection_interface_->ReadEntry(UUID, STAGING_ENTRY);
     if (entry.UUID.empty())
     {
-        std::cout << "Error, failed to read staging entry" << std::endl;
+        std::cout << "Error: failed to read staging entry" << std::endl;
         return entry;
     }
 
@@ -53,7 +53,7 @@ int BlackLibraryDB::UpdateStagingEntry(const std::string &UUID, const DBEntry &e
 {
     if (database_connection_interface_->UpdateEntry(UUID, entry, STAGING_ENTRY))
     {
-        std::cout << "Error, failed to update staging entry" << std::endl;
+        std::cout << "Error: failed to update staging entry" << std::endl;
         return -1;
     }
 
@@ -64,7 +64,7 @@ int BlackLibraryDB::DeleteStagingEntry(const std::string &UUID)
 {
     if (database_connection_interface_->DeleteEntry(UUID, STAGING_ENTRY))
     {
-        std::cout << "Error, failed to delete staging entry" << std::endl;
+        std::cout << "Error: failed to delete staging entry" << std::endl;
         return -1;
     }
 
@@ -75,7 +75,7 @@ int BlackLibraryDB::CreateBlackEntry(const DBEntry &entry)
 {
     if (database_connection_interface_->CreateEntry(entry, BLACK_ENTRY))
     {
-        std::cout << "Error, failed to create black entry" << std::endl;
+        std::cout << "Error: failed to create black entry" << std::endl;
         return -1;
     }
 
@@ -89,7 +89,7 @@ DBEntry BlackLibraryDB::ReadBlackEntry(const std::string &UUID)
     entry = database_connection_interface_->ReadEntry(UUID, BLACK_ENTRY);
     if (entry.UUID.empty())
     {
-        std::cout << "Error, failed to read black entry" << std::endl;
+        std::cout << "Error: failed to read black entry" << std::endl;
         return entry;
     }
 
@@ -100,7 +100,7 @@ int BlackLibraryDB::UpdateBlackEntry(const std::string &UUID, const DBEntry &ent
 {
     if (database_connection_interface_->UpdateEntry(UUID, entry, BLACK_ENTRY))
     {
-        std::cout << "Error, failed to update black entry" << std::endl;
+        std::cout << "Error: failed to update black entry" << std::endl;
         return -1;
     }
 
@@ -111,7 +111,7 @@ int BlackLibraryDB::DeleteBlackEntry(const std::string &UUID)
 {
     if (database_connection_interface_->DeleteEntry(UUID, BLACK_ENTRY))
     {
-        std::cout << "Error, failed to delete black entry" << std::endl;
+        std::cout << "Error: failed to delete black entry" << std::endl;
         return -1;
     }
 
@@ -174,7 +174,7 @@ DBStringResult BlackLibraryDB::GetStagingEntryUUIDFromUrl(const std::string &url
 {
     DBStringResult res = database_connection_interface_->GetEntryUUIDFromUrl(url, STAGING_ENTRY);
     if (res.error)
-        std::cout << "Error, failed to get staging UUID from url" << std::endl;
+        std::cout << "Error: failed to get staging UUID from url" << std::endl;
 
     return res;
 }
@@ -188,7 +188,7 @@ DBStringResult BlackLibraryDB::GetBlackEntryUUIDFromUrl(const std::string &url)
 {
     DBStringResult res = database_connection_interface_->GetEntryUUIDFromUrl(url, BLACK_ENTRY);
     if (res.error)
-        std::cout << "Error, failed to get black UUID from url" << std::endl;
+        std::cout << "Error: failed to get black UUID from url" << std::endl;
 
     return res;
 }

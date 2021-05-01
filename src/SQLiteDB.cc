@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 
+#include <FileOperations.h>
 #include <SourceInformation.h>
 
 #include <BlackLibraryDBConnectionInterfaceUtils.h>
@@ -100,11 +101,16 @@ SQLiteDB::SQLiteDB(const std::string &database_url, const bool first_time_setup)
         std::cout << "Empty database url given, using default: " << database_url_ << std::endl;
     }
 
+    if (!black_library::core::common::CheckFilePermission(database_url_))
+    {
+        std::cout << "Error: invoking user cannot write to: " << database_url_ << std::endl; 
+    }
+
     int res = sqlite3_open(database_url_.c_str(), &database_conn_);
     
     if (res != SQLITE_OK)
     {
-        std::cout << "Error, failed to open db at: " << database_url_ << " - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: failed to open db at: " << database_url_ << " - " << sqlite3_errmsg(database_conn_) << std::endl;
         return;
     }
 
@@ -112,7 +118,7 @@ SQLiteDB::SQLiteDB(const std::string &database_url, const bool first_time_setup)
 
     if (PrepareStatements())
     {
-        std::cout << "Error, failed to setup prepare statements" << std::endl;
+        std::cout << "Error: failed to setup prepare statements" << std::endl;
         return;
     }
 
@@ -120,19 +126,19 @@ SQLiteDB::SQLiteDB(const std::string &database_url, const bool first_time_setup)
     {
         if (SetupTables())
         {
-            std::cout << "Error, failed to setup database tables" << std::endl;
+            std::cout << "Error: failed to setup database tables" << std::endl;
             return;
         }
 
         if (SetupDefaultBlackLibraryUsers())
         {
-            std::cout << "Error, failed to setup default black library users" << std::endl;
+            std::cout << "Error: failed to setup default black library users" << std::endl;
             return;
         }
 
         if (SetupDefaultSubtypes())
         {
-            std::cout << "Error, failed to setup default subtypes" << std::endl;
+            std::cout << "Error: failed to setup default subtypes" << std::endl;
             return;
         }
     }
@@ -176,7 +182,7 @@ int SQLiteDB::CreateUser(const DBUser &user) const
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
-        std::cout << "Error, create user failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: create user failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         return -1;
     }
 
@@ -210,7 +216,7 @@ int SQLiteDB::CreateEntryType(const std::string &entry_type_name) const
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
-        std::cout << "Error, create entry type: " << entry_type_name << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: create entry type: " << entry_type_name << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
         EndTransaction();
         return -1;
@@ -262,7 +268,7 @@ int SQLiteDB::CreateSubtype(const std::string &subtype_name, db_entry_media_type
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
-        std::cout << "Error, create subtype: " << subtype_name << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: create subtype: " << subtype_name << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
         EndTransaction();
         return -1;
@@ -300,7 +306,7 @@ int SQLiteDB::CreateSource(const DBSource &source) const
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
-        std::cout << "Error, create source: " << source.name << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: create source: " << source.name << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
         EndTransaction();
         return -1;
@@ -376,7 +382,7 @@ int SQLiteDB::CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) 
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
-        std::cout << "Error, create " << GetEntryTypeString(entry_type) << " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: create " << GetEntryTypeString(entry_type) << " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
         EndTransaction();
         return -1;
@@ -431,7 +437,7 @@ DBEntry SQLiteDB::ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_t
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
-        std::cout << "Error, read " << GetEntryTypeString(entry_type) << " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: read " << GetEntryTypeString(entry_type) << " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
         EndTransaction();
         return entry;
@@ -664,7 +670,7 @@ int SQLiteDB::UpdateEntry(const std::string &UUID, const DBEntry &entry, db_entr
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
-        std::cout << "Error, update " << GetEntryTypeString(entry_type) << " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: update " << GetEntryTypeString(entry_type) << " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
         EndTransaction();
         return -1;
@@ -717,7 +723,7 @@ int SQLiteDB::DeleteEntry(const std::string &UUID, db_entry_type_rep_t entry_typ
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
-        std::cout << "Error, delete " << GetEntryTypeString(entry_type) <<  " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: delete " << GetEntryTypeString(entry_type) <<  " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
         EndTransaction();
         return -1;
@@ -1058,7 +1064,7 @@ int SQLiteDB::BeginTransaction() const
     int ret = sqlite3_exec(database_conn_, "BEGIN TRANSACTION", 0, 0, &error_msg);
     if (ret != SQLITE_OK)
     {
-        std::cout << "Error, begin transaction failed - " << error_msg << " - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: begin transaction failed - " << error_msg << " - " << sqlite3_errmsg(database_conn_) << std::endl;
         return -1;
     }
 
@@ -1069,7 +1075,7 @@ int SQLiteDB::CheckInitialized() const
 {
     if (!intialized_)
     {
-        std::cout << "Error, db not initialized" << std::endl;
+        std::cout << "Error: db not initialized" << std::endl;
         return -1;
     }
 
@@ -1083,7 +1089,7 @@ int SQLiteDB::EndTransaction() const
     int ret = sqlite3_exec(database_conn_, "END TRANSACTION", 0, 0, &error_msg);
     if (ret != SQLITE_OK)
     {
-        std::cout << "Error, end transaction  failed - " << error_msg << " - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: end transaction  failed - " << error_msg << " - " << sqlite3_errmsg(database_conn_) << std::endl;
         return -1;
     }
 
@@ -1096,7 +1102,7 @@ int SQLiteDB::GenerateTable(const std::string &sql)
     int ret = sqlite3_exec(database_conn_, sql.c_str(), 0, 0, &error_msg);
     if (ret != SQLITE_OK)
     {
-        std::cout << "Error, generate table failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: generate table failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         return -1;
     }
     return 0;
@@ -1108,7 +1114,7 @@ int SQLiteDB::PrepareStatement(const std::string &statement, int statement_id)
     int ret = sqlite3_prepare_v2(database_conn_, statement.c_str(), -1, &prepared_statements_[statement_id], nullptr);
     if (ret != SQLITE_OK)
     {
-        std::cout << "Error, prepare failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: prepare failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         return -1;
     }
 
@@ -1121,7 +1127,7 @@ int SQLiteDB::ResetStatement(sqlite3_stmt* stmt) const
     // std::cout << "Reset statement: " << sqlite3_sql(stmt) << std::endl;
     if (ret != SQLITE_OK)
     {
-        std::cout << "Error, reset statement failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: reset statement failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         return -1;
     }
 
@@ -1135,7 +1141,7 @@ int SQLiteDB::BindInt(sqlite3_stmt* stmt, const std::string &parameter_name, con
     int ret = sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, parameter_index_name.c_str()), bind_int);
     if (ret != SQLITE_OK)
     {
-        std::cout << "Error, bind of " << parameter_name << ": " << bind_int << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: bind of " << parameter_name << ": " << bind_int << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
         return -1;
     }
@@ -1151,7 +1157,7 @@ int SQLiteDB::BindText(sqlite3_stmt* stmt, const std::string &parameter_name, co
     int ret = sqlite3_bind_text(stmt, index, bind_text.c_str(), bind_text.length(), SQLITE_STATIC);
     if (ret != SQLITE_OK)
     {
-        std::cout << "Error, bind of " << parameter_name << ": " << bind_text << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: bind of " << parameter_name << ": " << bind_text << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
         return -1;
     }
