@@ -17,11 +17,37 @@ BlackLibraryDB::BlackLibraryDB(const std::string &database_url, bool initialize)
     database_connection_interface_(nullptr),
     database_url_(database_url)
 {
-    database_connection_interface_ = std::make_unique<black_library_sqlite3::SQLiteDB>(database_url_, initialize);
+    database_connection_interface_ = std::make_unique<SQLiteDB>(database_url_, initialize);
 }
 
 BlackLibraryDB::~BlackLibraryDB()
 {
+}
+
+std::string BlackLibraryDB::GetBlackEntryList()
+{
+    DBStringResult db_list = database_connection_interface_->ListEntries(STAGING_ENTRY);
+
+    if (db_list.error)
+    {
+        std::cout << "Error: failed to list staging entries - "  << db_list.error_string << std::endl;
+        return "";
+    }
+
+    return db_list.result;
+}
+
+std::string BlackLibraryDB::GetStagingEntryList()
+{
+    DBStringResult db_list = database_connection_interface_->ListEntries(BLACK_ENTRY);
+
+    if (db_list.error)
+    {
+        std::cout << "Error: failed to list black entries - "  << db_list.error_string << std::endl;
+        return "";
+    }
+
+    return db_list.result;
 }
 
 int BlackLibraryDB::CreateStagingEntry(const DBEntry &entry)

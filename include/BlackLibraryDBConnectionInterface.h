@@ -37,26 +37,27 @@ struct DBUser {
 };
 
 typedef enum {
+    DB_ENTRY_MEDIA_ERROR,
     DOCUMENT,
     IMAGE_GALLERY,
     VIDEO,
     _NUM_DB_ENTRY_MEDIA_TYPES
-} db_entry_media_type;
+} entry_media_t;
 
-typedef uint8_t db_entry_media_type_rep_t;
+typedef uint8_t entry_media_rep_t;
 
 struct DBSource {
     std::string name;
-    db_entry_media_type_rep_t type;
+    entry_media_rep_t media_type;
 };
 
 typedef enum {
     BLACK_ENTRY,
     STAGING_ENTRY,
     _NUM_ENTRY_TYPES
-} db_entry_type;
+} entry_table_t;
 
-typedef uint8_t db_entry_type_rep_t;
+typedef uint8_t entry_table_rep_t;
 
 struct DBEntry {
     std::string UUID;
@@ -74,6 +75,8 @@ struct DBEntry {
     std::string update_date;
     UID_rep_t user_contributed = 6;
 };
+
+#define NUM_ENTRY_COLUMNS 14;
 
 struct DBRating {
     std::string UUID;
@@ -108,16 +111,18 @@ public:
     virtual ~BlackLibraryDBConnectionInterface() {}
     // virtual DBUser ReadUser();
 
-    virtual int CreateEntry(const DBEntry &entry, db_entry_type_rep_t entry_type) const = 0;
-    virtual DBEntry ReadEntry(const std::string &UUID, db_entry_type_rep_t entry_type) const = 0;
-    virtual int UpdateEntry(const std::string &UUID, const DBEntry &entry, db_entry_type_rep_t entry_type) const = 0;
-    virtual int DeleteEntry(const std::string &UUID, db_entry_type_rep_t entry_type) const = 0;
+    virtual DBStringResult ListEntries(entry_table_rep_t entry_type) const = 0;
 
-    virtual DBBoolResult DoesEntryUrlExist(const std::string &url, db_entry_type_rep_t entry_type) const = 0;
-    virtual DBBoolResult DoesEntryUUIDExist(const std::string &UUID, db_entry_type_rep_t entry_type) const = 0;
+    virtual int CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const = 0;
+    virtual DBEntry ReadEntry(const std::string &UUID, entry_table_rep_t entry_type) const = 0;
+    virtual int UpdateEntry(const std::string &UUID, const DBEntry &entry, entry_table_rep_t entry_type) const = 0;
+    virtual int DeleteEntry(const std::string &UUID, entry_table_rep_t entry_type) const = 0;
 
-    virtual DBStringResult GetEntryUUIDFromUrl(const std::string &url, db_entry_type_rep_t entry_type) const = 0;
-    virtual DBStringResult GetEntryUrlFromUUID(const std::string &UUID, db_entry_type_rep_t entry_type) const = 0;
+    virtual DBBoolResult DoesEntryUrlExist(const std::string &url, entry_table_rep_t entry_type) const = 0;
+    virtual DBBoolResult DoesEntryUUIDExist(const std::string &UUID, entry_table_rep_t entry_type) const = 0;
+
+    virtual DBStringResult GetEntryUUIDFromUrl(const std::string &url, entry_table_rep_t entry_type) const = 0;
+    virtual DBStringResult GetEntryUrlFromUUID(const std::string &UUID, entry_table_rep_t entry_type) const = 0;
 
     virtual bool IsReady() const = 0;
 

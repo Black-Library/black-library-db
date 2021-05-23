@@ -21,6 +21,11 @@ public:
     explicit BlackLibraryDB(const std::string &database_url, bool initialize = false);
     ~BlackLibraryDB();
 
+    // front-end
+    std::string GetBlackEntryList();
+    std::string GetStagingEntryList();
+
+    // back-end
     int CreateStagingEntry(const DBEntry &entry);
     DBEntry ReadStagingEntry(const std::string &UUID);
     int UpdateStagingEntry(const std::string &UUID, const DBEntry &entry);

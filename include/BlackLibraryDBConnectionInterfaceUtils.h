@@ -13,7 +13,7 @@ namespace core {
 
 namespace db {
 
-std::string GetEntryTypeString(db_entry_type_rep_t type)
+std::string GetEntryTypeString(entry_table_rep_t type)
 {
     switch (type)
     {
@@ -22,14 +22,16 @@ std::string GetEntryTypeString(db_entry_type_rep_t type)
     case STAGING_ENTRY:
         return "staging_entry";
     default:
-        return "Error";
+        return "error";
     }
 }
 
-std::string GetMediaTypeString(db_entry_media_type_rep_t type)
+std::string GetMediaTypeString(entry_media_rep_t media_type)
 {
-    switch (type)
+    switch (media_type)
     {
+    case DB_ENTRY_MEDIA_ERROR:
+        return "error";
     case DOCUMENT:
         return "document";
     case IMAGE_GALLERY:
@@ -37,7 +39,7 @@ std::string GetMediaTypeString(db_entry_media_type_rep_t type)
     case VIDEO:
         return "video";
     default:
-        return "Error";
+        return "unknown error";
     }
 }
 
