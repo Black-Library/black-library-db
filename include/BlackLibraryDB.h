@@ -6,6 +6,7 @@
 #define __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDB_H__
 
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include <BlackLibraryDBConnectionInterface.h>
@@ -54,6 +55,7 @@ private:
     std::string GetUUID();
 
     std::unique_ptr<BlackLibraryDBConnectionInterface> database_connection_interface_;
+    std::mutex mutex_;
     std::string database_url_;
 };
 
