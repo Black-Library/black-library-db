@@ -25,7 +25,7 @@ BlackLibraryDB::~BlackLibraryDB()
 {
 }
 
-std::string BlackLibraryDB::GetBlackEntryList()
+std::string BlackLibraryDB::GetStagingEntryList()
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
@@ -33,14 +33,14 @@ std::string BlackLibraryDB::GetBlackEntryList()
 
     if (db_list.error)
     {
-        std::cout << "Error: failed to list staging entries - "  << db_list.error_string << std::endl;
+        std::cout << "Error: failed to list black entries - "  << db_list.error_string << std::endl;
         return "";
     }
 
     return db_list.result;
 }
 
-std::string BlackLibraryDB::GetStagingEntryList()
+std::string BlackLibraryDB::GetBlackEntryList()
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
@@ -48,7 +48,7 @@ std::string BlackLibraryDB::GetStagingEntryList()
 
     if (db_list.error)
     {
-        std::cout << "Error: failed to list black entries - "  << db_list.error_string << std::endl;
+        std::cout << "Error: failed to list staging entries - "  << db_list.error_string << std::endl;
         return "";
     }
 

@@ -194,7 +194,7 @@ DBStringResult SQLiteDB::ListEntries(entry_table_rep_t entry_type) const
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
     // std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
 
-    ss << "UUID, title, author, nickname, source, url, last_url, series, series_length, version, media_path, birth_date, update_date, user_contributed";
+    ss << "UUID, title, author, nickname, source, url, last_url, series, series_length, version, media_path, birth_date, update_date, user_contributed\n";
 
     // run statement in loop until done
     while (sqlite3_step(stmt) == SQLITE_ROW)

@@ -23,8 +23,8 @@ public:
     ~BlackLibraryDB();
 
     // front-end
-    std::string GetBlackEntryList();
     std::string GetStagingEntryList();
+    std::string GetBlackEntryList();
 
     // back-end
     int CreateStagingEntry(const DBEntry &entry);
