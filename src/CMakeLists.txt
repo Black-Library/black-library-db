@@ -8,24 +8,24 @@ message(STATUS "Searching for libsqlite3 - ${SQLite3_LIBRARY}")
 
 include(GNUInstallDirs)
 
-add_library(BlackLibraryDB BlackLibraryDB.cc SQLiteDB.cc)
-target_link_libraries(BlackLibraryDB blacklibrarycommon ${SQLite3_LIBRARY})
-target_include_directories(BlackLibraryDB PUBLIC ${SQLite3_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/include)
+add_library(blacklibrarydb BlackLibraryDB.cc SQLiteDB.cc)
+target_link_libraries(blacklibrarydb blacklibrarycommon ${SQLite3_LIBRARY})
+target_include_directories(blacklibrarydb PUBLIC ${SQLite3_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/include)
 
 install(
-  TARGETS BlackLibraryDB
+  TARGETS blacklibrarydb
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
-set_target_properties(BlackLibraryDB PROPERTIES INSTALL_RPATH
+set_target_properties(blacklibrarydb PROPERTIES INSTALL_RPATH
     "$LD_LIBRARY_PATH:${CMAKE_INSTALL_PREFIX}/lib")
 
-add_executable(blacklibrarydb blacklibrarydb.cc)
+add_executable(db_driver db_driver.cc)
 
-target_link_libraries(blacklibrarydb BlackLibraryDB)
+target_link_libraries(db_driver blacklibrarydb)
 
-set_target_properties(blacklibrarydb PROPERTIES INSTALL_RPATH
+set_target_properties(db_driver PROPERTIES INSTALL_RPATH
     "$LD_LIBRARY_PATH;${CMAKE_INSTALL_PREFIX}/lib")
 
-install(TARGETS blacklibrarydb RUNTIME DESTINATION bin)
+install(TARGETS db_driver RUNTIME DESTINATION bin)

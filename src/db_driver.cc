@@ -1,5 +1,5 @@
 /**
- * blacklibrarydb.cc
+ * db_driver.cc
  */
 
 #include <getopt.h>
