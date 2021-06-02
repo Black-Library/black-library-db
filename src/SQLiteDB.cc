@@ -665,9 +665,9 @@ DBBoolResult SQLiteDB::DoesEntryUUIDExist(const std::string &UUID, entry_table_r
     return check;
 }
 
-int SQLiteDB::UpdateEntry(const std::string &UUID, const DBEntry &entry, entry_table_rep_t entry_type) const
+int SQLiteDB::UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const
 {
-    std::cout << "Update " << GetEntryTypeString(entry_type) << " entry for UUID: " << UUID << std::endl;
+    std::cout << "Update " << GetEntryTypeString(entry_type) << " entry for UUID: " << entry.UUID << std::endl;
 
     if (CheckInitialized())
         return -1;
@@ -1013,19 +1013,19 @@ int SQLiteDB::SetupDefaultSourceTable()
     DBSource sbf_source;
     DBSource yt_source;
 
-    ao3_source.name = black_library::core::common::AO3::name;
+    ao3_source.name = black_library::core::common::AO3::source_name;
     ao3_source.media_type = DOCUMENT;
 
-    ffn_source.name = black_library::core::common::FFN::name;
+    ffn_source.name = black_library::core::common::FFN::source_name;
     ffn_source.media_type = DOCUMENT;
 
-    rr_source.name = black_library::core::common::RR::name;
+    rr_source.name = black_library::core::common::RR::source_name;
     rr_source.media_type = DOCUMENT;
 
-    sbf_source.name = black_library::core::common::SBF::name;
+    sbf_source.name = black_library::core::common::SBF::source_name;
     sbf_source.media_type = DOCUMENT;
 
-    yt_source.name = black_library::core::common::YT::name;
+    yt_source.name = black_library::core::common::YT::source_name;
     yt_source.media_type = VIDEO;
 
     if (CreateSource(ao3_source))

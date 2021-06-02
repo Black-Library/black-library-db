@@ -84,11 +84,11 @@ DBEntry BlackLibraryDB::ReadStagingEntry(const std::string &UUID)
     return entry;
 }
 
-int BlackLibraryDB::UpdateStagingEntry(const std::string &UUID, const DBEntry &entry)
+int BlackLibraryDB::UpdateStagingEntry(const DBEntry &entry)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    if (database_connection_interface_->UpdateEntry(UUID, entry, STAGING_ENTRY))
+    if (database_connection_interface_->UpdateEntry(entry, STAGING_ENTRY))
     {
         std::cout << "Error: failed to update staging entry" << std::endl;
         return -1;
@@ -139,11 +139,11 @@ DBEntry BlackLibraryDB::ReadBlackEntry(const std::string &UUID)
     return entry;
 }
 
-int BlackLibraryDB::UpdateBlackEntry(const std::string &UUID, const DBEntry &entry)
+int BlackLibraryDB::UpdateBlackEntry(const DBEntry &entry)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    if (database_connection_interface_->UpdateEntry(UUID, entry, BLACK_ENTRY))
+    if (database_connection_interface_->UpdateEntry(entry, BLACK_ENTRY))
     {
         std::cout << "Error: failed to update black entry" << std::endl;
         return -1;

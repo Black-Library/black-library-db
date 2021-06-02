@@ -139,7 +139,7 @@ int main(int argc, char* argv[])
     read_staging_entry.birth_date = "7foo";
     read_staging_entry.user_contributed = 4004;
 
-    blacklibrarydb->UpdateStagingEntry("55ee59ad-2feb-4196-960b-3226c65c80d5", read_staging_entry);
+    blacklibrarydb->UpdateStagingEntry(read_staging_entry);
 
     update_staging_entry = blacklibrarydb->ReadStagingEntry("55ee59ad-2feb-4196-960b-3226c65c80d5");
 

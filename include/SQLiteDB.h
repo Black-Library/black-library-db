@@ -32,7 +32,7 @@ public:
 
     int CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const override;
     DBEntry ReadEntry(const std::string &UUID, entry_table_rep_t entry_type) const override;
-    int UpdateEntry(const std::string &UUID, const DBEntry &entry, entry_table_rep_t entry_type) const override;
+    int UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const override;
     int DeleteEntry(const std::string &UUID, entry_table_rep_t entry_type) const override;
 
     DBBoolResult DoesEntryUrlExist(const std::string &url, entry_table_rep_t entry_type) const override;

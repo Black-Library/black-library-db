@@ -29,12 +29,12 @@ public:
     // back-end
     int CreateStagingEntry(const DBEntry &entry);
     DBEntry ReadStagingEntry(const std::string &UUID);
-    int UpdateStagingEntry(const std::string &UUID, const DBEntry &entry);
+    int UpdateStagingEntry(const DBEntry &entry);
     int DeleteStagingEntry(const std::string &UUID);
 
     int CreateBlackEntry(const DBEntry &entry);
     DBEntry ReadBlackEntry(const std::string &UUID);
-    int UpdateBlackEntry(const std::string &UUID, const DBEntry &entry);
+    int UpdateBlackEntry(const DBEntry &entry);
     int DeleteBlackEntry(const std::string &UUID);
 
     bool DoesStagingEntryUrlExist(const std::string &url);

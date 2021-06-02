@@ -115,7 +115,7 @@ public:
 
     virtual int CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const = 0;
     virtual DBEntry ReadEntry(const std::string &UUID, entry_table_rep_t entry_type) const = 0;
-    virtual int UpdateEntry(const std::string &UUID, const DBEntry &entry, entry_table_rep_t entry_type) const = 0;
+    virtual int UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const = 0;
     virtual int DeleteEntry(const std::string &UUID, entry_table_rep_t entry_type) const = 0;
 
     virtual DBBoolResult DoesEntryUrlExist(const std::string &url, entry_table_rep_t entry_type) const = 0;
