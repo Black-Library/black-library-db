@@ -28,26 +28,26 @@ public:
 
     // back-end
     int CreateStagingEntry(const DBEntry &entry);
-    DBEntry ReadStagingEntry(const std::string &UUID);
+    DBEntry ReadStagingEntry(const std::string &uuid);
     int UpdateStagingEntry(const DBEntry &entry);
-    int DeleteStagingEntry(const std::string &UUID);
+    int DeleteStagingEntry(const std::string &uuid);
 
     int CreateBlackEntry(const DBEntry &entry);
-    DBEntry ReadBlackEntry(const std::string &UUID);
+    DBEntry ReadBlackEntry(const std::string &uuid);
     int UpdateBlackEntry(const DBEntry &entry);
-    int DeleteBlackEntry(const std::string &UUID);
+    int DeleteBlackEntry(const std::string &uuid);
 
     bool DoesStagingEntryUrlExist(const std::string &url);
     bool DoesBlackEntryUrlExist(const std::string &url);
 
-    bool DoesStagingEntryUUIDExist(const std::string &UUID);
-    bool DoesBlackEntryUUIDExist(const std::string &UUID);
+    bool DoesStagingEntryUUIDExist(const std::string &uuid);
+    bool DoesBlackEntryUUIDExist(const std::string &uuid);
 
     DBStringResult GetStagingEntryUUIDFromUrl(const std::string &url);
-    DBStringResult GetStagingEntryUrlFromUUID(const std::string &UUID);
+    DBStringResult GetStagingEntryUrlFromUUID(const std::string &uuid);
 
     DBStringResult GetBlackEntryUUIDFromUrl(const std::string &url);
-    DBStringResult GetBlackEntryUrlFromUUID(const std::string &UUID);
+    DBStringResult GetBlackEntryUrlFromUUID(const std::string &uuid);
 
     bool IsReady();
 

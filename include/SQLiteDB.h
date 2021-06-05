@@ -31,15 +31,15 @@ public:
     int CreateSource(const DBSource &source) const;
 
     int CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const override;
-    DBEntry ReadEntry(const std::string &UUID, entry_table_rep_t entry_type) const override;
+    DBEntry ReadEntry(const std::string &uuid, entry_table_rep_t entry_type) const override;
     int UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const override;
-    int DeleteEntry(const std::string &UUID, entry_table_rep_t entry_type) const override;
+    int DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type) const override;
 
     DBBoolResult DoesEntryUrlExist(const std::string &url, entry_table_rep_t entry_type) const override;
-    DBBoolResult DoesEntryUUIDExist(const std::string &UUID, entry_table_rep_t entry_type) const override;
+    DBBoolResult DoesEntryUUIDExist(const std::string &uuid, entry_table_rep_t entry_type) const override;
 
     DBStringResult GetEntryUUIDFromUrl(const std::string &url, entry_table_rep_t entry_type) const;
-    DBStringResult GetEntryUrlFromUUID(const std::string &UUID, entry_table_rep_t entry_type) const;
+    DBStringResult GetEntryUrlFromUUID(const std::string &uuid, entry_table_rep_t entry_type) const;
 
     bool IsReady() const;
 

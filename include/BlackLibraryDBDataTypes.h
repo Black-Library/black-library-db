@@ -57,7 +57,7 @@ typedef enum {
 typedef uint8_t entry_table_rep_t;
 
 struct DBEntry {
-    std::string UUID;
+    std::string uuid;
     std::string title;
     std::string author;
     std::string nickname = "";
@@ -77,7 +77,7 @@ struct DBEntry {
 
 inline std::ostream& operator<< (std::ostream &out, const DBEntry &entry)
 {
-    out << "UUID: " << entry.UUID << " ";
+    out << "UUID: " << entry.uuid << " ";
     out << "title: " << entry.title << " ";
     out << "author: " << entry.author << " ";
     out << "nickname: " << entry.nickname << " ";

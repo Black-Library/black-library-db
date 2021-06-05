@@ -56,14 +56,14 @@ int BlackLibraryDB::CreateStagingEntry(const DBEntry &entry)
     return 0;
 }
 
-DBEntry BlackLibraryDB::ReadStagingEntry(const std::string &UUID)
+DBEntry BlackLibraryDB::ReadStagingEntry(const std::string &uuid)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
     DBEntry entry;
 
-    entry = database_connection_interface_->ReadEntry(UUID, STAGING_ENTRY);
-    if (entry.UUID.empty())
+    entry = database_connection_interface_->ReadEntry(uuid, STAGING_ENTRY);
+    if (entry.uuid.empty())
     {
         std::cout << "Error: failed to read staging entry" << std::endl;
         return entry;
@@ -85,11 +85,11 @@ int BlackLibraryDB::UpdateStagingEntry(const DBEntry &entry)
     return 0;
 }
 
-int BlackLibraryDB::DeleteStagingEntry(const std::string &UUID)
+int BlackLibraryDB::DeleteStagingEntry(const std::string &uuid)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    if (database_connection_interface_->DeleteEntry(UUID, STAGING_ENTRY))
+    if (database_connection_interface_->DeleteEntry(uuid, STAGING_ENTRY))
     {
         std::cout << "Error: failed to delete staging entry" << std::endl;
         return -1;
@@ -111,14 +111,14 @@ int BlackLibraryDB::CreateBlackEntry(const DBEntry &entry)
     return 0;
 }
 
-DBEntry BlackLibraryDB::ReadBlackEntry(const std::string &UUID)
+DBEntry BlackLibraryDB::ReadBlackEntry(const std::string &uuid)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
     DBEntry entry;
 
-    entry = database_connection_interface_->ReadEntry(UUID, BLACK_ENTRY);
-    if (entry.UUID.empty())
+    entry = database_connection_interface_->ReadEntry(uuid, BLACK_ENTRY);
+    if (entry.uuid.empty())
     {
         std::cout << "Error: failed to read black entry" << std::endl;
         return entry;
@@ -140,11 +140,11 @@ int BlackLibraryDB::UpdateBlackEntry(const DBEntry &entry)
     return 0;
 }
 
-int BlackLibraryDB::DeleteBlackEntry(const std::string &UUID)
+int BlackLibraryDB::DeleteBlackEntry(const std::string &uuid)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    if (database_connection_interface_->DeleteEntry(UUID, BLACK_ENTRY))
+    if (database_connection_interface_->DeleteEntry(uuid, BLACK_ENTRY))
     {
         std::cout << "Error: failed to delete black entry" << std::endl;
         return -1;
@@ -183,11 +183,11 @@ bool BlackLibraryDB::DoesBlackEntryUrlExist(const std::string &url)
     return check.result;
 }
 
-bool BlackLibraryDB::DoesStagingEntryUUIDExist(const std::string &UUID)
+bool BlackLibraryDB::DoesStagingEntryUUIDExist(const std::string &uuid)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    DBBoolResult check = database_connection_interface_->DoesEntryUUIDExist(UUID, STAGING_ENTRY);
+    DBBoolResult check = database_connection_interface_->DoesEntryUUIDExist(uuid, STAGING_ENTRY);
     
     if (check.error != 0)
     {
@@ -198,11 +198,11 @@ bool BlackLibraryDB::DoesStagingEntryUUIDExist(const std::string &UUID)
     return check.result;
 }
 
-bool BlackLibraryDB::DoesBlackEntryUUIDExist(const std::string &UUID)
+bool BlackLibraryDB::DoesBlackEntryUUIDExist(const std::string &uuid)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    DBBoolResult check = database_connection_interface_->DoesEntryUUIDExist(UUID, BLACK_ENTRY);
+    DBBoolResult check = database_connection_interface_->DoesEntryUUIDExist(uuid, BLACK_ENTRY);
     
     if (check.error != 0)
     {
@@ -224,11 +224,11 @@ DBStringResult BlackLibraryDB::GetStagingEntryUUIDFromUrl(const std::string &url
     return res;
 }
 
-DBStringResult BlackLibraryDB::GetStagingEntryUrlFromUUID(const std::string &UUID)
+DBStringResult BlackLibraryDB::GetStagingEntryUrlFromUUID(const std::string &uuid)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    return database_connection_interface_->GetEntryUrlFromUUID(UUID, STAGING_ENTRY);
+    return database_connection_interface_->GetEntryUrlFromUUID(uuid, STAGING_ENTRY);
 }
 
 DBStringResult BlackLibraryDB::GetBlackEntryUUIDFromUrl(const std::string &url)
@@ -242,11 +242,11 @@ DBStringResult BlackLibraryDB::GetBlackEntryUUIDFromUrl(const std::string &url)
     return res;
 }
 
-DBStringResult BlackLibraryDB::GetBlackEntryUrlFromUUID(const std::string &UUID)
+DBStringResult BlackLibraryDB::GetBlackEntryUrlFromUUID(const std::string &uuid)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    return database_connection_interface_->GetEntryUrlFromUUID(UUID, BLACK_ENTRY);
+    return database_connection_interface_->GetEntryUrlFromUUID(uuid, BLACK_ENTRY);
 }
 
 bool BlackLibraryDB::IsReady()

@@ -170,7 +170,6 @@ std::vector<DBEntry> SQLiteDB::ListEntries(entry_table_rep_t entry_type) const
     std::cout << "List " << GetEntryTypeString(entry_type) << " entries" << std::endl;
 
     std::vector<DBEntry> entries;
-    std::stringstream ss;
 
     if (CheckInitialized())
         return entries;
@@ -194,14 +193,12 @@ std::vector<DBEntry> SQLiteDB::ListEntries(entry_table_rep_t entry_type) const
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
     // std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
 
-    ss << "UUID, title, author, nickname, source, url, last_url, series, series_length, version, media_path, birth_date, update_date, user_contributed\n";
-
     // run statement in loop until done
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
         DBEntry entry;
 
-        entry.UUID = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+        entry.uuid = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
         entry.title = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
         entry.author = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
         entry.nickname = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
@@ -383,7 +380,7 @@ int SQLiteDB::CreateSource(const DBSource &source) const
 
 int SQLiteDB::CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const
 {
-    std::cout << "Create " << GetEntryTypeString(entry_type) << " entry for UUID: " << entry.UUID << std::endl;
+    std::cout << "Create " << GetEntryTypeString(entry_type) << " entry for UUID: " << entry.uuid << std::endl;
 
     if (CheckInitialized())
         return -1;
@@ -407,7 +404,7 @@ int SQLiteDB::CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) co
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
-    if (BindText(stmt, "UUID", entry.UUID))
+    if (BindText(stmt, "UUID", entry.uuid))
         return -1;
     if (BindText(stmt, "title", entry.title))
         return -1;
@@ -457,11 +454,11 @@ int SQLiteDB::CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) co
     return 0;
 }
 
-DBEntry SQLiteDB::ReadEntry(const std::string &UUID, entry_table_rep_t entry_type) const
+DBEntry SQLiteDB::ReadEntry(const std::string &uuid, entry_table_rep_t entry_type) const
 {
     DBEntry entry;
 
-    std::cout << "Read " << GetEntryTypeString(entry_type) << " entry with UUID: " << UUID << std::endl;
+    std::cout << "Read " << GetEntryTypeString(entry_type) << " entry with UUID: " << uuid << std::endl;
 
     if (CheckInitialized())
         return entry;
@@ -485,7 +482,7 @@ DBEntry SQLiteDB::ReadEntry(const std::string &UUID, entry_table_rep_t entry_typ
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
-    if (BindText(stmt, "UUID", UUID))
+    if (BindText(stmt, "UUID", uuid))
     {
         EndTransaction();
         return entry;
@@ -504,7 +501,7 @@ DBEntry SQLiteDB::ReadEntry(const std::string &UUID, entry_table_rep_t entry_typ
         return entry;
     }
 
-    entry.UUID = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+    entry.uuid = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
     entry.title = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
     entry.author = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
     entry.nickname = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
@@ -598,13 +595,13 @@ DBBoolResult SQLiteDB::DoesEntryUrlExist(const std::string &url, entry_table_rep
     return check;
 }
 
-DBBoolResult SQLiteDB::DoesEntryUUIDExist(const std::string &UUID, entry_table_rep_t entry_type) const
+DBBoolResult SQLiteDB::DoesEntryUUIDExist(const std::string &uuid, entry_table_rep_t entry_type) const
 {
     DBBoolResult check;
 
-    std::cout << "Check " << GetEntryTypeString(entry_type) << " entries for UUID: " << UUID << std::endl;
+    std::cout << "Check " << GetEntryTypeString(entry_type) << " entries for UUID: " << uuid << std::endl;
 
-    if (UUID.empty())
+    if (uuid.empty())
     {
         check.result = false;
         return check;
@@ -638,7 +635,7 @@ DBBoolResult SQLiteDB::DoesEntryUUIDExist(const std::string &UUID, entry_table_r
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
-    if (BindText(stmt, "UUID", UUID))
+    if (BindText(stmt, "UUID", uuid))
     {
         EndTransaction();
         check.error = sqlite3_errcode(database_conn_);
@@ -652,7 +649,7 @@ DBBoolResult SQLiteDB::DoesEntryUUIDExist(const std::string &UUID, entry_table_r
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
-        std::cout << "UUID: " << UUID << " does not exist" << std::endl;
+        std::cout << "UUID: " << uuid << " does not exist" << std::endl;
         check.result = false;
         ResetStatement(stmt);
         EndTransaction();
@@ -677,7 +674,7 @@ DBBoolResult SQLiteDB::DoesEntryUUIDExist(const std::string &UUID, entry_table_r
 
 int SQLiteDB::UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const
 {
-    std::cout << "Update " << GetEntryTypeString(entry_type) << " entry for UUID: " << entry.UUID << std::endl;
+    std::cout << "Update " << GetEntryTypeString(entry_type) << " entry for UUID: " << entry.uuid << std::endl;
 
     if (CheckInitialized())
         return -1;
@@ -701,7 +698,7 @@ int SQLiteDB::UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) co
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
-    if (BindText(stmt, "UUID", entry.UUID))
+    if (BindText(stmt, "UUID", entry.uuid))
         return -1;
     if (BindText(stmt, "title", entry.title))
         return -1;
@@ -751,9 +748,9 @@ int SQLiteDB::UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) co
     return 0;
 }
 
-int SQLiteDB::DeleteEntry(const std::string &UUID, entry_table_rep_t entry_type) const
+int SQLiteDB::DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type) const
 {
-    std::cout << "Delete " << GetEntryTypeString(entry_type) << " UUID: " << UUID << std::endl;
+    std::cout << "Delete " << GetEntryTypeString(entry_type) << " UUID: " << uuid << std::endl;
 
     if (CheckInitialized())
         return -1;
@@ -777,7 +774,7 @@ int SQLiteDB::DeleteEntry(const std::string &UUID, entry_table_rep_t entry_type)
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
-    if (BindText(stmt, "UUID", UUID))
+    if (BindText(stmt, "UUID", uuid))
     {
         EndTransaction();
         return -1;
@@ -872,9 +869,9 @@ DBStringResult SQLiteDB::GetEntryUUIDFromUrl(const std::string &url, entry_table
     return res;
 }
 
-DBStringResult SQLiteDB::GetEntryUrlFromUUID(const std::string &UUID, entry_table_rep_t entry_type) const
+DBStringResult SQLiteDB::GetEntryUrlFromUUID(const std::string &uuid, entry_table_rep_t entry_type) const
 {
-    std::cout << "Get url from: " << UUID << std::endl;
+    std::cout << "Get url from: " << uuid << std::endl;
 
     DBStringResult res;
 
@@ -905,7 +902,7 @@ DBStringResult SQLiteDB::GetEntryUrlFromUUID(const std::string &UUID, entry_tabl
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
-    if (BindText(stmt, "UUID", UUID))
+    if (BindText(stmt, "UUID", uuid))
     {
         EndTransaction();
         return res;
@@ -918,7 +915,7 @@ DBStringResult SQLiteDB::GetEntryUrlFromUUID(const std::string &UUID, entry_tabl
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
-        std::cout << "UUID: " << UUID << " does not exist" << std::endl;
+        std::cout << "UUID: " << uuid << " does not exist" << std::endl;
         ResetStatement(stmt);
         EndTransaction();
         res.does_not_exist = true;

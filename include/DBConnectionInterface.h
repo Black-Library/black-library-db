@@ -26,15 +26,15 @@ public:
     virtual std::vector<DBEntry> ListEntries(entry_table_rep_t entry_type) const = 0;
 
     virtual int CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const = 0;
-    virtual DBEntry ReadEntry(const std::string &UUID, entry_table_rep_t entry_type) const = 0;
+    virtual DBEntry ReadEntry(const std::string &uuid, entry_table_rep_t entry_type) const = 0;
     virtual int UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const = 0;
-    virtual int DeleteEntry(const std::string &UUID, entry_table_rep_t entry_type) const = 0;
+    virtual int DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type) const = 0;
 
     virtual DBBoolResult DoesEntryUrlExist(const std::string &url, entry_table_rep_t entry_type) const = 0;
-    virtual DBBoolResult DoesEntryUUIDExist(const std::string &UUID, entry_table_rep_t entry_type) const = 0;
+    virtual DBBoolResult DoesEntryUUIDExist(const std::string &uuid, entry_table_rep_t entry_type) const = 0;
 
     virtual DBStringResult GetEntryUUIDFromUrl(const std::string &url, entry_table_rep_t entry_type) const = 0;
-    virtual DBStringResult GetEntryUrlFromUUID(const std::string &UUID, entry_table_rep_t entry_type) const = 0;
+    virtual DBStringResult GetEntryUrlFromUUID(const std::string &uuid, entry_table_rep_t entry_type) const = 0;
 
     virtual bool IsReady() const = 0;
 

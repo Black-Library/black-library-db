@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
     std::cout << "Starting db" << std::endl;
     black_library::core::db::BlackLibraryDB blacklibrarydb(opts.db_path, opts.intialize_db);
 
-    create_staging_entry.UUID = "55ee59ad-2feb-4196-960b-3226c65c80d5";
+    create_staging_entry.uuid = "55ee59ad-2feb-4196-960b-3226c65c80d5";
     create_staging_entry.title = "foo2";
     create_staging_entry.nickname = "foo3";
     create_staging_entry.source = "foo4";
