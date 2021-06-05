@@ -1,9 +1,9 @@
 /**
- * BlackLibraryDBConnectionInterface.h
+ * BlackLibraryDBDataTypes.h
  */
 
-#ifndef __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDBCONNECTIONINTERFACE_H__
-#define __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDBCONNECTIONINTERFACE_H__
+#ifndef __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDBDATATYPES_H__
+#define __BLACK_LIBRARY_CORE_DB_BLACKLIBRARYDBDATATYPES_H__
 
 #include <string>
 #include <sstream>
@@ -13,6 +13,7 @@ namespace black_library {
 namespace core {
 
 namespace db {
+
 
 typedef enum {
     NO_PERMISSIONS,
@@ -78,6 +79,26 @@ struct DBEntry {
 
 #define NUM_ENTRY_COLUMNS 14;
 
+inline std::ostream& operator<< (std::ostream &out, const DBEntry &entry)
+{
+    out << "UUID: " << entry.UUID << " ";
+    out << "title: " << entry.title << " ";
+    out << "author: " << entry.author << " ";
+    out << "nickname: " << entry.nickname << " ";
+    out << "source: " << entry.source << " ";
+    out << "url: " << entry.url << " ";
+    out << "last_url: " << entry.last_url << " ";
+    out << "series: " << entry.series << " ";
+    out << "series_length: " << entry.series_length << " ";
+    out << "version: " << entry.version << " ";
+    out << "media_path: " << entry.media_path << " ";
+    out << "birth_date: " << entry.birth_date << " ";
+    out << "update_date: " << entry.update_date << " ";
+    out << "user_contributed: " << entry.user_contributed << " ";
+
+    return out;
+}
+
 struct DBRating {
     std::string UUID;
     UID_rep_t UID;
@@ -103,31 +124,6 @@ struct DBBoolResult {
     bool result = false;
     bool does_not_exist = false;
     int error = 0;
-};
-
-class BlackLibraryDBConnectionInterface
-{
-public:
-    virtual ~BlackLibraryDBConnectionInterface() {}
-    // virtual DBUser ReadUser();
-
-    virtual DBStringResult ListEntries(entry_table_rep_t entry_type) const = 0;
-
-    virtual int CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const = 0;
-    virtual DBEntry ReadEntry(const std::string &UUID, entry_table_rep_t entry_type) const = 0;
-    virtual int UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const = 0;
-    virtual int DeleteEntry(const std::string &UUID, entry_table_rep_t entry_type) const = 0;
-
-    virtual DBBoolResult DoesEntryUrlExist(const std::string &url, entry_table_rep_t entry_type) const = 0;
-    virtual DBBoolResult DoesEntryUUIDExist(const std::string &UUID, entry_table_rep_t entry_type) const = 0;
-
-    virtual DBStringResult GetEntryUUIDFromUrl(const std::string &url, entry_table_rep_t entry_type) const = 0;
-    virtual DBStringResult GetEntryUrlFromUUID(const std::string &UUID, entry_table_rep_t entry_type) const = 0;
-
-    virtual bool IsReady() const = 0;
-
-private:
-
 };
 
 } // namespace db

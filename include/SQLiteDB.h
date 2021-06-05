@@ -9,7 +9,7 @@
 
 #include <sqlite3.h>
 
-#include <BlackLibraryDBConnectionInterface.h>
+#include <DBConnectionInterface.h>
 
 namespace black_library {
 
@@ -17,13 +17,13 @@ namespace core {
 
 namespace db {
 
-class SQLiteDB : public BlackLibraryDBConnectionInterface
+class SQLiteDB : public DBConnectionInterface
 {
 public:
     explicit SQLiteDB(const std::string &database_url, bool first_time_setup);
     ~SQLiteDB();
 
-    DBStringResult ListEntries(entry_table_rep_t entry_type) const;
+    std::vector<DBEntry> ListEntries(entry_table_rep_t entry_type) const;
 
     int CreateUser(const DBUser &user) const;
     int CreateEntryType(const std::string &entry_type_name) const;

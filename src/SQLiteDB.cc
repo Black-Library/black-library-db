@@ -9,7 +9,7 @@
 #include <FileOperations.h>
 #include <SourceInformation.h>
 
-#include <BlackLibraryDBConnectionInterfaceUtils.h>
+#include <DBConnectionInterfaceUtils.h>
 #include <SQLiteDB.h>
 
 namespace black_library {
@@ -165,18 +165,18 @@ SQLiteDB::~SQLiteDB()
     }
 }
 
-DBStringResult SQLiteDB::ListEntries(entry_table_rep_t entry_type) const
+std::vector<DBEntry> SQLiteDB::ListEntries(entry_table_rep_t entry_type) const
 {
     std::cout << "List " << GetEntryTypeString(entry_type) << " entries" << std::endl;
 
-    DBStringResult res;
+    std::vector<DBEntry> entries;
     std::stringstream ss;
 
     if (CheckInitialized())
-        return res;
+        return entries;
 
     if (BeginTransaction())
-        return res;
+        return entries;
 
     int statement_id;
     switch (entry_type)
@@ -188,7 +188,7 @@ DBStringResult SQLiteDB::ListEntries(entry_table_rep_t entry_type) const
             statement_id = GET_STAGING_ENTRIES_STATEMENT;
             break;
         default:
-            return res;
+            return entries;
     }
 
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
@@ -199,22 +199,32 @@ DBStringResult SQLiteDB::ListEntries(entry_table_rep_t entry_type) const
     // run statement in loop until done
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-        for (size_t i = 0; i < 14; ++i)
-        {
-            ss << std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, i))) << " ";
-        }
+        DBEntry entry;
 
-        ss << std::endl;
+        entry.UUID = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+        entry.title = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+        entry.author = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+        entry.nickname = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+        entry.source = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
+        entry.url = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+        entry.last_url = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)));
+        entry.series = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 7)));
+        entry.series_length = sqlite3_column_int(stmt, 8);
+        entry.version = sqlite3_column_int(stmt, 9);
+        entry.media_path = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 10)));
+        entry.birth_date = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 11)));
+        entry.update_date = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 12)));
+        entry.user_contributed = sqlite3_column_int(stmt, 13);
+
+        entries.emplace_back(entry);
     }
 
     ResetStatement(stmt);
 
     if (EndTransaction())
-        return res;
+        return entries;
 
-    res.result = ss.str();
-
-    return res;
+    return entries;
 }
 
 int SQLiteDB::CreateUser(const DBUser &user) const

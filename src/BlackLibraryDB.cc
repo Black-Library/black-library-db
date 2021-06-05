@@ -25,34 +25,22 @@ BlackLibraryDB::~BlackLibraryDB()
 {
 }
 
-std::string BlackLibraryDB::GetStagingEntryList()
+std::vector<DBEntry> BlackLibraryDB::GetStagingEntryList()
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    DBStringResult db_list = database_connection_interface_->ListEntries(STAGING_ENTRY);
+    auto entry_list = database_connection_interface_->ListEntries(STAGING_ENTRY);
 
-    if (db_list.error)
-    {
-        std::cout << "Error: failed to list black entries - "  << db_list.error_string << std::endl;
-        return "";
-    }
-
-    return db_list.result;
+    return entry_list;
 }
 
-std::string BlackLibraryDB::GetBlackEntryList()
+std::vector<DBEntry> BlackLibraryDB::GetBlackEntryList()
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    DBStringResult db_list = database_connection_interface_->ListEntries(BLACK_ENTRY);
+    auto entry_list = database_connection_interface_->ListEntries(BLACK_ENTRY);
 
-    if (db_list.error)
-    {
-        std::cout << "Error: failed to list staging entries - "  << db_list.error_string << std::endl;
-        return "";
-    }
-
-    return db_list.result;
+    return entry_list;
 }
 
 int BlackLibraryDB::CreateStagingEntry(const DBEntry &entry)

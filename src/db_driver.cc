@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
     black_library::core::db::DBEntry update_staging_entry;
 
     std::cout << "Starting db" << std::endl;
-    black_library::core::db::BlackLibraryDB *blacklibrarydb = new black_library::core::db::BlackLibraryDB(opts.db_path, opts.intialize_db);
+    black_library::core::db::BlackLibraryDB blacklibrarydb(opts.db_path, opts.intialize_db);
 
     create_staging_entry.UUID = "55ee59ad-2feb-4196-960b-3226c65c80d5";
     create_staging_entry.title = "foo2";
@@ -100,28 +100,17 @@ int main(int argc, char* argv[])
     create_staging_entry.birth_date = "foo7";
     create_staging_entry.user_contributed = 4004;
 
-    blacklibrarydb->CreateStagingEntry(create_staging_entry);
+    blacklibrarydb.CreateStagingEntry(create_staging_entry);
 
     // second time should fail
-    blacklibrarydb->CreateStagingEntry(create_staging_entry);
+    blacklibrarydb.CreateStagingEntry(create_staging_entry);
 
-    read_staging_entry = blacklibrarydb->ReadStagingEntry("55ee59ad-2feb-4196-960b-3226c65c80d5");
+    read_staging_entry = blacklibrarydb.ReadStagingEntry("55ee59ad-2feb-4196-960b-3226c65c80d5");
 
-    std::cout << "\tUUID: " << read_staging_entry.UUID << std::endl;
-    std::cout << "\ttitle: " << read_staging_entry.title << std::endl;
-    std::cout << "\tnickname: " << read_staging_entry.nickname << std::endl;
-    std::cout << "\tsource: " << read_staging_entry.source << std::endl;
-    std::cout << "\tURL: " << read_staging_entry.url << std::endl;
-    std::cout << "\tlast_url: " << read_staging_entry.last_url << std::endl;
-    std::cout << "\tseries: " << read_staging_entry.series << std::endl;
-    std::cout << "\tseries_length: " << read_staging_entry.series_length << std::endl;
-    std::cout << "\tversion: " << read_staging_entry.version << std::endl;
-    std::cout << "\tmedia_path: " << read_staging_entry.media_path << std::endl;
-    std::cout << "\tbirth_date: " << read_staging_entry.birth_date << std::endl;
-    std::cout << "\tuser_contributed: " << read_staging_entry.user_contributed << std::endl;
+    std::cout << read_staging_entry << std::endl;
 
-    bool check0 = blacklibrarydb->DoesStagingEntryUrlExist("foo5");
-    bool check1 = blacklibrarydb->DoesStagingEntryUrlExist("foo6");
+    bool check0 = blacklibrarydb.DoesStagingEntryUrlExist("foo5");
+    bool check1 = blacklibrarydb.DoesStagingEntryUrlExist("foo6");
 
     std::cout << "url foo5 exists: " << check0 << std::endl;
     std::cout << "url foo6 exists: " << check1 << std::endl;
@@ -139,44 +128,20 @@ int main(int argc, char* argv[])
     read_staging_entry.birth_date = "7foo";
     read_staging_entry.user_contributed = 4004;
 
-    blacklibrarydb->UpdateStagingEntry(read_staging_entry);
+    blacklibrarydb.UpdateStagingEntry(read_staging_entry);
 
-    update_staging_entry = blacklibrarydb->ReadStagingEntry("55ee59ad-2feb-4196-960b-3226c65c80d5");
+    update_staging_entry = blacklibrarydb.ReadStagingEntry("55ee59ad-2feb-4196-960b-3226c65c80d5");
 
-    std::cout << "\tUUID: " << read_staging_entry.UUID << std::endl;
-    std::cout << "\ttitle: " << read_staging_entry.title << std::endl;
-    std::cout << "\tnickname: " << read_staging_entry.nickname << std::endl;
-    std::cout << "\tsource: " << read_staging_entry.source << std::endl;
-    std::cout << "\tURL: " << read_staging_entry.url << std::endl;
-    std::cout << "\tlast_url: " << read_staging_entry.last_url << std::endl;
-    std::cout << "\tseries: " << read_staging_entry.series << std::endl;
-    std::cout << "\tseries_length: " << read_staging_entry.series_length << std::endl;
-    std::cout << "\tversion: " << read_staging_entry.version << std::endl;
-    std::cout << "\tmedia_path: " << read_staging_entry.media_path << std::endl;
-    std::cout << "\tbirth_date: " << read_staging_entry.birth_date << std::endl;
-    std::cout << "\tuser_contributed: " << read_staging_entry.user_contributed << std::endl;
+    std::cout << read_staging_entry << std::endl;
 
-    blacklibrarydb->DeleteStagingEntry("55ee59ad-2feb-4196-960b-3226c65c80d5");
-    blacklibrarydb->DeleteStagingEntry("75ee5fad-2deb-4436-120c-3226ceeeaed6");
+    blacklibrarydb.DeleteStagingEntry("55ee59ad-2feb-4196-960b-3226c65c80d5");
+    blacklibrarydb.DeleteStagingEntry("75ee5fad-2deb-4436-120c-3226ceeeaed6");
 
-    read_staging_entry = blacklibrarydb->ReadStagingEntry("55ee59ad-2feb-4196-960b-3226c65c80d5");
+    read_staging_entry = blacklibrarydb.ReadStagingEntry("55ee59ad-2feb-4196-960b-3226c65c80d5");
 
-    std::cout << "\tUUID: " << read_staging_entry.UUID << std::endl;
-    std::cout << "\ttitle: " << read_staging_entry.title << std::endl;
-    std::cout << "\tnickname: " << read_staging_entry.nickname << std::endl;
-    std::cout << "\tsource: " << read_staging_entry.source << std::endl;
-    std::cout << "\tURL: " << read_staging_entry.url << std::endl;
-    std::cout << "\tlast_url: " << read_staging_entry.last_url << std::endl;
-    std::cout << "\tseries: " << read_staging_entry.series << std::endl;
-    std::cout << "\tseries_length: " << read_staging_entry.series_length << std::endl;
-    std::cout << "\tversion: " << read_staging_entry.version << std::endl;
-    std::cout << "\tmedia_path: " << read_staging_entry.media_path << std::endl;
-    std::cout << "\tbirth_date: " << read_staging_entry.birth_date << std::endl;
-    std::cout << "\tuser_contributed: " << read_staging_entry.user_contributed << std::endl;
+    std::cout << read_staging_entry << std::endl;
 
     std::cout << "Closing application" << std::endl;
-
-    delete blacklibrarydb;
 
     return 0;
 }

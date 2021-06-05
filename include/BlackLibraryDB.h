@@ -9,7 +9,7 @@
 #include <mutex>
 #include <string>
 
-#include <BlackLibraryDBConnectionInterface.h>
+#include <DBConnectionInterface.h>
 
 namespace black_library {
 
@@ -23,8 +23,8 @@ public:
     ~BlackLibraryDB();
 
     // front-end
-    std::string GetStagingEntryList();
-    std::string GetBlackEntryList();
+    std::vector<DBEntry> GetStagingEntryList();
+    std::vector<DBEntry> GetBlackEntryList();
 
     // back-end
     int CreateStagingEntry(const DBEntry &entry);
@@ -54,7 +54,7 @@ public:
 private:
     std::string GetUUID();
 
-    std::unique_ptr<BlackLibraryDBConnectionInterface> database_connection_interface_;
+    std::unique_ptr<DBConnectionInterface> database_connection_interface_;
     std::mutex mutex_;
     std::string database_url_;
 };
