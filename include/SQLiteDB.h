@@ -27,7 +27,7 @@ public:
 
     int CreateUser(const DBUser &user) const;
     int CreateEntryType(const std::string &entry_type_name) const;
-    int CreateSubtype(const std::string &subtype_name, entry_media_rep_t media_type) const;
+    int CreateSubtype(const std::string &subtype_name, DBEntryMediaType media_type) const;
     int CreateSource(const DBSource &source) const;
 
     int CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const override;

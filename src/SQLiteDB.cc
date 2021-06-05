@@ -240,7 +240,7 @@ int SQLiteDB::CreateUser(const DBUser &user) const
     // bind statement variables
     if (BindInt(stmt, "UID", user.UID))
         return -1;
-    if (BindInt(stmt, "permission_level", user.permission_level))
+    if (BindInt(stmt, "permission_level", static_cast<uint8_t>(user.permission_level)))
         return -1;
     if (BindText(stmt, "name", user.name))
         return -1;
@@ -297,7 +297,7 @@ int SQLiteDB::CreateEntryType(const std::string &entry_type_name) const
     return 0;
 }
 
-int SQLiteDB::CreateSubtype(const std::string &subtype_name, entry_media_rep_t media_type) const
+int SQLiteDB::CreateSubtype(const std::string &subtype_name, DBEntryMediaType media_type) const
 {
     if (BeginTransaction())
         return -1;
@@ -306,13 +306,13 @@ int SQLiteDB::CreateSubtype(const std::string &subtype_name, entry_media_rep_t m
 
     switch (media_type)
     {
-    case DOCUMENT:
+    case DBEntryMediaType::Document:
         statement_id = CREATE_DOCUMENT_SUBTYPE_STATEMENT;
         break;
-    case IMAGE_GALLERY:
+    case DBEntryMediaType::ImageGallery:
         statement_id = CREATE_IMAGE_GALLERY_SUBTYPE_STATEMENT;
         break;
-    case VIDEO:
+    case DBEntryMediaType::Video:
         statement_id = CREATE_VIDEO_SUBTYPE_STATEMENT;
         break;
     default:
@@ -988,9 +988,9 @@ int SQLiteDB::SetupDefaultEntryTypeTable()
 {
     int res = 0;
 
-    res += CreateEntryType(GetMediaTypeString(DOCUMENT));
-    res += CreateEntryType(GetMediaTypeString(IMAGE_GALLERY));
-    res += CreateEntryType(GetMediaTypeString(VIDEO));
+    res += CreateEntryType(GetMediaTypeString(DBEntryMediaType::Document));
+    res += CreateEntryType(GetMediaTypeString(DBEntryMediaType::ImageGallery));
+    res += CreateEntryType(GetMediaTypeString(DBEntryMediaType::Video));
 
     return res;
 }
@@ -999,18 +999,18 @@ int SQLiteDB::SetupDefaultSubtypeTable()
 {
     int res = 0;
 
-    res += CreateSubtype("blog", DOCUMENT);
-    res += CreateSubtype("book", DOCUMENT);
-    res += CreateSubtype("news-article", DOCUMENT);
-    res += CreateSubtype("paper", DOCUMENT);
-    res += CreateSubtype("webnovel", DOCUMENT);
+    res += CreateSubtype("blog", DBEntryMediaType::Document);
+    res += CreateSubtype("book", DBEntryMediaType::Document);
+    res += CreateSubtype("news-article", DBEntryMediaType::Document);
+    res += CreateSubtype("paper", DBEntryMediaType::Document);
+    res += CreateSubtype("webnovel", DBEntryMediaType::Document);
 
-    res += CreateSubtype("manga", IMAGE_GALLERY);
-    res += CreateSubtype("photo-album", IMAGE_GALLERY);
+    res += CreateSubtype("manga", DBEntryMediaType::ImageGallery);
+    res += CreateSubtype("photo-album", DBEntryMediaType::ImageGallery);
 
-    res += CreateSubtype("movie", VIDEO);
-    res += CreateSubtype("tv-show", VIDEO);
-    res += CreateSubtype("youtube", VIDEO);
+    res += CreateSubtype("movie", DBEntryMediaType::Video);
+    res += CreateSubtype("tv-show", DBEntryMediaType::Video);
+    res += CreateSubtype("youtube", DBEntryMediaType::Video);
 
     return res;
 }
@@ -1024,19 +1024,19 @@ int SQLiteDB::SetupDefaultSourceTable()
     DBSource yt_source;
 
     ao3_source.name = black_library::core::common::AO3::source_name;
-    ao3_source.media_type = DOCUMENT;
+    ao3_source.media_type = DBEntryMediaType::Document;
 
     ffn_source.name = black_library::core::common::FFN::source_name;
-    ffn_source.media_type = DOCUMENT;
+    ffn_source.media_type = DBEntryMediaType::Document;
 
     rr_source.name = black_library::core::common::RR::source_name;
-    rr_source.media_type = DOCUMENT;
+    rr_source.media_type = DBEntryMediaType::Document;
 
     sbf_source.name = black_library::core::common::SBF::source_name;
-    sbf_source.media_type = DOCUMENT;
+    sbf_source.media_type = DBEntryMediaType::Document;
 
     yt_source.name = black_library::core::common::YT::source_name;
-    yt_source.media_type = VIDEO;
+    yt_source.media_type = DBEntryMediaType::Video;
 
     if (CreateSource(ao3_source))
         return -1;
@@ -1101,23 +1101,23 @@ int SQLiteDB::SetupDefaultBlackLibraryUsers()
     DBUser black_library_no_permissions;
 
     black_library_admin.UID = 4007;
-    black_library_admin.permission_level = READ_WRITE_EXECUTE_PERMISSIONS;
+    black_library_admin.permission_level = DBPermissions::ReadWriteExecutePermission;
     black_library_admin.name = "BlackLibraryAdmin";
 
     black_library_librarian.UID = 4004;
-    black_library_librarian.permission_level = READ_WRITE_PERMISSIONS;
+    black_library_librarian.permission_level = DBPermissions::ReadWritePermission;
     black_library_librarian.name = "BlackLibraryLibrarian";
 
     black_library_writer.UID = 4003;
-    black_library_writer.permission_level = WRITE_PERMISSIONS;
+    black_library_writer.permission_level = DBPermissions::WritePermission;
     black_library_writer.name = "BlackLibraryWriter";
 
     black_library_reader.UID = 4001;
-    black_library_reader.permission_level = READ_PERMISSIONS;
+    black_library_reader.permission_level = DBPermissions::ReadPermission;
     black_library_reader.name = "BlackLibraryReader";
 
     black_library_no_permissions.UID = 4000;
-    black_library_no_permissions.permission_level = NO_PERMISSIONS;
+    black_library_no_permissions.permission_level = DBPermissions::NoPermission;
     black_library_no_permissions.name = "BlackLibraryNoPermissions";
 
     if (CreateUser(black_library_admin))

@@ -15,41 +15,37 @@ namespace core {
 namespace db {
 
 
-typedef enum {
-    NO_PERMISSIONS,
-    READ_PERMISSIONS,
-    WRITE_PERMISSIONS,
-    READ_WRITE_PERMISSIONS,
-    EXECUTE_PERMISSIONS,
-    READ_EXECUTE_PERMISSIONS,
-    WRITE_EXECUTE_PERMISSIONS,
-    READ_WRITE_EXECUTE_PERMISSIONS,
+enum class DBPermissions : uint8_t {
+    NoPermission = 0,
+    ReadPermission,
+    WritePermission,
+    ReadWritePermission,
+    ExecutePermission,
+    ReadExecutePermisson,
+    WriteExecutePermission,
+    ReadWriteExecutePermission,
     _NUM_PERMSSIONS
-} permissions_t;
-
-typedef uint8_t permissions_rep_t;
+};
 
 typedef uint16_t UID_rep_t;
 
 struct DBUser {
     UID_rep_t UID;
-    permissions_rep_t permission_level = NO_PERMISSIONS;
+    DBPermissions permission_level = DBPermissions::NoPermission;
     std::string name = "";
 };
 
-typedef enum {
-    DB_ENTRY_MEDIA_ERROR,
-    DOCUMENT,
-    IMAGE_GALLERY,
-    VIDEO,
+enum class DBEntryMediaType : uint8_t {
+    DBEntryMediaTypeError = 0,
+    Document,
+    ImageGallery,
+    Video,
     _NUM_DB_ENTRY_MEDIA_TYPES
-} entry_media_t;
-
-typedef uint8_t entry_media_rep_t;
+};
 
 struct DBSource {
     std::string name;
-    entry_media_rep_t media_type;
+    DBEntryMediaType media_type;
 };
 
 typedef enum {

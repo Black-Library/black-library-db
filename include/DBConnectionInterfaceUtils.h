@@ -26,17 +26,17 @@ std::string GetEntryTypeString(entry_table_rep_t type)
     }
 }
 
-std::string GetMediaTypeString(entry_media_rep_t media_type)
+std::string GetMediaTypeString(DBEntryMediaType media_type)
 {
     switch (media_type)
     {
-    case DB_ENTRY_MEDIA_ERROR:
+    case DBEntryMediaType::DBEntryMediaTypeError:
         return "error";
-    case DOCUMENT:
+    case DBEntryMediaType::Document:
         return "document";
-    case IMAGE_GALLERY:
+    case DBEntryMediaType::ImageGallery:
         return "image-gallery";
-    case VIDEO:
+    case DBEntryMediaType::Video:
         return "video";
     default:
         return "unknown error";
