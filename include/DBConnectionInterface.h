@@ -21,14 +21,17 @@ class DBConnectionInterface
 {
 public:
     virtual ~DBConnectionInterface() {}
-    // virtual DBUser ReadUser();
 
     virtual std::vector<DBEntry> ListEntries(entry_table_rep_t entry_type) const = 0;
+
+    // virtual DBUser ReadUser();
 
     virtual int CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const = 0;
     virtual DBEntry ReadEntry(const std::string &uuid, entry_table_rep_t entry_type) const = 0;
     virtual int UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const = 0;
     virtual int DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type) const = 0;
+
+    // virtual int CreateErrorEntry()
 
     virtual DBBoolResult DoesEntryUrlExist(const std::string &url, entry_table_rep_t entry_type) const = 0;
     virtual DBBoolResult DoesEntryUUIDExist(const std::string &uuid, entry_table_rep_t entry_type) const = 0;

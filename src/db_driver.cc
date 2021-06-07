@@ -97,7 +97,9 @@ int main(int argc, char* argv[])
     create_staging_entry.series_length = 2;
     create_staging_entry.version = 1;
     create_staging_entry.media_path = "foo6";
-    create_staging_entry.birth_date = "foo7";
+    create_staging_entry.birth_date = "some-day-0";
+    create_staging_entry.check_date = "some-day-1";
+    create_staging_entry.update_date = "some-day-2";
     create_staging_entry.user_contributed = 4004;
 
     blacklibrarydb.CreateStagingEntry(create_staging_entry);
@@ -125,7 +127,9 @@ int main(int argc, char* argv[])
     read_staging_entry.series_length = 3;
     read_staging_entry.version = 2;
     read_staging_entry.media_path = "6foo";
-    read_staging_entry.birth_date = "7foo";
+    read_staging_entry.birth_date = "0-some-day";
+    read_staging_entry.check_date = "1-some-day";
+    read_staging_entry.update_date = "2-some-day";
     read_staging_entry.user_contributed = 4004;
 
     blacklibrarydb.UpdateStagingEntry(read_staging_entry);

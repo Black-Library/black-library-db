@@ -14,7 +14,6 @@ namespace core {
 
 namespace db {
 
-
 enum class DBPermissions : uint8_t {
     NoPermission = 0,
     ReadPermission,
@@ -69,11 +68,10 @@ struct DBEntry {
     uint16_t version = 1;
     std::string media_path;
     std::string birth_date;
+    std::string check_date;
     std::string update_date;
     UID_rep_t user_contributed = 6;
 };
-
-#define NUM_ENTRY_COLUMNS 14;
 
 inline std::ostream& operator<< (std::ostream &out, const DBEntry &entry)
 {
@@ -89,6 +87,7 @@ inline std::ostream& operator<< (std::ostream &out, const DBEntry &entry)
     out << "version: " << entry.version << " ";
     out << "media_path: " << entry.media_path << " ";
     out << "birth_date: " << entry.birth_date << " ";
+    out << "check_date: " << entry.check_date << " ";
     out << "update_date: " << entry.update_date << " ";
     out << "user_contributed: " << entry.user_contributed << " ";
 
