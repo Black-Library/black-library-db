@@ -43,6 +43,15 @@ std::vector<DBEntry> BlackLibraryDB::GetBlackEntryList()
     return entry_list;
 }
 
+std::vector<ErrorEntry> BlackLibraryDB::GetErrorEntryList()
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    auto entry_list = database_connection_interface_->ListErrorEntries();
+
+    return entry_list;
+}
+
 int BlackLibraryDB::CreateStagingEntry(const DBEntry &entry)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
@@ -153,6 +162,19 @@ int BlackLibraryDB::DeleteBlackEntry(const std::string &uuid)
     return 0;
 }
 
+int BlackLibraryDB::CreateErrorEntry(const ErrorEntry &entry)
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    if (database_connection_interface_->CreateErrorEntry(entry))
+    {
+        std::cout << "Error: failed to create error entry" << std::endl;
+        return -1;
+    }
+
+    return 0;
+}
+
 bool BlackLibraryDB::DoesStagingEntryUrlExist(const std::string &url)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
@@ -203,6 +225,21 @@ bool BlackLibraryDB::DoesBlackEntryUUIDExist(const std::string &uuid)
     const std::lock_guard<std::mutex> lock(mutex_);
 
     DBBoolResult check = database_connection_interface_->DoesEntryUUIDExist(uuid, BLACK_ENTRY);
+    
+    if (check.error != 0)
+    {
+        std::cout << "Error: database returned " << check.error << std::endl;
+        return false;
+    }
+
+    return check.result;
+}
+
+bool BlackLibraryDB::DoesErrorEntryExist(const std::string &uuid, size_t progress_num)
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    DBBoolResult check = database_connection_interface_->DoesErrorEntryExist(uuid, progress_num);
     
     if (check.error != 0)
     {

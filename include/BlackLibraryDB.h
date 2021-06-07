@@ -25,6 +25,7 @@ public:
     // front-end
     std::vector<DBEntry> GetStagingEntryList();
     std::vector<DBEntry> GetBlackEntryList();
+    std::vector<ErrorEntry> GetErrorEntryList();
 
     // back-end
     int CreateStagingEntry(const DBEntry &entry);
@@ -37,8 +38,11 @@ public:
     int UpdateBlackEntry(const DBEntry &entry);
     int DeleteBlackEntry(const std::string &uuid);
 
+    int CreateErrorEntry(const ErrorEntry &entry);
+
     bool DoesStagingEntryUrlExist(const std::string &url);
     bool DoesBlackEntryUrlExist(const std::string &url);
+    bool DoesErrorEntryExist(const std::string &uuid, size_t progress_num);
 
     bool DoesStagingEntryUUIDExist(const std::string &uuid);
     bool DoesBlackEntryUUIDExist(const std::string &uuid);

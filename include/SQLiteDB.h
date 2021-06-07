@@ -24,6 +24,7 @@ public:
     ~SQLiteDB();
 
     std::vector<DBEntry> ListEntries(entry_table_rep_t entry_type) const;
+    std::vector<ErrorEntry> ListErrorEntries() const;
 
     int CreateUser(const DBUser &user) const;
     int CreateEntryType(const std::string &entry_type_name) const;
@@ -35,8 +36,11 @@ public:
     int UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const override;
     int DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type) const override;
 
+    int CreateErrorEntry(const ErrorEntry &entry) const;
+
     DBBoolResult DoesEntryUrlExist(const std::string &url, entry_table_rep_t entry_type) const override;
     DBBoolResult DoesEntryUUIDExist(const std::string &uuid, entry_table_rep_t entry_type) const override;
+    DBBoolResult DoesErrorEntryExist(const std::string &uuid, size_t progress_num) const;
 
     DBStringResult GetEntryUUIDFromUrl(const std::string &url, entry_table_rep_t entry_type) const;
     DBStringResult GetEntryUrlFromUUID(const std::string &uuid, entry_table_rep_t entry_type) const;

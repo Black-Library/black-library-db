@@ -28,7 +28,7 @@ static constexpr const char CreateDocumentTagTable[]              = "CREATE TABL
 static constexpr const char CreateSourceTable[]                   = "CREATE TABLE IF NOT EXISTS source(name TEXT NOT NULL PRIMARY KEY, type TEXT, FOREIGN KEY(type) REFERENCES entry_type(name))";
 static constexpr const char CreateStagingEntryTable[]             = "CREATE TABLE IF NOT EXISTS staging_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, author TEXT NOT NULL, nickname TEXT, source TEXT, url TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date TEXT NOT NULL, check_date TEXT NOT NULL, update_date TEXT NOT NULL, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
 static constexpr const char CreateBlackEntryTable[]               = "CREATE TABLE IF NOT EXISTS black_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, author TEXT NOT NULL, nickname TEXT, source TEXT, url TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date TEXT NOT NULL, check_date TEXT NOT NULL, update_date TEXT NOT NULL, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
-static constexpr const char CreateErrorEntryTable[]               = "CREATE TABLE IF NOT EXISTS error_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, error_chapter INTEGER)";
+static constexpr const char CreateErrorEntryTable[]               = "CREATE TABLE IF NOT EXISTS error_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, progress_num INTEGER)";
 
 static constexpr const char CreateUserStatement[]                 = "INSERT INTO user(UID, permission_level, name) VALUES (:UID, :permission_level, :name)";
 static constexpr const char CreateEntryTypeStatement[]            = "INSERT INTO entry_type(name) VALUES (:name)";
@@ -38,7 +38,7 @@ static constexpr const char CreateVideoSubtypeStatement[]         = "INSERT INTO
 static constexpr const char CreateSourceStatement[]               = "INSERT INTO source(name, type) VALUES (:name, :type)";
 static constexpr const char CreateStagingEntryStatement[]         = "INSERT INTO staging_entry(UUID, title, author, nickname, source, url, last_url, series, series_length, version, media_path, birth_date, check_date, update_date, user_contributed) VALUES (:UUID, :title, :author, :nickname, :source, :url, :last_url, :series, :series_length, :version, :media_path, :birth_date, :check_date, :update_date, :user_contributed)";
 static constexpr const char CreateBlackEntryStatement[]           = "INSERT INTO black_entry(UUID, title, author, nickname, source, url, last_url, series, series_length, version, media_path, birth_date, check_date, update_date, user_contributed) VALUES (:UUID, :title, :author, :nickname, :source, :url, :last_url, :series, :series_length, :version, :media_path, :birth_date, :check_date, :update_date, :user_contributed)";
-static constexpr const char CreateErrorEntryStatement[]           = "INSERT INTO error_entry(UUID, error_chapter) VALUES (:UUID, :error_chapter)";
+static constexpr const char CreateErrorEntryStatement[]           = "INSERT INTO error_entry(UUID, progress_num) VALUES (:UUID, :progress_num)";
 
 static constexpr const char ReadStagingEntryStatement[]           = "SELECT * FROM staging_entry WHERE UUID = :UUID";
 static constexpr const char ReadStagingEntryUrlStatement[]        = "SELECT * FROM staging_entry WHERE url = :url";
@@ -46,14 +46,14 @@ static constexpr const char ReadStagingEntryUUIDStatement[]       = "SELECT * FR
 static constexpr const char ReadBlackEntryStatement[]             = "SELECT * FROM black_entry WHERE UUID = :UUID";
 static constexpr const char ReadBlackEntryUrlStatement[]          = "SELECT * FROM black_entry WHERE url = :url";
 static constexpr const char ReadBlackEntryUUIDStatement[]         = "SELECT * FROM black_entry WHERE UUID = :UUID";
-static constexpr const char ReadErrorEntryStatement[]             = "SELECT * FROM error_entry WHERE UUID = :UUID";
+static constexpr const char ReadErrorEntryStatement[]             = "SELECT * FROM error_entry WHERE UUID = :UUID AND progress_num = :progress_num";
 
 static constexpr const char UpdateStagingEntryStatement[]         = "UPDATE staging_entry SET title = :title, author = :author, nickname = :nickname, source = :source, url = :url, last_url = :last_url, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, check_date = :check_date, update_date = :update_date, user_contributed = :user_contributed WHERE UUID = :UUID";
 static constexpr const char UpdateBlackEntryStatement[]           = "UPDATE black_entry SET title = :title, author = :author, nickname = :nickname, source = :source, url = :url, last_url = :last_url, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, check_date = :check_date, update_date = :update_date, user_contributed = :user_contributed WHERE UUID = :UUID";
 
 static constexpr const char DeleteStagingEntryStatement[]         = "DELETE FROM staging_entry WHERE UUID = :UUID";
 static constexpr const char DeleteBlackEntryStatement[]           = "DELETE FROM black_entry WHERE UUID = :UUID";
-static constexpr const char DeleteErrorEntryStatement[]           = "DELETE FROM error_entry WHERE UUID = :UUID AND error_chapter = :error_chapter";
+static constexpr const char DeleteErrorEntryStatement[]           = "DELETE FROM error_entry WHERE UUID = :UUID AND progress_num = :progress_num";
 
 static constexpr const char GetStagingEntriesStatement[]          = "SELECT * FROM staging_entry";
 static constexpr const char GetBlackEntriesStatement[]            = "SELECT * FROM black_entry"; 
@@ -222,6 +222,40 @@ std::vector<DBEntry> SQLiteDB::ListEntries(entry_table_rep_t entry_type) const
         entry.check_date = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 12)));
         entry.update_date = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 13)));
         entry.user_contributed = sqlite3_column_int(stmt, 14);
+
+        entries.emplace_back(entry);
+    }
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return entries;
+
+    return entries;
+}
+
+std::vector<ErrorEntry> SQLiteDB::ListErrorEntries() const
+{
+    std::cout << "List error entries" << std::endl;
+
+    std::vector<ErrorEntry> entries;
+
+    if (CheckInitialized())
+        return entries;
+
+    if (BeginTransaction())
+        return entries;
+
+    sqlite3_stmt *stmt = prepared_statements_[GET_ERROR_ENTRIES_STATEMENT];
+    // std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
+
+    // run statement in loop until done
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        ErrorEntry entry;
+
+        entry.uuid = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+        entry.progress_num = sqlite3_column_int(stmt, 1);
 
         entries.emplace_back(entry);
     }
@@ -537,6 +571,176 @@ DBEntry SQLiteDB::ReadEntry(const std::string &uuid, entry_table_rep_t entry_typ
     return entry;
 }
 
+int SQLiteDB::UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const
+{
+    std::cout << "Update " << GetEntryTypeString(entry_type) << " entry for UUID: " << entry.uuid << std::endl;
+
+    if (CheckInitialized())
+        return -1;
+
+    if (BeginTransaction())
+        return -1;
+
+    int statement_id;
+    switch (entry_type)
+    {
+        case BLACK_ENTRY:
+            statement_id = UPDATE_BLACK_ENTRY_STATEMENT;
+            break;
+        case STAGING_ENTRY:
+            statement_id = UPDATE_STAGING_ENTRY_STATEMENT;
+            break;
+        default:
+            return -1;
+    }
+
+    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+
+    // bind statement variables
+    if (BindText(stmt, "UUID", entry.uuid))
+        return -1;
+    if (BindText(stmt, "title", entry.title))
+        return -1;
+    if (BindText(stmt, "author", entry.author))
+        return -1;
+    if (BindText(stmt, "nickname", entry.nickname))
+        return -1;
+    if (BindText(stmt, "source", entry.source))
+        return -1;
+    if (BindText(stmt, "url", entry.url))
+        return -1;
+    if (BindText(stmt, "last_url", entry.last_url))
+        return -1;
+    if (BindText(stmt, "series", entry.series))
+        return -1;
+    if (BindInt(stmt, "series_length", entry.series_length))
+        return -1;
+    if (BindInt(stmt, "version", entry.version))
+        return -1;
+    if (BindText(stmt, "media_path", entry.media_path))
+        return -1;
+    if (BindText(stmt, "birth_date", entry.birth_date))
+        return -1;
+    if (BindText(stmt, "check_date", entry.check_date))
+        return -1;
+    if (BindText(stmt, "update_date", entry.update_date))
+        return -1;
+    if (BindInt(stmt, "user_contributed", entry.user_contributed))
+        return -1;
+
+    // run statement
+    int ret = SQLITE_OK;
+
+    // std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_DONE)
+    {
+        std::cout << "Error: update " << GetEntryTypeString(entry_type) << " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        ResetStatement(stmt);
+        EndTransaction();
+        return -1;
+    }
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return -1;
+
+    return 0;
+}
+
+int SQLiteDB::DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type) const
+{
+    std::cout << "Delete " << GetEntryTypeString(entry_type) << " UUID: " << uuid << std::endl;
+
+    if (CheckInitialized())
+        return -1;
+
+    if (BeginTransaction())
+        return -1;
+
+    int statement_id;
+    switch (entry_type)
+    {
+        case BLACK_ENTRY:
+            statement_id = DELETE_BLACK_ENTRY_STATEMENT;
+            break;
+        case STAGING_ENTRY:
+            statement_id = DELETE_STAGING_ENTRY_STATEMENT;
+            break;
+        default:
+            return -1;
+    }
+
+    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+
+    // bind statement variables
+    if (BindText(stmt, "UUID", uuid))
+    {
+        EndTransaction();
+        return -1;
+    }
+
+    // run statement
+    int ret = SQLITE_OK;
+
+    // std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_DONE)
+    {
+        std::cout << "Error: delete " << GetEntryTypeString(entry_type) <<  " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        ResetStatement(stmt);
+        EndTransaction();
+        return -1;
+    }
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return -1;
+
+    return 0;
+}
+
+int SQLiteDB::CreateErrorEntry(const ErrorEntry &entry) const
+{
+    std::cout << "Create error entry for UUID: " << entry.uuid << std::endl;
+
+    if (CheckInitialized())
+        return -1;
+
+    if (BeginTransaction())
+        return -1;
+
+    sqlite3_stmt *stmt = prepared_statements_[CREATE_ERROR_ENTRY_STATEMENT];
+
+    // bind statement variables
+    if (BindText(stmt, "UUID", entry.uuid))
+        return -1;
+    if (BindInt(stmt, "progress_num", entry.progress_num))
+        return -1;
+
+    // run statement
+    int ret = SQLITE_OK;
+
+    // std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_DONE)
+    {
+        std::cout << "Error: create error entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        ResetStatement(stmt);
+        EndTransaction();
+        return -1;
+    }
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return -1;
+
+    return 0;
+}
+
 DBBoolResult SQLiteDB::DoesEntryUrlExist(const std::string &url, entry_table_rep_t entry_type) const
 {
     DBBoolResult check;
@@ -685,114 +889,44 @@ DBBoolResult SQLiteDB::DoesEntryUUIDExist(const std::string &uuid, entry_table_r
     return check;
 }
 
-int SQLiteDB::UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const
+DBBoolResult SQLiteDB::DoesErrorEntryExist(const std::string &uuid, size_t progress_num) const
 {
-    std::cout << "Update " << GetEntryTypeString(entry_type) << " entry for UUID: " << entry.uuid << std::endl;
+    DBBoolResult check;
+
+    std::cout << "Check error entries for UUID: " << uuid << "progress_num: " << progress_num << std::endl;
+
+    if (uuid.empty())
+    {
+        check.result = false;
+        return check;
+    }
 
     if (CheckInitialized())
-        return -1;
+    {
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
 
     if (BeginTransaction())
-        return -1;
-
-    int statement_id;
-    switch (entry_type)
     {
-        case BLACK_ENTRY:
-            statement_id = UPDATE_BLACK_ENTRY_STATEMENT;
-            break;
-        case STAGING_ENTRY:
-            statement_id = UPDATE_STAGING_ENTRY_STATEMENT;
-            break;
-        default:
-            return -1;
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
     }
 
-    sqlite3_stmt *stmt = prepared_statements_[statement_id];
-
-    // bind statement variables
-    if (BindText(stmt, "UUID", entry.uuid))
-        return -1;
-    if (BindText(stmt, "title", entry.title))
-        return -1;
-    if (BindText(stmt, "author", entry.author))
-        return -1;
-    if (BindText(stmt, "nickname", entry.nickname))
-        return -1;
-    if (BindText(stmt, "source", entry.source))
-        return -1;
-    if (BindText(stmt, "url", entry.url))
-        return -1;
-    if (BindText(stmt, "last_url", entry.last_url))
-        return -1;
-    if (BindText(stmt, "series", entry.series))
-        return -1;
-    if (BindInt(stmt, "series_length", entry.series_length))
-        return -1;
-    if (BindInt(stmt, "version", entry.version))
-        return -1;
-    if (BindText(stmt, "media_path", entry.media_path))
-        return -1;
-    if (BindText(stmt, "birth_date", entry.birth_date))
-        return -1;
-    if (BindText(stmt, "check_date", entry.check_date))
-        return -1;
-    if (BindText(stmt, "update_date", entry.update_date))
-        return -1;
-    if (BindInt(stmt, "user_contributed", entry.user_contributed))
-        return -1;
-
-    // run statement
-    int ret = SQLITE_OK;
-
-    // std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
-    ret = sqlite3_step(stmt);
-    if (ret != SQLITE_DONE)
-    {
-        std::cout << "Error: update " << GetEntryTypeString(entry_type) << " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
-        ResetStatement(stmt);
-        EndTransaction();
-        return -1;
-    }
-
-    ResetStatement(stmt);
-
-    if (EndTransaction())
-        return -1;
-
-    return 0;
-}
-
-int SQLiteDB::DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type) const
-{
-    std::cout << "Delete " << GetEntryTypeString(entry_type) << " UUID: " << uuid << std::endl;
-
-    if (CheckInitialized())
-        return -1;
-
-    if (BeginTransaction())
-        return -1;
-
-    int statement_id;
-    switch (entry_type)
-    {
-        case BLACK_ENTRY:
-            statement_id = DELETE_BLACK_ENTRY_STATEMENT;
-            break;
-        case STAGING_ENTRY:
-            statement_id = DELETE_STAGING_ENTRY_STATEMENT;
-            break;
-        default:
-            return -1;
-    }
-
-    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+    sqlite3_stmt *stmt = prepared_statements_[READ_ERROR_ENTRY_STATEMENT];
 
     // bind statement variables
     if (BindText(stmt, "UUID", uuid))
     {
         EndTransaction();
-        return -1;
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+    if (BindInt(stmt, "progress_num", progress_num))
+    {
+        EndTransaction();
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
     }
 
     // run statement
@@ -800,20 +934,29 @@ int SQLiteDB::DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type)
 
     // std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
     ret = sqlite3_step(stmt);
-    if (ret != SQLITE_DONE)
+    if (ret != SQLITE_ROW)
     {
-        std::cout << "Error: delete " << GetEntryTypeString(entry_type) <<  " entry failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "UUID: " << uuid << " progress_num: " << progress_num << "does not exist" << std::endl;
+        check.result = false;
         ResetStatement(stmt);
         EndTransaction();
-        return -1;
+        return check;
     }
+    else
+    {
+        check.result = true;
+    }
+    
 
     ResetStatement(stmt);
 
     if (EndTransaction())
-        return -1;
+    {
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
 
-    return 0;
+    return check;
 }
 
 DBStringResult SQLiteDB::GetEntryUUIDFromUrl(const std::string &url, entry_table_rep_t entry_type) const

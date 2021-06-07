@@ -121,6 +121,11 @@ struct DBBoolResult {
     int error = 0;
 };
 
+struct ErrorEntry {
+    std::string uuid;
+    size_t progress_num;
+};
+
 } // namespace db
 } // namespace core
 } // namespace black_library
