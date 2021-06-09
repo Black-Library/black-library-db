@@ -29,7 +29,7 @@ enum class DBPermissions : uint8_t {
 typedef uint16_t UID_rep_t;
 
 struct DBUser {
-    UID_rep_t UID;
+    UID_rep_t uid;
     DBPermissions permission_level = DBPermissions::NoPermission;
     std::string name = "";
 };
@@ -89,20 +89,20 @@ inline std::ostream& operator<< (std::ostream &out, const DBEntry &entry)
     out << "birth_date: " << entry.birth_date << " ";
     out << "check_date: " << entry.check_date << " ";
     out << "update_date: " << entry.update_date << " ";
-    out << "user_contributed: " << entry.user_contributed << " ";
+    out << "user_contributed: " << entry.user_contributed;
 
     return out;
 }
 
 struct DBRating {
-    std::string UUID;
-    UID_rep_t UID;
+    std::string uuid;
+    UID_rep_t uid;
     uint16_t rating;
 };
 
 struct DBUserProgress {
-    std::string UUID;
-    UID_rep_t UID;
+    std::string uuid;
+    UID_rep_t uid;
     uint16_t number;
     uint16_t chapter;
     uint32_t page;
@@ -125,6 +125,14 @@ struct ErrorEntry {
     std::string uuid;
     size_t progress_num;
 };
+
+inline std::ostream& operator<< (std::ostream &out, const ErrorEntry &entry)
+{
+    out << "UUID: " << entry.uuid << " ";
+    out << "progress_num: " << entry.progress_num;
+
+    return out;
+}
 
 } // namespace db
 } // namespace core

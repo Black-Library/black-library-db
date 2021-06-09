@@ -270,7 +270,7 @@ std::vector<ErrorEntry> SQLiteDB::ListErrorEntries() const
 
 int SQLiteDB::CreateUser(const DBUser &user) const
 {
-    std::cout << "Create user: " << user.name << " with UID: " << user.UID << std::endl;
+    std::cout << "Create user: " << user.name << " with UID: " << user.uid << std::endl;
 
     if (BeginTransaction())
         return -1;
@@ -279,7 +279,7 @@ int SQLiteDB::CreateUser(const DBUser &user) const
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
-    if (BindInt(stmt, "UID", user.UID))
+    if (BindInt(stmt, "UID", user.uid))
         return -1;
     if (BindInt(stmt, "permission_level", static_cast<uint8_t>(user.permission_level)))
         return -1;
@@ -1261,23 +1261,23 @@ int SQLiteDB::SetupDefaultBlackLibraryUsers()
     DBUser black_library_reader;
     DBUser black_library_no_permissions;
 
-    black_library_admin.UID = 4007;
+    black_library_admin.uid = 4007;
     black_library_admin.permission_level = DBPermissions::ReadWriteExecutePermission;
     black_library_admin.name = "BlackLibraryAdmin";
 
-    black_library_librarian.UID = 4004;
+    black_library_librarian.uid = 4004;
     black_library_librarian.permission_level = DBPermissions::ReadWritePermission;
     black_library_librarian.name = "BlackLibraryLibrarian";
 
-    black_library_writer.UID = 4003;
+    black_library_writer.uid = 4003;
     black_library_writer.permission_level = DBPermissions::WritePermission;
     black_library_writer.name = "BlackLibraryWriter";
 
-    black_library_reader.UID = 4001;
+    black_library_reader.uid = 4001;
     black_library_reader.permission_level = DBPermissions::ReadPermission;
     black_library_reader.name = "BlackLibraryReader";
 
-    black_library_no_permissions.UID = 4000;
+    black_library_no_permissions.uid = 4000;
     black_library_no_permissions.permission_level = DBPermissions::NoPermission;
     black_library_no_permissions.name = "BlackLibraryNoPermissions";
 
