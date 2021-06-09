@@ -110,7 +110,7 @@ struct DBUserProgress {
 
 struct DBStringResult {
     std::string result = "";
-    std::string error_string = "";
+    std::string debug_string = "";
     bool does_not_exist = false;
     int error = 0;
 };
