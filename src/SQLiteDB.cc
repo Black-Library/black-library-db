@@ -26,8 +26,8 @@ static constexpr const char CreateVideoSubtypeTable[]             = "CREATE TABL
 static constexpr const char CreateBookGenreTable[]                = "CREATE TABLE IF NOT EXISTS book_genre(name TEXT NOT NULL PRIMARY KEY)";
 static constexpr const char CreateDocumentTagTable[]              = "CREATE TABLE IF NOT EXISTS document_tag(name TEXT NOT NULL PRIMARY KEY)";
 static constexpr const char CreateSourceTable[]                   = "CREATE TABLE IF NOT EXISTS source(name TEXT NOT NULL PRIMARY KEY, type TEXT, FOREIGN KEY(type) REFERENCES entry_type(name))";
-static constexpr const char CreateStagingEntryTable[]             = "CREATE TABLE IF NOT EXISTS staging_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, author TEXT NOT NULL, nickname TEXT, source TEXT, url TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date TEXT NOT NULL, check_date TEXT NOT NULL, update_date TEXT NOT NULL, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
-static constexpr const char CreateBlackEntryTable[]               = "CREATE TABLE IF NOT EXISTS black_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, author TEXT NOT NULL, nickname TEXT, source TEXT, url TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date TEXT NOT NULL, check_date TEXT NOT NULL, update_date TEXT NOT NULL, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
+static constexpr const char CreateStagingEntryTable[]             = "CREATE TABLE IF NOT EXISTS staging_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, author TEXT NOT NULL, nickname TEXT, source TEXT, url TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date INTEGER, check_date INTEGER, update_date INTEGER, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
+static constexpr const char CreateBlackEntryTable[]               = "CREATE TABLE IF NOT EXISTS black_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, author TEXT NOT NULL, nickname TEXT, source TEXT, url TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date INTEGER, check_date INTEGER, update_date INTEGER, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
 static constexpr const char CreateErrorEntryTable[]               = "CREATE TABLE IF NOT EXISTS error_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, progress_num INTEGER)";
 
 static constexpr const char CreateUserStatement[]                 = "INSERT INTO user(UID, permission_level, name) VALUES (:UID, :permission_level, :name)";
@@ -218,9 +218,9 @@ std::vector<DBEntry> SQLiteDB::ListEntries(entry_table_rep_t entry_type) const
         entry.series_length = sqlite3_column_int(stmt, 8);
         entry.version = sqlite3_column_int(stmt, 9);
         entry.media_path = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 10)));
-        entry.birth_date = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 11)));
-        entry.check_date = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 12)));
-        entry.update_date = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 13)));
+        entry.birth_date = sqlite3_column_int(stmt, 11);
+        entry.check_date = sqlite3_column_int(stmt, 12);
+        entry.update_date = sqlite3_column_int(stmt, 13);
         entry.user_contributed = sqlite3_column_int(stmt, 14);
 
         entries.emplace_back(entry);
@@ -470,11 +470,11 @@ int SQLiteDB::CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) co
         return -1;
     if (BindText(stmt, "media_path", entry.media_path))
         return -1;
-    if (BindText(stmt, "birth_date", entry.birth_date))
+    if (BindInt(stmt, "birth_date", entry.birth_date))
         return -1;
-    if (BindText(stmt, "check_date", entry.check_date))
+    if (BindInt(stmt, "check_date", entry.check_date))
         return -1;
-    if (BindText(stmt, "update_date", entry.update_date))
+    if (BindInt(stmt, "update_date", entry.update_date))
         return -1;
     if (BindInt(stmt, "user_contributed", entry.user_contributed))
         return -1;
@@ -558,9 +558,9 @@ DBEntry SQLiteDB::ReadEntry(const std::string &uuid, entry_table_rep_t entry_typ
     entry.series_length = sqlite3_column_int(stmt, 8);
     entry.version = sqlite3_column_int(stmt, 9);
     entry.media_path = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 10)));
-    entry.birth_date = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 11)));
-    entry.check_date = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 12)));
-    entry.update_date = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 13)));
+    entry.birth_date = sqlite3_column_int(stmt, 11);
+    entry.check_date = sqlite3_column_int(stmt, 12);
+    entry.update_date = sqlite3_column_int(stmt, 13);
     entry.user_contributed = sqlite3_column_int(stmt, 14);
 
     ResetStatement(stmt);
@@ -619,11 +619,11 @@ int SQLiteDB::UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) co
         return -1;
     if (BindText(stmt, "media_path", entry.media_path))
         return -1;
-    if (BindText(stmt, "birth_date", entry.birth_date))
+    if (BindInt(stmt, "birth_date", entry.birth_date))
         return -1;
-    if (BindText(stmt, "check_date", entry.check_date))
+    if (BindInt(stmt, "check_date", entry.check_date))
         return -1;
-    if (BindText(stmt, "update_date", entry.update_date))
+    if (BindInt(stmt, "update_date", entry.update_date))
         return -1;
     if (BindInt(stmt, "user_contributed", entry.user_contributed))
         return -1;
@@ -1213,44 +1213,46 @@ int SQLiteDB::PrepareStatements()
     if (!database_conn_)
         return -1;
 
-    PrepareStatement(CreateUserStatement, CREATE_USER_STATEMENT);
-    PrepareStatement(CreateEntryTypeStatement, CREATE_ENTRY_TYPE_STATEMENT);
-    PrepareStatement(CreateDocumentSubtypeStatement, CREATE_DOCUMENT_SUBTYPE_STATEMENT);
-    PrepareStatement(CreateImageGallerySubtypeStatement, CREATE_IMAGE_GALLERY_SUBTYPE_STATEMENT);
-    PrepareStatement(CreateVideoSubtypeStatement, CREATE_VIDEO_SUBTYPE_STATEMENT);
-    PrepareStatement(CreateSourceStatement, CREATE_SOURCE_STATEMENT);
+    int res = 0;
 
-    PrepareStatement(CreateStagingEntryStatement, CREATE_STAGING_ENTRY_STATEMENT);
-    PrepareStatement(CreateBlackEntryStatement, CREATE_BLACK_ENTRY_STATEMENT);
-    PrepareStatement(CreateErrorEntryStatement, CREATE_ERROR_ENTRY_STATEMENT);
+    res += PrepareStatement(CreateUserStatement, CREATE_USER_STATEMENT);
+    res += PrepareStatement(CreateEntryTypeStatement, CREATE_ENTRY_TYPE_STATEMENT);
+    res += PrepareStatement(CreateDocumentSubtypeStatement, CREATE_DOCUMENT_SUBTYPE_STATEMENT);
+    res += PrepareStatement(CreateImageGallerySubtypeStatement, CREATE_IMAGE_GALLERY_SUBTYPE_STATEMENT);
+    res += PrepareStatement(CreateVideoSubtypeStatement, CREATE_VIDEO_SUBTYPE_STATEMENT);
+    res += PrepareStatement(CreateSourceStatement, CREATE_SOURCE_STATEMENT);
 
-    PrepareStatement(ReadStagingEntryStatement, READ_STAGING_ENTRY_STATEMENT);
-    PrepareStatement(ReadStagingEntryUrlStatement, READ_STAGING_ENTRY_URL_STATEMENT);
-    PrepareStatement(ReadStagingEntryUUIDStatement, READ_STAGING_ENTRY_UUID_STATEMENT);
+    res += PrepareStatement(CreateStagingEntryStatement, CREATE_STAGING_ENTRY_STATEMENT);
+    res += PrepareStatement(CreateBlackEntryStatement, CREATE_BLACK_ENTRY_STATEMENT);
+    res += PrepareStatement(CreateErrorEntryStatement, CREATE_ERROR_ENTRY_STATEMENT);
 
-    PrepareStatement(ReadBlackEntryStatement, READ_BLACK_ENTRY_STATEMENT);
-    PrepareStatement(ReadBlackEntryUrlStatement, READ_BLACK_ENTRY_URL_STATEMENT);
-    PrepareStatement(ReadBlackEntryUUIDStatement, READ_BLACK_ENTRY_UUID_STATEMENT);
+    res += PrepareStatement(ReadStagingEntryStatement, READ_STAGING_ENTRY_STATEMENT);
+    res += PrepareStatement(ReadStagingEntryUrlStatement, READ_STAGING_ENTRY_URL_STATEMENT);
+    res += PrepareStatement(ReadStagingEntryUUIDStatement, READ_STAGING_ENTRY_UUID_STATEMENT);
 
-    PrepareStatement(ReadErrorEntryStatement, READ_ERROR_ENTRY_STATEMENT);
+    res += PrepareStatement(ReadBlackEntryStatement, READ_BLACK_ENTRY_STATEMENT);
+    res += PrepareStatement(ReadBlackEntryUrlStatement, READ_BLACK_ENTRY_URL_STATEMENT);
+    res += PrepareStatement(ReadBlackEntryUUIDStatement, READ_BLACK_ENTRY_UUID_STATEMENT);
 
-    PrepareStatement(UpdateStagingEntryStatement, UPDATE_STAGING_ENTRY_STATEMENT);
-    PrepareStatement(UpdateBlackEntryStatement, UPDATE_BLACK_ENTRY_STATEMENT);
+    res += PrepareStatement(ReadErrorEntryStatement, READ_ERROR_ENTRY_STATEMENT);
 
-    PrepareStatement(DeleteStagingEntryStatement, DELETE_STAGING_ENTRY_STATEMENT);
-    PrepareStatement(DeleteBlackEntryStatement, DELETE_BLACK_ENTRY_STATEMENT);
-    PrepareStatement(DeleteBlackEntryStatement, DELETE_ERROR_ENTRY_STATEMENT);
+    res += PrepareStatement(UpdateStagingEntryStatement, UPDATE_STAGING_ENTRY_STATEMENT);
+    res += PrepareStatement(UpdateBlackEntryStatement, UPDATE_BLACK_ENTRY_STATEMENT);
 
-    PrepareStatement(GetStagingEntriesStatement, GET_STAGING_ENTRIES_STATEMENT);
-    PrepareStatement(GetBlackEntriesStatement, GET_BLACK_ENTRIES_STATEMENT);
-    PrepareStatement(GetErrorEntriesStatement, GET_ERROR_ENTRIES_STATEMENT);
+    res += PrepareStatement(DeleteStagingEntryStatement, DELETE_STAGING_ENTRY_STATEMENT);
+    res += PrepareStatement(DeleteBlackEntryStatement, DELETE_BLACK_ENTRY_STATEMENT);
+    res += PrepareStatement(DeleteBlackEntryStatement, DELETE_ERROR_ENTRY_STATEMENT);
 
-    PrepareStatement(GetStagingEntryUUIDFromUrlStatement, GET_STAGING_ENTRY_UUID_FROM_URL_STATEMENT);
-    PrepareStatement(GetStagingEntryUrlFromUUIDStatement, GET_STAGING_ENTRY_URL_FROM_UUID_STATEMENT);
-    PrepareStatement(GetBlackEntryUUIDFromUrlStatement, GET_BLACK_ENTRY_UUID_FROM_URL_STATEMENT);
-    PrepareStatement(GetBlackEntryUrlFromUUIDStatement, GET_BLACK_ENTRY_URL_FROM_UUID_STATEMENT);
+    res += PrepareStatement(GetStagingEntriesStatement, GET_STAGING_ENTRIES_STATEMENT);
+    res += PrepareStatement(GetBlackEntriesStatement, GET_BLACK_ENTRIES_STATEMENT);
+    res += PrepareStatement(GetErrorEntriesStatement, GET_ERROR_ENTRIES_STATEMENT);
 
-    return 0;
+    res += PrepareStatement(GetStagingEntryUUIDFromUrlStatement, GET_STAGING_ENTRY_UUID_FROM_URL_STATEMENT);
+    res += PrepareStatement(GetStagingEntryUrlFromUUIDStatement, GET_STAGING_ENTRY_URL_FROM_UUID_STATEMENT);
+    res += PrepareStatement(GetBlackEntryUUIDFromUrlStatement, GET_BLACK_ENTRY_UUID_FROM_URL_STATEMENT);
+    res += PrepareStatement(GetBlackEntryUrlFromUUIDStatement, GET_BLACK_ENTRY_URL_FROM_UUID_STATEMENT);
+
+    return res;
 }
 
 int SQLiteDB::SetupDefaultBlackLibraryUsers()

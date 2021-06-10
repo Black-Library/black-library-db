@@ -67,9 +67,9 @@ struct DBEntry {
     uint16_t series_length = 1;
     uint16_t version = 1;
     std::string media_path;
-    std::string birth_date;
-    std::string check_date;
-    std::string update_date;
+    time_t birth_date;
+    time_t check_date;
+    time_t update_date;
     UID_rep_t user_contributed = 6;
 };
 
