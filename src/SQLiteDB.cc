@@ -18,6 +18,8 @@ namespace core {
 
 namespace db {
 
+namespace BlackLibraryCommon = black_library::core::common;
+
 static constexpr const char CreateUserTable[]                     = "CREATE TABLE IF NOT EXISTS user(UID INTEGER PRIMARY KEY, permission_level INTEGER DEFAULT 0 NOT NULL, name TEXT NOT NULL)";
 static constexpr const char CreateEntryTypeTable[]                = "CREATE TABLE IF NOT EXISTS entry_type(name TEXT NOT NULL PRIMARY KEY)";
 static constexpr const char CreateDocumentSubtypeTable[]          = "CREATE TABLE IF NOT EXISTS document_subtype(name TEXT NOT NULL PRIMARY KEY)";
@@ -115,7 +117,7 @@ SQLiteDB::SQLiteDB(const std::string &database_url, bool first_time_setup) :
         std::cout << "Empty database url given, using default: " << database_url_ << std::endl;
     }
 
-    if (!black_library::core::common::Exists(database_url_))
+    if (!BlackLibraryCommon::Exists(database_url_))
     {
         first_time_setup_ = true;
     }
@@ -1179,19 +1181,19 @@ int SQLiteDB::SetupDefaultSourceTable()
     DBSource sbf_source;
     DBSource yt_source;
 
-    ao3_source.name = black_library::core::common::AO3::source_name;
+    ao3_source.name = BlackLibraryCommon::AO3::source_name;
     ao3_source.media_type = DBEntryMediaType::Document;
 
-    ffn_source.name = black_library::core::common::FFN::source_name;
+    ffn_source.name = BlackLibraryCommon::FFN::source_name;
     ffn_source.media_type = DBEntryMediaType::Document;
 
-    rr_source.name = black_library::core::common::RR::source_name;
+    rr_source.name = BlackLibraryCommon::RR::source_name;
     rr_source.media_type = DBEntryMediaType::Document;
 
-    sbf_source.name = black_library::core::common::SBF::source_name;
+    sbf_source.name = BlackLibraryCommon::SBF::source_name;
     sbf_source.media_type = DBEntryMediaType::Document;
 
-    yt_source.name = black_library::core::common::YT::source_name;
+    yt_source.name = BlackLibraryCommon::YT::source_name;
     yt_source.media_type = DBEntryMediaType::Video;
 
     if (CreateSource(ao3_source))

@@ -8,6 +8,8 @@
 
 #include <BlackLibraryDB.h>
 
+namespace BlackLibraryDB = black_library::core::db;
+
 struct options
 {
     std::string db_path = "";
@@ -80,12 +82,12 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-    black_library::core::db::DBEntry create_staging_entry;
-    black_library::core::db::DBEntry read_staging_entry;
-    black_library::core::db::DBEntry update_staging_entry;
+    BlackLibraryDB::DBEntry create_staging_entry;
+    BlackLibraryDB::DBEntry read_staging_entry;
+    BlackLibraryDB::DBEntry update_staging_entry;
 
     std::cout << "Starting db" << std::endl;
-    black_library::core::db::BlackLibraryDB blacklibrarydb(opts.db_path, opts.intialize_db);
+    BlackLibraryDB::BlackLibraryDB blacklibrarydb(opts.db_path, opts.intialize_db);
 
     create_staging_entry.uuid = "55ee59ad-2feb-4196-960b-3226c65c80d5";
     create_staging_entry.title = "foo2";
