@@ -109,7 +109,7 @@ SQLiteDB::SQLiteDB(const std::string &database_url, bool first_time_setup) :
     prepared_statements_(),
     database_url_(database_url),
     first_time_setup_(first_time_setup),
-    intialized_(false)
+    initialized_(false)
 {
     if (database_url_.empty())
     {
@@ -161,7 +161,7 @@ SQLiteDB::SQLiteDB(const std::string &database_url, bool first_time_setup) :
         }
     }
 
-    intialized_ = true;
+    initialized_ = true;
 }
 
 SQLiteDB::~SQLiteDB()
@@ -1109,7 +1109,7 @@ DBStringResult SQLiteDB::GetEntryUrlFromUUID(const std::string &uuid, entry_tabl
 
 bool SQLiteDB::IsReady() const
 {
-    return intialized_;
+    return initialized_;
 }
 
 int SQLiteDB::GenerateTables()
@@ -1315,7 +1315,7 @@ int SQLiteDB::BeginTransaction() const
 
 int SQLiteDB::CheckInitialized() const
 {
-    if (!intialized_)
+    if (!initialized_)
     {
         std::cout << "Error: db not initialized" << std::endl;
         return -1;

@@ -13,7 +13,7 @@ namespace BlackLibraryDB = black_library::core::db;
 struct options
 {
     std::string db_path = "";
-    bool intialize_db = false;
+    bool initialize_db = false;
 };
 
 static void Usage(const char *prog)
@@ -46,7 +46,7 @@ static int ParseOptions(int argc, char **argv, struct options *opts)
                 exit(0);
                 break;
             case 'i':
-                opts->intialize_db = true;
+                opts->initialize_db = true;
                 break;
             case 'p':
                 opts->db_path = std::string(optarg);
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
     BlackLibraryDB::DBEntry update_staging_entry;
 
     std::cout << "Starting db" << std::endl;
-    BlackLibraryDB::BlackLibraryDB blacklibrarydb(opts.db_path, opts.intialize_db);
+    BlackLibraryDB::BlackLibraryDB blacklibrarydb(opts.db_path, opts.initialize_db);
 
     create_staging_entry.uuid = "55ee59ad-2feb-4196-960b-3226c65c80d5";
     create_staging_entry.title = "foo2";

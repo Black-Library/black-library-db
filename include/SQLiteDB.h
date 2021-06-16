@@ -72,7 +72,7 @@ private:
     std::vector<sqlite3_stmt *> prepared_statements_;
     std::string database_url_;
     bool first_time_setup_;
-    bool intialized_;
+    bool initialized_;
 };
 
 } // namespace db
