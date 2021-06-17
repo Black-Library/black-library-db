@@ -67,9 +67,9 @@ struct DBEntry {
     uint16_t series_length = 1;
     uint16_t version = 1;
     std::string media_path;
-    time_t birth_date;
-    time_t check_date;
-    time_t update_date;
+    time_t birth_date = 0;
+    time_t check_date = 0;
+    time_t update_date = 0;
     UID_rep_t user_contributed = 6;
 };
 
@@ -93,6 +93,26 @@ inline std::ostream& operator<< (std::ostream &out, const DBEntry &entry)
 
     return out;
 }
+
+enum class DBEntryColumnID : uint8_t
+{
+    uuid,
+    title,
+    author,
+    nickname,
+    source,
+    url,
+    last_url,
+    series,
+    series_length,
+    version,
+    media_path,
+    birth_date,
+    check_date,
+    update_date,
+    user_contributed,
+    _NUM_DB_ENTRY_COLUMN_ID
+};
 
 struct DBRating {
     std::string uuid;
