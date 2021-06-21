@@ -113,7 +113,7 @@ SQLiteDB::SQLiteDB(const std::string &database_url, bool first_time_setup) :
 {
     if (database_url_.empty())
     {
-        database_url_ = "/mnt/db/catalog.db";
+        database_url_ = "/mnt/black-library/db/catalog.db";
         std::cout << "Empty database url given, using default: " << database_url_ << std::endl;
     }
 
