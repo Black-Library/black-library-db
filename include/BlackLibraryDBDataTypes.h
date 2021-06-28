@@ -123,9 +123,9 @@ struct DBRating {
 struct DBUserProgress {
     std::string uuid;
     UID_rep_t uid;
+    uint16_t series_number;
     uint16_t number;
-    uint16_t chapter;
-    uint32_t page;
+    uint64_t progress;
 };
 
 struct DBStringResult {
