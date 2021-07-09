@@ -118,9 +118,7 @@ SQLiteDB::SQLiteDB(const std::string &database_url, bool first_time_setup) :
     }
 
     if (!BlackLibraryCommon::Exists(database_url_))
-    {
         first_time_setup_ = true;
-    }
 
     int res = sqlite3_open(database_url_.c_str(), &database_conn_);
     
@@ -185,9 +183,6 @@ std::vector<DBEntry> SQLiteDB::ListEntries(entry_table_rep_t entry_type) const
     if (CheckInitialized())
         return entries;
 
-    if (BeginTransaction())
-        return entries;
-
     int statement_id;
     switch (entry_type)
     {
@@ -200,6 +195,9 @@ std::vector<DBEntry> SQLiteDB::ListEntries(entry_table_rep_t entry_type) const
         default:
             return entries;
     }
+
+    if (BeginTransaction())
+        return entries;
 
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
     // std::cout << "\t" << sqlite3_expanded_sql(stmt) << std::endl;
@@ -342,11 +340,7 @@ int SQLiteDB::CreateEntryType(const std::string &entry_type_name) const
 
 int SQLiteDB::CreateSubtype(const std::string &subtype_name, DBEntryMediaType media_type) const
 {
-    if (BeginTransaction())
-        return -1;
-
     int statement_id;
-
     switch (media_type)
     {
     case DBEntryMediaType::Document:
@@ -361,6 +355,9 @@ int SQLiteDB::CreateSubtype(const std::string &subtype_name, DBEntryMediaType me
     default:
         break;
     }
+
+    if (BeginTransaction())
+        return -1;
 
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
@@ -431,9 +428,6 @@ int SQLiteDB::CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) co
     if (CheckInitialized())
         return -1;
 
-    if (BeginTransaction())
-        return -1;
-
     int statement_id;
     switch (entry_type)
     {
@@ -446,6 +440,9 @@ int SQLiteDB::CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) co
         default:
             return -1;
     }
+
+    if (BeginTransaction())
+        return -1;
 
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
@@ -511,9 +508,6 @@ DBEntry SQLiteDB::ReadEntry(const std::string &uuid, entry_table_rep_t entry_typ
     if (CheckInitialized())
         return entry;
 
-    if (BeginTransaction())
-        return entry;
-
     int statement_id;
     switch (entry_type)
     {
@@ -527,14 +521,14 @@ DBEntry SQLiteDB::ReadEntry(const std::string &uuid, entry_table_rep_t entry_typ
             return entry;
     }
 
+    if (BeginTransaction())
+        return entry;
+
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
     if (BindText(stmt, "UUID", uuid))
-    {
-        EndTransaction();
         return entry;
-    }
 
     // run statement
     int ret = SQLITE_OK;
@@ -580,9 +574,6 @@ int SQLiteDB::UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) co
     if (CheckInitialized())
         return -1;
 
-    if (BeginTransaction())
-        return -1;
-
     int statement_id;
     switch (entry_type)
     {
@@ -595,6 +586,9 @@ int SQLiteDB::UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) co
         default:
             return -1;
     }
+
+    if (BeginTransaction())
+        return -1;
 
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
@@ -658,9 +652,6 @@ int SQLiteDB::DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type)
     if (CheckInitialized())
         return -1;
 
-    if (BeginTransaction())
-        return -1;
-
     int statement_id;
     switch (entry_type)
     {
@@ -673,15 +664,14 @@ int SQLiteDB::DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type)
         default:
             return -1;
     }
+    if (BeginTransaction())
+        return -1;
 
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
     if (BindText(stmt, "UUID", uuid))
-    {
-        EndTransaction();
         return -1;
-    }
 
     // run statement
     int ret = SQLITE_OK;
@@ -755,12 +745,6 @@ DBBoolResult SQLiteDB::DoesEntryUrlExist(const std::string &url, entry_table_rep
         return check;
     }
 
-    if (BeginTransaction())
-    {
-        check.error = sqlite3_errcode(database_conn_);
-        return check;
-    }
-
     int statement_id;
     switch (entry_type)
     {
@@ -774,12 +758,17 @@ DBBoolResult SQLiteDB::DoesEntryUrlExist(const std::string &url, entry_table_rep
             return check;
     }
 
+    if (BeginTransaction())
+    {
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
     if (BindText(stmt, "url", url))
     {
-        EndTransaction();
         check.error = sqlite3_errcode(database_conn_);
         return check;
     }
@@ -832,12 +821,6 @@ DBBoolResult SQLiteDB::DoesEntryUUIDExist(const std::string &uuid, entry_table_r
         return check;
     }
 
-    if (BeginTransaction())
-    {
-        check.error = sqlite3_errcode(database_conn_);
-        return check;
-    }
-
     int statement_id;
     switch (entry_type)
     {
@@ -851,12 +834,17 @@ DBBoolResult SQLiteDB::DoesEntryUUIDExist(const std::string &uuid, entry_table_r
             return check;
     }
 
+    if (BeginTransaction())
+    {
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
     if (BindText(stmt, "UUID", uuid))
     {
-        EndTransaction();
         check.error = sqlite3_errcode(database_conn_);
         return check;
     }
@@ -920,13 +908,11 @@ DBBoolResult SQLiteDB::DoesErrorEntryExist(const std::string &uuid, size_t progr
     // bind statement variables
     if (BindText(stmt, "UUID", uuid))
     {
-        EndTransaction();
         check.error = sqlite3_errcode(database_conn_);
         return check;
     }
     if (BindInt(stmt, "progress_num", progress_num))
     {
-        EndTransaction();
         check.error = sqlite3_errcode(database_conn_);
         return check;
     }
@@ -968,14 +954,7 @@ DBStringResult SQLiteDB::GetEntryUUIDFromUrl(const std::string &url, entry_table
     DBStringResult res;
 
     if (CheckInitialized())
-    {
         return res;
-    }
-
-    if (BeginTransaction())
-    {
-        return res;
-    }
 
     int statement_id;
     switch (entry_type)
@@ -991,14 +970,14 @@ DBStringResult SQLiteDB::GetEntryUUIDFromUrl(const std::string &url, entry_table
             return res;
     }
 
+    if (BeginTransaction())
+        return res;
+
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
     if (BindText(stmt, "url", url))
-    {
-        EndTransaction();
         return res;
-    }
 
     // run statement
     int ret = SQLITE_OK;
@@ -1020,9 +999,7 @@ DBStringResult SQLiteDB::GetEntryUUIDFromUrl(const std::string &url, entry_table
     ResetStatement(stmt);
 
     if (EndTransaction())
-    {
         return res;
-    }
 
     res.error = false;
 
@@ -1036,14 +1013,7 @@ DBStringResult SQLiteDB::GetEntryUrlFromUUID(const std::string &uuid, entry_tabl
     DBStringResult res;
 
     if (CheckInitialized())
-    {
         return res;
-    }
-
-    if (BeginTransaction())
-    {
-        return res;
-    }
 
     int statement_id;
     switch (entry_type)
@@ -1055,18 +1025,19 @@ DBStringResult SQLiteDB::GetEntryUrlFromUUID(const std::string &uuid, entry_tabl
             statement_id = GET_STAGING_ENTRY_URL_FROM_UUID_STATEMENT;
             break;
         default:
+            EndTransaction();
             res.error = true;
             return res;
     }
+
+    if (BeginTransaction())
+        return res;
 
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
     if (BindText(stmt, "UUID", uuid))
-    {
-        EndTransaction();
         return res;
-    }
 
     // run statement
     int ret = SQLITE_OK;
@@ -1089,9 +1060,7 @@ DBStringResult SQLiteDB::GetEntryUrlFromUUID(const std::string &uuid, entry_tabl
     ResetStatement(stmt);
 
     if (EndTransaction())
-    {
         return res;
-    }
 
     if (!last_url.empty())
     {
@@ -1386,6 +1355,7 @@ int SQLiteDB::BindInt(sqlite3_stmt* stmt, const std::string &parameter_name, con
     {
         std::cout << "Error: bind of " << parameter_name << ": " << bind_int << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
+        EndTransaction();
         return -1;
     }
 
@@ -1402,6 +1372,7 @@ int SQLiteDB::BindText(sqlite3_stmt* stmt, const std::string &parameter_name, co
     {
         std::cout << "Error: bind of " << parameter_name << ": " << bind_text << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
+        EndTransaction();
         return -1;
     }
 
