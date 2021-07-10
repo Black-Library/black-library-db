@@ -22,22 +22,18 @@ namespace BlackLibraryCommon = black_library::core::common;
 
 static constexpr const char CreateUserTable[]                     = "CREATE TABLE IF NOT EXISTS user(UID INTEGER PRIMARY KEY, permission_level INTEGER DEFAULT 0 NOT NULL, name TEXT NOT NULL)";
 static constexpr const char CreateEntryTypeTable[]                = "CREATE TABLE IF NOT EXISTS entry_type(name TEXT NOT NULL PRIMARY KEY)";
-static constexpr const char CreateDocumentSubtypeTable[]          = "CREATE TABLE IF NOT EXISTS document_subtype(name TEXT NOT NULL PRIMARY KEY)";
-static constexpr const char CreateImageGallerySubtypeTable[]      = "CREATE TABLE IF NOT EXISTS image_gallery_subtype(name TEXT NOT NULL PRIMARY KEY)";
-static constexpr const char CreateVideoSubtypeTable[]             = "CREATE TABLE IF NOT EXISTS video_subtype(name TEXT NOT NULL PRIMARY KEY)";
+static constexpr const char CreateEntrySubtypeTable[]             = "CREATE TABLE IF NOT EXISTS entry_subtype(name TEXT NOT NULL PRIMARY KEY, entry_type TEXT, FOREIGN KEY(entry_type) REFERENCES entry_type(name))";
 static constexpr const char CreateBookGenreTable[]                = "CREATE TABLE IF NOT EXISTS book_genre(name TEXT NOT NULL PRIMARY KEY)";
 static constexpr const char CreateDocumentTagTable[]              = "CREATE TABLE IF NOT EXISTS document_tag(name TEXT NOT NULL PRIMARY KEY)";
-static constexpr const char CreateSourceTable[]                   = "CREATE TABLE IF NOT EXISTS source(name TEXT NOT NULL PRIMARY KEY, type TEXT, FOREIGN KEY(type) REFERENCES entry_type(name))";
+static constexpr const char CreateSourceTable[]                   = "CREATE TABLE IF NOT EXISTS source(name TEXT NOT NULL PRIMARY KEY, type TEXT, subtype TEXT, FOREIGN KEY(type) REFERENCES entry_type(name) FOREIGN KEY(subtype) REFERENCES entry_subtype(name))";
 static constexpr const char CreateStagingEntryTable[]             = "CREATE TABLE IF NOT EXISTS staging_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, author TEXT NOT NULL, nickname TEXT, source TEXT, url TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date INTEGER, check_date INTEGER, update_date INTEGER, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
 static constexpr const char CreateBlackEntryTable[]               = "CREATE TABLE IF NOT EXISTS black_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, author TEXT NOT NULL, nickname TEXT, source TEXT, url TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date INTEGER, check_date INTEGER, update_date INTEGER, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
 static constexpr const char CreateErrorEntryTable[]               = "CREATE TABLE IF NOT EXISTS error_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, progress_num INTEGER)";
 
 static constexpr const char CreateUserStatement[]                 = "INSERT INTO user(UID, permission_level, name) VALUES (:UID, :permission_level, :name)";
 static constexpr const char CreateEntryTypeStatement[]            = "INSERT INTO entry_type(name) VALUES (:name)";
-static constexpr const char CreateDocumentSubtypeStatement[]      = "INSERT INTO document_subtype(name) VALUES (:name)";
-static constexpr const char CreateImageGallerySubtypeStatement[]  = "INSERT INTO image_gallery_subtype(name) VALUES (:name)";
-static constexpr const char CreateVideoSubtypeStatement[]         = "INSERT INTO video_subtype(name) VALUES (:name)";
-static constexpr const char CreateSourceStatement[]               = "INSERT INTO source(name, type) VALUES (:name, :type)";
+static constexpr const char CreateEntrySubtypeStatement[]         = "INSERT INTO entry_subtype(name, type) VALUES (:name, :type)";
+static constexpr const char CreateSourceStatement[]               = "INSERT INTO source(name, type, subtype) VALUES (:name, :type, :subtype)";
 static constexpr const char CreateStagingEntryStatement[]         = "INSERT INTO staging_entry(UUID, title, author, nickname, source, url, last_url, series, series_length, version, media_path, birth_date, check_date, update_date, user_contributed) VALUES (:UUID, :title, :author, :nickname, :source, :url, :last_url, :series, :series_length, :version, :media_path, :birth_date, :check_date, :update_date, :user_contributed)";
 static constexpr const char CreateBlackEntryStatement[]           = "INSERT INTO black_entry(UUID, title, author, nickname, source, url, last_url, series, series_length, version, media_path, birth_date, check_date, update_date, user_contributed) VALUES (:UUID, :title, :author, :nickname, :source, :url, :last_url, :series, :series_length, :version, :media_path, :birth_date, :check_date, :update_date, :user_contributed)";
 static constexpr const char CreateErrorEntryStatement[]           = "INSERT INTO error_entry(UUID, progress_num) VALUES (:UUID, :progress_num)";
@@ -69,9 +65,7 @@ static constexpr const char GetBlackEntryUrlFromUUIDStatement[]   = "SELECT url,
 typedef enum {
     CREATE_USER_STATEMENT,
     CREATE_ENTRY_TYPE_STATEMENT,
-    CREATE_DOCUMENT_SUBTYPE_STATEMENT,
-    CREATE_IMAGE_GALLERY_SUBTYPE_STATEMENT,
-    CREATE_VIDEO_SUBTYPE_STATEMENT,
+    CREATE_ENTRY_SUBTYPE_STATEMENT,
     CREATE_SOURCE_STATEMENT,
     CREATE_STAGING_ENTRY_STATEMENT,
     CREATE_BLACK_ENTRY_STATEMENT,
@@ -338,23 +332,9 @@ int SQLiteDB::CreateEntryType(const std::string &entry_type_name) const
     return 0;
 }
 
-int SQLiteDB::CreateSubtype(const std::string &subtype_name, DBEntryMediaType media_type) const
+int SQLiteDB::CreateSubtype(DBEntryMediaSubtype media_subtype, DBEntryMediaType media_type) const
 {
-    int statement_id;
-    switch (media_type)
-    {
-    case DBEntryMediaType::Document:
-        statement_id = CREATE_DOCUMENT_SUBTYPE_STATEMENT;
-        break;
-    case DBEntryMediaType::ImageGallery:
-        statement_id = CREATE_IMAGE_GALLERY_SUBTYPE_STATEMENT;
-        break;
-    case DBEntryMediaType::Video:
-        statement_id = CREATE_VIDEO_SUBTYPE_STATEMENT;
-        break;
-    default:
-        break;
-    }
+    const int statement_id = CREATE_ENTRY_SUBTYPE_STATEMENT;
 
     if (BeginTransaction())
         return -1;
@@ -362,7 +342,9 @@ int SQLiteDB::CreateSubtype(const std::string &subtype_name, DBEntryMediaType me
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
-    if (BindText(stmt, "name", subtype_name))
+    if (BindText(stmt, "name", GetMediaSubtypeString(media_subtype)))
+        return -1;
+    if (BindText(stmt, "type", GetMediaTypeString(media_type)))
         return -1;
 
     // run statement
@@ -372,7 +354,7 @@ int SQLiteDB::CreateSubtype(const std::string &subtype_name, DBEntryMediaType me
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
-        std::cout << "Error: create subtype: " << subtype_name << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
+        std::cout << "Error: create subtype: " << GetMediaSubtypeString(media_subtype) << " - " << GetMediaTypeString(media_type) << " failed - " << sqlite3_errmsg(database_conn_) << std::endl;
         ResetStatement(stmt);
         EndTransaction();
         return -1;
@@ -398,6 +380,8 @@ int SQLiteDB::CreateSource(const DBSource &source) const
     if (BindText(stmt, "name", source.name))
         return -1;
     if (BindText(stmt, "type", GetMediaTypeString(source.media_type)))
+        return -1;
+    if (BindText(stmt, "subtype", GetMediaSubtypeString(source.subtype)))
         return -1;
 
     // run statement
@@ -1087,9 +1071,7 @@ int SQLiteDB::GenerateTables()
 
     res += GenerateTable(CreateUserTable);
     res += GenerateTable(CreateEntryTypeTable);
-    res += GenerateTable(CreateDocumentSubtypeTable);
-    res += GenerateTable(CreateImageGallerySubtypeTable);
-    res += GenerateTable(CreateVideoSubtypeTable);
+    res += GenerateTable(CreateEntrySubtypeTable);
     res += GenerateTable(CreateBookGenreTable);
     res += GenerateTable(CreateDocumentTagTable);
     res += GenerateTable(CreateSourceTable);
@@ -1126,18 +1108,18 @@ int SQLiteDB::SetupDefaultSubtypeTable()
 {
     int res = 0;
 
-    res += CreateSubtype("blog", DBEntryMediaType::Document);
-    res += CreateSubtype("book", DBEntryMediaType::Document);
-    res += CreateSubtype("news-article", DBEntryMediaType::Document);
-    res += CreateSubtype("paper", DBEntryMediaType::Document);
-    res += CreateSubtype("webnovel", DBEntryMediaType::Document);
+    res += CreateSubtype(DBEntryMediaSubtype::BLOG, DBEntryMediaType::Document);
+    res += CreateSubtype(DBEntryMediaSubtype::BOOK, DBEntryMediaType::Document);
+    res += CreateSubtype(DBEntryMediaSubtype::NEWS_ARTICLE, DBEntryMediaType::Document);
+    res += CreateSubtype(DBEntryMediaSubtype::PAPER, DBEntryMediaType::Document);
+    res += CreateSubtype(DBEntryMediaSubtype::WEBNOVEL, DBEntryMediaType::Document);
 
-    res += CreateSubtype("manga", DBEntryMediaType::ImageGallery);
-    res += CreateSubtype("photo-album", DBEntryMediaType::ImageGallery);
+    res += CreateSubtype(DBEntryMediaSubtype::MANGA, DBEntryMediaType::ImageGallery);
+    res += CreateSubtype(DBEntryMediaSubtype::PHOTO_ALBUM, DBEntryMediaType::ImageGallery);
 
-    res += CreateSubtype("movie", DBEntryMediaType::Video);
-    res += CreateSubtype("tv-show", DBEntryMediaType::Video);
-    res += CreateSubtype("youtube", DBEntryMediaType::Video);
+    res += CreateSubtype(DBEntryMediaSubtype::MOVIE, DBEntryMediaType::Video);
+    res += CreateSubtype(DBEntryMediaSubtype::TV_SHOW, DBEntryMediaType::Video);
+    res += CreateSubtype(DBEntryMediaSubtype::YOUTUBE, DBEntryMediaType::Video);
 
     return res;
 }
@@ -1188,9 +1170,7 @@ int SQLiteDB::PrepareStatements()
 
     res += PrepareStatement(CreateUserStatement, CREATE_USER_STATEMENT);
     res += PrepareStatement(CreateEntryTypeStatement, CREATE_ENTRY_TYPE_STATEMENT);
-    res += PrepareStatement(CreateDocumentSubtypeStatement, CREATE_DOCUMENT_SUBTYPE_STATEMENT);
-    res += PrepareStatement(CreateImageGallerySubtypeStatement, CREATE_IMAGE_GALLERY_SUBTYPE_STATEMENT);
-    res += PrepareStatement(CreateVideoSubtypeStatement, CREATE_VIDEO_SUBTYPE_STATEMENT);
+    res += PrepareStatement(CreateEntrySubtypeStatement, CREATE_ENTRY_SUBTYPE_STATEMENT);
     res += PrepareStatement(CreateSourceStatement, CREATE_SOURCE_STATEMENT);
 
     res += PrepareStatement(CreateStagingEntryStatement, CREATE_STAGING_ENTRY_STATEMENT);

@@ -42,9 +42,25 @@ enum class DBEntryMediaType : uint8_t {
     _NUM_DB_ENTRY_MEDIA_TYPES
 };
 
+enum class DBEntryMediaSubtype : uint8_t {
+    DBEntryMediaSubtypeError = 0,
+    BLOG,
+    BOOK,
+    MANGA,
+    MOVIE,
+    NEWS_ARTICLE,
+    PAPER,
+    PHOTO_ALBUM,
+    TV_SHOW,
+    WEBNOVEL,
+    YOUTUBE,
+    _NUM_DB_ENTRY_MEDIA_SUBTYPES
+};
+
 struct DBSource {
     std::string name;
     DBEntryMediaType media_type;
+    DBEntryMediaSubtype subtype;
 };
 
 typedef enum {
