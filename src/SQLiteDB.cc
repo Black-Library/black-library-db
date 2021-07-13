@@ -117,7 +117,7 @@ SQLiteDB::SQLiteDB(const std::string &database_url, bool first_time_setup) :
         std::cout << "Empty database url given, using default: " << database_url_ << std::endl;
     }
 
-    if (!BlackLibraryCommon::Exists(database_url_))
+    if (!BlackLibraryCommon::FileExists(database_url_))
         first_time_setup_ = true;
 
     int res = sqlite3_open(database_url_.c_str(), &database_conn_);
