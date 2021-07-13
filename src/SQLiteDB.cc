@@ -32,7 +32,7 @@ static constexpr const char CreateErrorEntryTable[]               = "CREATE TABL
 
 static constexpr const char CreateUserStatement[]                 = "INSERT INTO user(UID, permission_level, name) VALUES (:UID, :permission_level, :name)";
 static constexpr const char CreateEntryTypeStatement[]            = "INSERT INTO entry_type(name) VALUES (:name)";
-static constexpr const char CreateEntrySubtypeStatement[]         = "INSERT INTO entry_subtype(name, type) VALUES (:name, :type)";
+static constexpr const char CreateEntrySubtypeStatement[]         = "INSERT INTO entry_subtype(name, entry_type) VALUES (:name, :entry_type)";
 static constexpr const char CreateSourceStatement[]               = "INSERT INTO source(name, type, subtype) VALUES (:name, :type, :subtype)";
 static constexpr const char CreateStagingEntryStatement[]         = "INSERT INTO staging_entry(UUID, title, author, nickname, source, url, last_url, series, series_length, version, media_path, birth_date, check_date, update_date, user_contributed) VALUES (:UUID, :title, :author, :nickname, :source, :url, :last_url, :series, :series_length, :version, :media_path, :birth_date, :check_date, :update_date, :user_contributed)";
 static constexpr const char CreateBlackEntryStatement[]           = "INSERT INTO black_entry(UUID, title, author, nickname, source, url, last_url, series, series_length, version, media_path, birth_date, check_date, update_date, user_contributed) VALUES (:UUID, :title, :author, :nickname, :source, :url, :last_url, :series, :series_length, :version, :media_path, :birth_date, :check_date, :update_date, :user_contributed)";
@@ -1130,22 +1130,32 @@ int SQLiteDB::SetupDefaultSourceTable()
     DBSource ffn_source;
     DBSource rr_source;
     DBSource sbf_source;
+    DBSource svf_source;
     DBSource yt_source;
 
     ao3_source.name = BlackLibraryCommon::AO3::source_name;
     ao3_source.media_type = DBEntryMediaType::Document;
+    ao3_source.subtype = DBEntryMediaSubtype::WEBNOVEL;
 
     ffn_source.name = BlackLibraryCommon::FFN::source_name;
     ffn_source.media_type = DBEntryMediaType::Document;
+    ffn_source.subtype = DBEntryMediaSubtype::WEBNOVEL;
 
     rr_source.name = BlackLibraryCommon::RR::source_name;
     rr_source.media_type = DBEntryMediaType::Document;
+    rr_source.subtype = DBEntryMediaSubtype::WEBNOVEL;
 
     sbf_source.name = BlackLibraryCommon::SBF::source_name;
     sbf_source.media_type = DBEntryMediaType::Document;
+    sbf_source.subtype = DBEntryMediaSubtype::WEBNOVEL;
+
+    svf_source.name = BlackLibraryCommon::SBF::source_name;
+    svf_source.media_type = DBEntryMediaType::Document;
+    svf_source.subtype = DBEntryMediaSubtype::WEBNOVEL;
 
     yt_source.name = BlackLibraryCommon::YT::source_name;
     yt_source.media_type = DBEntryMediaType::Video;
+    yt_source.subtype = DBEntryMediaSubtype::YOUTUBE;
 
     if (CreateSource(ao3_source))
         return -1;
@@ -1154,6 +1164,8 @@ int SQLiteDB::SetupDefaultSourceTable()
     if (CreateSource(rr_source))
         return -1;
     if (CreateSource(sbf_source))
+        return -1;
+    if (CreateSource(svf_source))
         return -1;
     if (CreateSource(yt_source))
         return -1;
