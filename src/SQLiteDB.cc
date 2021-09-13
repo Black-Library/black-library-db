@@ -443,7 +443,7 @@ int SQLiteDB::CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) co
         return -1;
     if (BindText(stmt, "url", entry.url))
         return -1;
-    if (BindText(stmt, "last_url", entry.url))
+    if (BindText(stmt, "last_url", entry.last_url))
         return -1;
     if (BindText(stmt, "series", entry.series))
         return -1;
