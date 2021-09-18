@@ -104,10 +104,10 @@ int main(int argc, char* argv[])
     create_staging_entry.update_date = 2;
     create_staging_entry.user_contributed = 4004;
 
-    blacklibrarydb.CreateStagingEntry(create_staging_entry);
+    // blacklibrarydb.CreateStagingEntry(create_staging_entry);
 
     // second time should fail
-    blacklibrarydb.CreateStagingEntry(create_staging_entry);
+    // blacklibrarydb.CreateStagingEntry(create_staging_entry);
 
     read_staging_entry = blacklibrarydb.ReadStagingEntry("55ee59ad-2feb-4196-960b-3226c65c80d5");
 

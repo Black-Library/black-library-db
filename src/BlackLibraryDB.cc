@@ -4,8 +4,11 @@
 
 #include <iostream>
 
-#include <BlackLibraryDB.h>
+#include <LogOperations.h>
+
 #include <SQLiteDB.h>
+
+#include <BlackLibraryDB.h>
 
 namespace black_library {
 
@@ -13,11 +16,15 @@ namespace core {
 
 namespace db {
 
+namespace BlackLibraryCommon = black_library::core::common;
+
 BlackLibraryDB::BlackLibraryDB(const std::string &database_url, bool initialize) :
     database_connection_interface_(nullptr),
     mutex_(),
     database_url_(database_url)
 {
+    BlackLibraryCommon::InitRotatingLogger("db", "/mnt/black-library/log/");
+
     database_connection_interface_ = std::make_unique<SQLiteDB>(database_url_, initialize);
 }
 
@@ -58,7 +65,7 @@ int BlackLibraryDB::CreateStagingEntry(const DBEntry &entry)
 
     if (database_connection_interface_->CreateEntry(entry, STAGING_ENTRY))
     {
-        std::cout << "Error: failed to create staging entry" << std::endl;
+        BlackLibraryCommon::LogError("db", "Failed to create staging entry with UUID: {}", entry.uuid);
         return -1;
     }
 
@@ -74,7 +81,7 @@ DBEntry BlackLibraryDB::ReadStagingEntry(const std::string &uuid)
     entry = database_connection_interface_->ReadEntry(uuid, STAGING_ENTRY);
     if (entry.uuid.empty())
     {
-        std::cout << "Error: failed to read staging entry" << std::endl;
+        BlackLibraryCommon::LogError("db", "Failed to read staging entry with UUID: {}", uuid);
         return entry;
     }
 
@@ -87,7 +94,7 @@ int BlackLibraryDB::UpdateStagingEntry(const DBEntry &entry)
 
     if (database_connection_interface_->UpdateEntry(entry, STAGING_ENTRY))
     {
-        std::cout << "Error: failed to update staging entry" << std::endl;
+        BlackLibraryCommon::LogError("db", "Failed to update staging entry with UUID: {}", entry.uuid);
         return -1;
     }
 
@@ -100,7 +107,7 @@ int BlackLibraryDB::DeleteStagingEntry(const std::string &uuid)
 
     if (database_connection_interface_->DeleteEntry(uuid, STAGING_ENTRY))
     {
-        std::cout << "Error: failed to delete staging entry" << std::endl;
+        BlackLibraryCommon::LogError("db", "Failed to delete staging entry with UUID: {}", uuid);
         return -1;
     }
 
@@ -113,7 +120,7 @@ int BlackLibraryDB::CreateBlackEntry(const DBEntry &entry)
 
     if (database_connection_interface_->CreateEntry(entry, BLACK_ENTRY))
     {
-        std::cout << "Error: failed to create black entry" << std::endl;
+        BlackLibraryCommon::LogError("db", "Failed to create black entry with UUID: {}", entry.uuid);
         return -1;
     }
 
@@ -129,7 +136,7 @@ DBEntry BlackLibraryDB::ReadBlackEntry(const std::string &uuid)
     entry = database_connection_interface_->ReadEntry(uuid, BLACK_ENTRY);
     if (entry.uuid.empty())
     {
-        std::cout << "Error: failed to read black entry" << std::endl;
+        BlackLibraryCommon::LogError("db", "Failed to read black entry with UUID: {}", uuid);
         return entry;
     }
 
@@ -142,7 +149,7 @@ int BlackLibraryDB::UpdateBlackEntry(const DBEntry &entry)
 
     if (database_connection_interface_->UpdateEntry(entry, BLACK_ENTRY))
     {
-        std::cout << "Error: failed to update black entry" << std::endl;
+        BlackLibraryCommon::LogError("db", "Failed to update black entry with UUID: {}", entry.uuid);
         return -1;
     }
 
@@ -155,7 +162,7 @@ int BlackLibraryDB::DeleteBlackEntry(const std::string &uuid)
 
     if (database_connection_interface_->DeleteEntry(uuid, BLACK_ENTRY))
     {
-        std::cout << "Error: failed to delete black entry" << std::endl;
+        BlackLibraryCommon::LogError("db", "Failed to delete black entry with UUID: {}", uuid);
         return -1;
     }
 
@@ -168,7 +175,7 @@ int BlackLibraryDB::CreateErrorEntry(const ErrorEntry &entry)
 
     if (database_connection_interface_->CreateErrorEntry(entry))
     {
-        std::cout << "Error: failed to create error entry" << std::endl;
+        BlackLibraryCommon::LogError("db", "Failed to create error entry with UUID: {}", entry.uuid);
         return -1;
     }
 
@@ -183,7 +190,7 @@ bool BlackLibraryDB::DoesStagingEntryUrlExist(const std::string &url)
     
     if (check.error != 0)
     {
-        std::cout << "Error: database returned " << check.error << std::endl;
+        BlackLibraryCommon::LogError("db", "Database returned {}", check.error);
         return false;
     }
 
@@ -198,7 +205,7 @@ bool BlackLibraryDB::DoesBlackEntryUrlExist(const std::string &url)
     
     if (check.error != 0)
     {
-        std::cout << "Error: database returned " << check.error << std::endl;
+        BlackLibraryCommon::LogError("db", "Database returned {}", check.error);
         return false;
     }
 
@@ -213,7 +220,7 @@ bool BlackLibraryDB::DoesStagingEntryUUIDExist(const std::string &uuid)
     
     if (check.error != 0)
     {
-        std::cout << "Error: database returned " << check.error << std::endl;
+        BlackLibraryCommon::LogError("db", "Database returned {}", check.error);
         return false;
     }
 
@@ -228,7 +235,7 @@ bool BlackLibraryDB::DoesBlackEntryUUIDExist(const std::string &uuid)
     
     if (check.error != 0)
     {
-        std::cout << "Error: database returned " << check.error << std::endl;
+        BlackLibraryCommon::LogError("db", "Database returned {}", check.error);
         return false;
     }
 
@@ -243,7 +250,7 @@ bool BlackLibraryDB::DoesErrorEntryExist(const std::string &uuid, size_t progres
     
     if (check.error != 0)
     {
-        std::cout << "Error: database returned " << check.error << std::endl;
+        BlackLibraryCommon::LogError("db", "Database returned {}", check.error);
         return false;
     }
 
@@ -256,7 +263,7 @@ DBStringResult BlackLibraryDB::GetStagingEntryUUIDFromUrl(const std::string &url
 
     DBStringResult res = database_connection_interface_->GetEntryUUIDFromUrl(url, STAGING_ENTRY);
     if (res.error)
-        std::cout << "Error: failed to get staging UUID from url" << std::endl;
+        BlackLibraryCommon::LogError("db", "Failed to get staging UUID from url: {}", url);
 
     return res;
 }
@@ -274,7 +281,7 @@ DBStringResult BlackLibraryDB::GetBlackEntryUUIDFromUrl(const std::string &url)
 
     DBStringResult res = database_connection_interface_->GetEntryUUIDFromUrl(url, BLACK_ENTRY);
     if (res.error)
-        std::cout << "Error: failed to get black UUID from url" << std::endl;
+        BlackLibraryCommon::LogError("db", "Failed to get black UUID from url: {}", url);
 
     return res;
 }
