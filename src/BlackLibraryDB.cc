@@ -23,7 +23,7 @@ BlackLibraryDB::BlackLibraryDB(const std::string &database_url, bool initialize)
     mutex_(),
     database_url_(database_url)
 {
-    BlackLibraryCommon::InitRotatingLogger("db", "/mnt/black-library/log/");
+    BlackLibraryCommon::InitRotatingLogger("db", "/mnt/black-library/log/", false);
 
     database_connection_interface_ = std::make_unique<SQLiteDB>(database_url_, initialize);
 }
