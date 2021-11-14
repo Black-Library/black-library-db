@@ -21,8 +21,10 @@ std::string GetEntryTypeString(entry_table_rep_t type)
         return "black_entry";
     case STAGING_ENTRY:
         return "staging_entry";
+    case ERROR_ENTRY:
+        return "error_entry";
     default:
-        return "error";
+        return "unknown_entry_type";
     }
 }
 

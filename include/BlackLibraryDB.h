@@ -39,6 +39,7 @@ public:
     int DeleteBlackEntry(const std::string &uuid);
 
     int CreateErrorEntry(const ErrorEntry &entry);
+    int DeleteErrorEntry(const std::string &uuid, size_t progress_num);
 
     bool DoesStagingEntryUrlExist(const std::string &url);
     bool DoesBlackEntryUrlExist(const std::string &url);

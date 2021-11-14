@@ -724,6 +724,45 @@ int SQLiteDB::CreateErrorEntry(const ErrorEntry &entry) const
     return 0;
 }
 
+int SQLiteDB::DeleteErrorEntry(const std::string &uuid, size_t progress_num) const
+{
+    BlackLibraryCommon::LogDebug("db", "Delete error entry for UUID: {} and progress number: {}", uuid, progress_num);
+
+    if (CheckInitialized())
+        return -1;
+
+    if (BeginTransaction())
+        return -1;
+
+    sqlite3_stmt *stmt = prepared_statements_[DELETE_ERROR_ENTRY_STATEMENT];
+
+    // bind statement variables
+    if (BindText(stmt, "UUID", uuid))
+        return -1;
+    if (BindInt(stmt, "progress_num", progress_num))
+        return -1;
+
+    // run statement
+    int ret = SQLITE_OK;
+
+    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_DONE)
+    {
+        BlackLibraryCommon::LogError("db", "Delete error entry for UUID: {} and progress number: {} failed: {}", uuid, progress_num, sqlite3_errmsg(database_conn_));
+        ResetStatement(stmt);
+        EndTransaction();
+        return -1;
+    }
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return -1;
+
+    return 0;
+}
+
 DBBoolResult SQLiteDB::DoesEntryUrlExist(const std::string &url, entry_table_rep_t entry_type) const
 {
     BlackLibraryCommon::LogDebug("db", "Check {} entries for url: {}", GetEntryTypeString(entry_type), url);
@@ -1054,14 +1093,7 @@ DBStringResult SQLiteDB::GetEntryUrlFromUUID(const std::string &uuid, entry_tabl
     if (EndTransaction())
         return res;
 
-    if (!last_url.empty())
-    {
-        res.result = last_url;
-    }
-    else
-    {
-        res.result = url;
-    } 
+    res.result = url;
 
     res.error = false;
 
@@ -1212,7 +1244,7 @@ int SQLiteDB::PrepareStatements()
 
     res += PrepareStatement(DeleteStagingEntryStatement, DELETE_STAGING_ENTRY_STATEMENT);
     res += PrepareStatement(DeleteBlackEntryStatement, DELETE_BLACK_ENTRY_STATEMENT);
-    res += PrepareStatement(DeleteBlackEntryStatement, DELETE_ERROR_ENTRY_STATEMENT);
+    res += PrepareStatement(DeleteErrorEntryStatement, DELETE_ERROR_ENTRY_STATEMENT);
 
     res += PrepareStatement(GetStagingEntriesStatement, GET_STAGING_ENTRIES_STATEMENT);
     res += PrepareStatement(GetBlackEntriesStatement, GET_BLACK_ENTRIES_STATEMENT);

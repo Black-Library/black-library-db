@@ -66,13 +66,14 @@ struct DBSource {
 typedef enum {
     BLACK_ENTRY,
     STAGING_ENTRY,
+    ERROR_ENTRY,
     _NUM_ENTRY_TYPES
 } entry_table_t;
 
 typedef uint8_t entry_table_rep_t;
 
 struct DBEntry {
-    std::string uuid;
+    std::string uuid = "";
     std::string title;
     std::string author;
     std::string nickname = "";
@@ -146,7 +147,6 @@ struct DBUserProgress {
 
 struct DBStringResult {
     std::string result = "";
-    std::string debug_string = "";
     bool does_not_exist = false;
     int error = 0;
 };

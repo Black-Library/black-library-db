@@ -182,6 +182,20 @@ int BlackLibraryDB::CreateErrorEntry(const ErrorEntry &entry)
     return 0;
 }
 
+int BlackLibraryDB::DeleteErrorEntry(const std::string &uuid, size_t progress_num)
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    if (database_connection_interface_->DeleteErrorEntry(uuid, progress_num))
+    {
+        BlackLibraryCommon::LogError("db", "Failed to delete error entry with UUID: {} and progress number: {}", uuid, progress_num);
+        return -1;
+    }
+
+    return 0;
+}
+
+
 bool BlackLibraryDB::DoesStagingEntryUrlExist(const std::string &url)
 {
     const std::lock_guard<std::mutex> lock(mutex_);

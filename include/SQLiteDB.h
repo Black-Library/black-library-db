@@ -37,6 +37,7 @@ public:
     int DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type) const override;
 
     int CreateErrorEntry(const ErrorEntry &entry) const;
+    int DeleteErrorEntry(const std::string &uuid, size_t progress_num) const;
 
     DBBoolResult DoesEntryUrlExist(const std::string &url, entry_table_rep_t entry_type) const override;
     DBBoolResult DoesEntryUUIDExist(const std::string &uuid, entry_table_rep_t entry_type) const override;

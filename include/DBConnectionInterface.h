@@ -33,7 +33,7 @@ public:
     virtual int DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type) const = 0;
 
     virtual int CreateErrorEntry(const ErrorEntry &entry) const = 0;
-    // virutal int DeleteErrorEntry(const std::string &uuid, size_t progress_num) const = 0;
+    virtual int DeleteErrorEntry(const std::string &uuid, size_t progress_num) const = 0;
 
     virtual DBBoolResult DoesEntryUrlExist(const std::string &url, entry_table_rep_t entry_type) const = 0;
     virtual DBBoolResult DoesEntryUUIDExist(const std::string &uuid, entry_table_rep_t entry_type) const = 0;
