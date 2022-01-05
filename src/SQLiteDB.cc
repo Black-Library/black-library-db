@@ -99,33 +99,33 @@ typedef enum {
     _NUM_PREPARED_STATEMENTS
 } prepared_statement_id_t;
 
-SQLiteDB::SQLiteDB(const std::string &database_url, bool first_time_setup) :
+SQLiteDB::SQLiteDB(const std::string &database_url) :
     database_conn_(),
     prepared_statements_(),
-    database_url_(database_url),
-    first_time_setup_(first_time_setup),
     initialized_(false)
 {
-    if (database_url_.empty())
+    std::string target_url = database_url;
+    if (target_url.empty())
     {
-        database_url_ = "/mnt/black-library/db/catalog.db";
-        BlackLibraryCommon::LogDebug("db", "Empty database url given, using default: {}", database_url_);
+        target_url = DefaultDBPath;
+        BlackLibraryCommon::LogDebug("db", "Empty database url given, using default: {}", target_url);
     }
 
-    if (!BlackLibraryCommon::FileExists(database_url_))
-        first_time_setup_ = true;
+    bool first_time_setup = false;
+    if (!BlackLibraryCommon::FileExists(target_url))
+        first_time_setup = true;
 
-    int res = sqlite3_open(database_url_.c_str(), &database_conn_);
+    int res = sqlite3_open(target_url.c_str(), &database_conn_);
     
     if (res != SQLITE_OK)
     {
-        BlackLibraryCommon::LogError("db", "Failed to open db at: {} - {}", database_url_, sqlite3_errmsg(database_conn_));
+        BlackLibraryCommon::LogError("db", "Failed to open db at: {} - {}", target_url, sqlite3_errmsg(database_conn_));
         return;
     }
 
-    BlackLibraryCommon::LogInfo("db", "Open database at: {}", database_url_);
+    BlackLibraryCommon::LogInfo("db", "Open database at: {}", target_url);
 
-    if (first_time_setup_)
+    if (first_time_setup)
     {
         if (GenerateTables())
         {
@@ -140,7 +140,7 @@ SQLiteDB::SQLiteDB(const std::string &database_url, bool first_time_setup) :
         return;
     }
 
-    if (first_time_setup_)
+    if (first_time_setup)
     {
         if (SetupDefaultBlackLibraryUsers())
         {

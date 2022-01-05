@@ -20,7 +20,7 @@ namespace db {
 class SQLiteDB : public DBConnectionInterface
 {
 public:
-    explicit SQLiteDB(const std::string &database_url, bool first_time_setup);
+    explicit SQLiteDB(const std::string &database_url);
     ~SQLiteDB();
 
     std::vector<DBEntry> ListEntries(entry_table_rep_t entry_type) const;
@@ -71,8 +71,6 @@ private:
 
     sqlite3 *database_conn_;
     std::vector<sqlite3_stmt *> prepared_statements_;
-    std::string database_url_;
-    bool first_time_setup_;
     bool initialized_;
 };
 
