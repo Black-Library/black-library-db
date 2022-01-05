@@ -14,6 +14,8 @@ namespace core {
 
 namespace db {
 
+static constexpr const char DefaultDBPath[] = "/mnt/black-library/db/catalog.db";
+
 enum class DBPermissions : uint8_t {
     NoPermission = 0,
     ReadPermission,
