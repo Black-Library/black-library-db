@@ -3,8 +3,12 @@
  */
 
 #include <getopt.h>
-#include <iostream>
 #include <string.h>
+
+#include <fstream>
+#include <iostream>
+
+#include <ConfigOperations.h>
 
 #include <BlackLibraryDB.h>
 
@@ -12,24 +16,23 @@ namespace BlackLibraryDB = black_library::core::db;
 
 struct options
 {
-    std::string db_path = "";
-    bool initialize_db = false;
+    std::string config_path = "";
+    bool print_config = false;
 };
 
 static void Usage(const char *prog)
 {
     const char *p = strchr(prog, '/');
-    printf("usage: %s --(p)ath --[i]nit_db [-h]\n", p ? (p + 1) : prog);
+    printf("usage: %s --(c)onfig --[p]rint_config [-h]\n", p ? (p + 1) : prog);
 }
 
 static int ParseOptions(int argc, char **argv, struct options *opts)
 {
-    static const char *const optstr = "hip:";
+    static const char *const optstr = "c:hp";
     static const struct option long_opts[] = {
+        { "config", required_argument, 0, 'c' },
         { "help", no_argument, 0, 'h' },
-        { "init_db", no_argument, 0, 'i' },
-        { "path", required_argument, 0, 'p' },
-        { "verbose", no_argument, 0, 'v' },
+        { "print_config", no_argument, 0, 'p' },
         { 0, 0, 0, 0 }
     };
 
@@ -41,15 +44,15 @@ static int ParseOptions(int argc, char **argv, struct options *opts)
     {
         switch (opt)
         {
+            case 'c':
+                opts->config_path = std::string(optarg);
+                break;
             case 'h':
                 Usage(argv[0]);
                 exit(0);
                 break;
-            case 'i':
-                opts->initialize_db = true;
-                break;
             case 'p':
-                opts->db_path = std::string(optarg);
+                opts->print_config = true;
                 break;
             default:
                 exit(1);
@@ -82,12 +85,21 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
+    std::ifstream in_file(opts.config_path);
+    njson config;
+    in_file >> config;
+
+    if (opts.print_config)
+    {
+        std::cout << config.dump(4) << std::endl;
+    }
+
     BlackLibraryDB::DBEntry create_staging_entry;
     BlackLibraryDB::DBEntry read_staging_entry;
     BlackLibraryDB::DBEntry update_staging_entry;
 
     std::cout << "Starting db" << std::endl;
-    BlackLibraryDB::BlackLibraryDB blacklibrarydb(opts.db_path, opts.initialize_db);
+    BlackLibraryDB::BlackLibraryDB blacklibrarydb(config);
 
     create_staging_entry.uuid = "55ee59ad-2feb-4196-960b-3226c65c80d5";
     create_staging_entry.title = "foo2";

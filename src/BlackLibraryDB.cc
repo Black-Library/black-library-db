@@ -18,14 +18,33 @@ namespace db {
 
 namespace BlackLibraryCommon = black_library::core::common;
 
-BlackLibraryDB::BlackLibraryDB(const std::string &database_url, bool initialize) :
+BlackLibraryDB::BlackLibraryDB(const njson &config) :
     database_connection_interface_(nullptr),
-    mutex_(),
-    database_url_(database_url)
+    mutex_()
 {
-    BlackLibraryCommon::InitRotatingLogger("db", "/mnt/black-library/log/", false);
+    njson nconfig = config["config"];
 
-    database_connection_interface_ = std::make_unique<SQLiteDB>(database_url_, initialize);
+    std::string database_url = DefaultDBPath;
+    if (nconfig.contains("db_path"))
+    {
+        database_url = nconfig["db_path"];
+    }
+
+    std::string logger_path = BlackLibraryCommon::DefaultLogPath;
+    if (nconfig.contains("logger_path"))
+    {
+        logger_path = nconfig["logger_path"];
+    }
+
+    bool logger_level = BlackLibraryCommon::DefaultLogLevel;
+    if (nconfig.contains("db_debug_log"))
+    {
+        logger_level = nconfig["db_debug_log"];
+    }
+
+    BlackLibraryCommon::InitRotatingLogger("db", logger_path, logger_level);
+
+    database_connection_interface_ = std::make_unique<SQLiteDB>(database_url);
 }
 
 BlackLibraryDB::~BlackLibraryDB()

@@ -9,6 +9,8 @@
 #include <mutex>
 #include <string>
 
+#include <ConfigOperations.h>
+
 #include <DBConnectionInterface.h>
 
 namespace black_library {
@@ -19,7 +21,7 @@ namespace db {
 
 class BlackLibraryDB {
 public:
-    explicit BlackLibraryDB(const std::string &database_url, bool initialize = false);
+    explicit BlackLibraryDB(const njson &config);
     ~BlackLibraryDB();
 
     // front-end
@@ -61,7 +63,6 @@ private:
 
     std::unique_ptr<DBConnectionInterface> database_connection_interface_;
     std::mutex mutex_;
-    std::string database_url_;
 };
 
 } // namespace db
