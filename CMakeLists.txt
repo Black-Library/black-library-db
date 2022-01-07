@@ -13,5 +13,6 @@ include(cmake/docker.cmake)
 
 add_subdirectory(ext)
 add_subdirectory(src)
+add_subdirectory(test)
 
 add_db_docker_targets()
