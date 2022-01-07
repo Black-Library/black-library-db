@@ -22,22 +22,24 @@ namespace db {
 namespace BlackLibraryCommon = black_library::core::common;
 
 static constexpr const char CreateUserTable[]                     = "CREATE TABLE IF NOT EXISTS user(UID INTEGER PRIMARY KEY, permission_level INTEGER DEFAULT 0 NOT NULL, name TEXT NOT NULL)";
-static constexpr const char CreateEntryTypeTable[]                = "CREATE TABLE IF NOT EXISTS entry_type(name TEXT NOT NULL PRIMARY KEY)";
-static constexpr const char CreateEntrySubtypeTable[]             = "CREATE TABLE IF NOT EXISTS entry_subtype(name TEXT NOT NULL PRIMARY KEY, entry_type TEXT, FOREIGN KEY(entry_type) REFERENCES entry_type(name))";
+static constexpr const char CreateMediaTypeTable[]                = "CREATE TABLE IF NOT EXISTS media_type(name TEXT NOT NULL PRIMARY KEY)";
+static constexpr const char CreateMediaSubtypeTable[]             = "CREATE TABLE IF NOT EXISTS media_subtype(name TEXT NOT NULL PRIMARY KEY, media_type_name TEXT, FOREIGN KEY(media_type_name) REFERENCES media_type(name))";
 static constexpr const char CreateBookGenreTable[]                = "CREATE TABLE IF NOT EXISTS book_genre(name TEXT NOT NULL PRIMARY KEY)";
 static constexpr const char CreateDocumentTagTable[]              = "CREATE TABLE IF NOT EXISTS document_tag(name TEXT NOT NULL PRIMARY KEY)";
-static constexpr const char CreateSourceTable[]                   = "CREATE TABLE IF NOT EXISTS source(name TEXT NOT NULL PRIMARY KEY, type TEXT, subtype TEXT, FOREIGN KEY(type) REFERENCES entry_type(name) FOREIGN KEY(subtype) REFERENCES entry_subtype(name))";
+static constexpr const char CreateSourceTable[]                   = "CREATE TABLE IF NOT EXISTS source(name TEXT NOT NULL PRIMARY KEY, media_type TEXT, media_subtype TEXT, FOREIGN KEY(media_type) REFERENCES media_type(name) FOREIGN KEY(media_subtype) REFERENCES media_subtype(name))";
 static constexpr const char CreateStagingEntryTable[]             = "CREATE TABLE IF NOT EXISTS staging_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, author TEXT NOT NULL, nickname TEXT, source TEXT, url TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date INTEGER, check_date INTEGER, update_date INTEGER, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
 static constexpr const char CreateBlackEntryTable[]               = "CREATE TABLE IF NOT EXISTS black_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, title TEXT NOT NULL, author TEXT NOT NULL, nickname TEXT, source TEXT, url TEXT, last_url TEXT, series TEXT, series_length DEFAULT 1, version INTEGER, media_path TEXT NOT NULL, birth_date INTEGER, check_date INTEGER, update_date INTEGER, user_contributed INTEGER NOT NULL, FOREIGN KEY(source) REFERENCES source(name), FOREIGN KEY(user_contributed) REFERENCES user(UID))";
 static constexpr const char CreateErrorEntryTable[]               = "CREATE TABLE IF NOT EXISTS error_entry(UUID VARCHAR(36) PRIMARY KEY NOT NULL, progress_num INTEGER)";
+static constexpr const char CreateMd5SumTable[]                   = "CREATE TABLE IF NOT EXISTS md5_sum(UUID VARCHAR(36) NOT NULL, index_num INTERGER, md5_sum VARCHAR(32), PRIMARY KEY (UUID, index_num))";
 
 static constexpr const char CreateUserStatement[]                 = "INSERT INTO user(UID, permission_level, name) VALUES (:UID, :permission_level, :name)";
-static constexpr const char CreateEntryTypeStatement[]            = "INSERT INTO entry_type(name) VALUES (:name)";
-static constexpr const char CreateEntrySubtypeStatement[]         = "INSERT INTO entry_subtype(name, entry_type) VALUES (:name, :entry_type)";
-static constexpr const char CreateSourceStatement[]               = "INSERT INTO source(name, type, subtype) VALUES (:name, :type, :subtype)";
+static constexpr const char CreateMediaTypeStatement[]            = "INSERT INTO media_type(name) VALUES (:name)";
+static constexpr const char CreateMediaSubtypeStatement[]         = "INSERT INTO media_subtype(name, media_type_name) VALUES (:name, :media_type_name)";
+static constexpr const char CreateSourceStatement[]               = "INSERT INTO source(name, media_type, media_subtype) VALUES (:name, :media_type, :media_subtype)";
 static constexpr const char CreateStagingEntryStatement[]         = "INSERT INTO staging_entry(UUID, title, author, nickname, source, url, last_url, series, series_length, version, media_path, birth_date, check_date, update_date, user_contributed) VALUES (:UUID, :title, :author, :nickname, :source, :url, :last_url, :series, :series_length, :version, :media_path, :birth_date, :check_date, :update_date, :user_contributed)";
 static constexpr const char CreateBlackEntryStatement[]           = "INSERT INTO black_entry(UUID, title, author, nickname, source, url, last_url, series, series_length, version, media_path, birth_date, check_date, update_date, user_contributed) VALUES (:UUID, :title, :author, :nickname, :source, :url, :last_url, :series, :series_length, :version, :media_path, :birth_date, :check_date, :update_date, :user_contributed)";
 static constexpr const char CreateErrorEntryStatement[]           = "INSERT INTO error_entry(UUID, progress_num) VALUES (:UUID, :progress_num)";
+static constexpr const char CreateMd5SumStatement[]               = "INSERT INTO md5_sum(UUID, index_num, md5_sum) VALUES (:UUID, :index_num, :md5_sum)";
 
 static constexpr const char ReadStagingEntryStatement[]           = "SELECT * FROM staging_entry WHERE UUID = :UUID";
 static constexpr const char ReadStagingEntryUrlStatement[]        = "SELECT * FROM staging_entry WHERE url = :url";
@@ -46,13 +48,16 @@ static constexpr const char ReadBlackEntryStatement[]             = "SELECT * FR
 static constexpr const char ReadBlackEntryUrlStatement[]          = "SELECT * FROM black_entry WHERE url = :url";
 static constexpr const char ReadBlackEntryUUIDStatement[]         = "SELECT * FROM black_entry WHERE UUID = :UUID";
 static constexpr const char ReadErrorEntryStatement[]             = "SELECT * FROM error_entry WHERE UUID = :UUID AND progress_num = :progress_num";
+static constexpr const char ReadMd5SumStatement[]                 = "SELECT * FROM md5_sum WHERE UUID = :UUID AND index_num = :index_num";
 
 static constexpr const char UpdateStagingEntryStatement[]         = "UPDATE staging_entry SET title = :title, author = :author, nickname = :nickname, source = :source, url = :url, last_url = :last_url, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, check_date = :check_date, update_date = :update_date, user_contributed = :user_contributed WHERE UUID = :UUID";
 static constexpr const char UpdateBlackEntryStatement[]           = "UPDATE black_entry SET title = :title, author = :author, nickname = :nickname, source = :source, url = :url, last_url = :last_url, series = :series, series_length = :series_length, version = :version, media_path = :media_path, birth_date = :birth_date, check_date = :check_date, update_date = :update_date, user_contributed = :user_contributed WHERE UUID = :UUID";
+static constexpr const char UpdateMd5SumStatement[]               = "UPDATE md5_sum SET md5_sum = :md5_sum WHERE UUID = :UUID AND index_num = :index_num";
 
 static constexpr const char DeleteStagingEntryStatement[]         = "DELETE FROM staging_entry WHERE UUID = :UUID";
 static constexpr const char DeleteBlackEntryStatement[]           = "DELETE FROM black_entry WHERE UUID = :UUID";
 static constexpr const char DeleteErrorEntryStatement[]           = "DELETE FROM error_entry WHERE UUID = :UUID AND progress_num = :progress_num";
+static constexpr const char DeleteMd5SumStatement[]               = "DELETE FROM md5_sum WHERE UUID = :UUID AND index_num = :index_num";
 
 static constexpr const char GetStagingEntriesStatement[]          = "SELECT * FROM staging_entry";
 static constexpr const char GetBlackEntriesStatement[]            = "SELECT * FROM black_entry"; 
@@ -62,15 +67,17 @@ static constexpr const char GetStagingEntryUUIDFromUrlStatement[] = "SELECT UUID
 static constexpr const char GetBlackEntryUUIDFromUrlStatement[]   = "SELECT UUID FROM black_entry WHERE url = :url";
 static constexpr const char GetStagingEntryUrlFromUUIDStatement[] = "SELECT url, last_url FROM staging_entry WHERE UUID = :UUID";
 static constexpr const char GetBlackEntryUrlFromUUIDStatement[]   = "SELECT url, last_url FROM black_entry WHERE UUID = :UUID";
+static constexpr const char GetMd5SumFromUUIDAndIndexStatment[]   = "SELECT md5_sum FROM md5_sum WHERE UUID = :UUID AND index_num = :index_num";
 
 typedef enum {
     CREATE_USER_STATEMENT,
-    CREATE_ENTRY_TYPE_STATEMENT,
-    CREATE_ENTRY_SUBTYPE_STATEMENT,
+    CREATE_MEDIA_TYPE_STATEMENT,
+    CREATE_MEDIA_SUBTYPE_STATEMENT,
     CREATE_SOURCE_STATEMENT,
     CREATE_STAGING_ENTRY_STATEMENT,
     CREATE_BLACK_ENTRY_STATEMENT,
     CREATE_ERROR_ENTRY_STATEMENT,
+    CREATE_MD5_SUM_STATEMENT,
 
     READ_STAGING_ENTRY_STATEMENT,
     READ_STAGING_ENTRY_URL_STATEMENT,
@@ -79,13 +86,16 @@ typedef enum {
     READ_BLACK_ENTRY_URL_STATEMENT,
     READ_BLACK_ENTRY_UUID_STATEMENT,
     READ_ERROR_ENTRY_STATEMENT,
+    READ_MD5_SUM_STATEMENT,
 
     UPDATE_STAGING_ENTRY_STATEMENT,
     UPDATE_BLACK_ENTRY_STATEMENT,
+    UPDATE_MD5_SUM_STATEMENT,
 
     DELETE_STAGING_ENTRY_STATEMENT,
     DELETE_BLACK_ENTRY_STATEMENT,
     DELETE_ERROR_ENTRY_STATEMENT,
+    DELETE_MD5_SUM_STATEMENT,
 
     GET_STAGING_ENTRIES_STATEMENT,
     GET_BLACK_ENTRIES_STATEMENT,
@@ -95,6 +105,7 @@ typedef enum {
     GET_STAGING_ENTRY_URL_FROM_UUID_STATEMENT,
     GET_BLACK_ENTRY_UUID_FROM_URL_STATEMENT,
     GET_BLACK_ENTRY_URL_FROM_UUID_STATEMENT,
+    GET_MD5_SUM_FROM_UUID_AND_INDEX_STATEMENT,
 
     _NUM_PREPARED_STATEMENTS
 } prepared_statement_id_t;
@@ -113,7 +124,10 @@ SQLiteDB::SQLiteDB(const std::string &database_url) :
 
     bool first_time_setup = false;
     if (!BlackLibraryCommon::FileExists(target_url))
+    {
+        BlackLibraryCommon::LogDebug("db", "{} does not exist, first tiem setup enabled", target_url);
         first_time_setup = true;
+    }
 
     int res = sqlite3_open(target_url.c_str(), &database_conn_);
     
@@ -147,9 +161,9 @@ SQLiteDB::SQLiteDB(const std::string &database_url) :
             BlackLibraryCommon::LogError("db", "Failed to setup default black library users");
             return;
         }
-        if (SetupDefaultTables())
+        if (SetupDefaultTypeTables())
         {
-            BlackLibraryCommon::LogError("db", "Failed to setup default tables");
+            BlackLibraryCommon::LogError("db", "Failed to setup default type tables");
             return;
         }
     }
@@ -229,11 +243,11 @@ std::vector<DBEntry> SQLiteDB::ListEntries(entry_table_rep_t entry_type) const
     return entries;
 }
 
-std::vector<ErrorEntry> SQLiteDB::ListErrorEntries() const
+std::vector<DBErrorEntry> SQLiteDB::ListErrorEntries() const
 {
     BlackLibraryCommon::LogDebug("db", "List error entries");
 
-    std::vector<ErrorEntry> entries;
+    std::vector<DBErrorEntry> entries;
 
     if (CheckInitialized())
         return entries;
@@ -247,7 +261,7 @@ std::vector<ErrorEntry> SQLiteDB::ListErrorEntries() const
     // run statement in loop until done
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-        ErrorEntry entry;
+        DBErrorEntry entry;
 
         entry.uuid = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
         entry.progress_num = sqlite3_column_int(stmt, 1);
@@ -299,18 +313,18 @@ int SQLiteDB::CreateUser(const DBUser &user) const
     return 0;
 }
 
-int SQLiteDB::CreateEntryType(const std::string &entry_type_name) const
+int SQLiteDB::CreateMediaType(const std::string &media_type_name) const
 {
-    BlackLibraryCommon::LogDebug("db", "Create entry type: {}", entry_type_name);
+    BlackLibraryCommon::LogDebug("db", "Create media type: {}", media_type_name);
 
     if (BeginTransaction())
         return -1;
 
-    int statement_id = CREATE_ENTRY_TYPE_STATEMENT;
+    int statement_id = CREATE_MEDIA_TYPE_STATEMENT;
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
-    if (BindText(stmt, "name", entry_type_name))
+    if (BindText(stmt, "name", media_type_name))
         return -1;
 
     // run statement
@@ -321,7 +335,7 @@ int SQLiteDB::CreateEntryType(const std::string &entry_type_name) const
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
-        BlackLibraryCommon::LogError("db", "Create entry type: {} failed: {}", entry_type_name, sqlite3_errmsg(database_conn_));
+        BlackLibraryCommon::LogError("db", "Create media type: {} failed: {}", media_type_name, sqlite3_errmsg(database_conn_));
         ResetStatement(stmt);
         EndTransaction();
         return -1;
@@ -335,11 +349,11 @@ int SQLiteDB::CreateEntryType(const std::string &entry_type_name) const
     return 0;
 }
 
-int SQLiteDB::CreateSubtype(DBEntryMediaSubtype media_subtype, DBEntryMediaType media_type) const
+int SQLiteDB::CreateMediaSubtype(const std::string &media_subtype_name, const std::string &media_type_name) const
 {
-    BlackLibraryCommon::LogDebug("db", "Create entry: {} subtype: {}", media_type, media_subtype);
+    BlackLibraryCommon::LogDebug("db", "Create subtype: {} media: {}", media_subtype_name, media_type_name);
 
-    const int statement_id = CREATE_ENTRY_SUBTYPE_STATEMENT;
+    const int statement_id = CREATE_MEDIA_SUBTYPE_STATEMENT;
 
     if (BeginTransaction())
         return -1;
@@ -347,9 +361,9 @@ int SQLiteDB::CreateSubtype(DBEntryMediaSubtype media_subtype, DBEntryMediaType 
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
 
     // bind statement variables
-    if (BindText(stmt, "name", GetMediaSubtypeString(media_subtype)))
+    if (BindText(stmt, "name", media_subtype_name))
         return -1;
-    if (BindText(stmt, "type", GetMediaTypeString(media_type)))
+    if (BindText(stmt, "media_type_name", media_type_name))
         return -1;
 
     // run statement
@@ -359,7 +373,7 @@ int SQLiteDB::CreateSubtype(DBEntryMediaSubtype media_subtype, DBEntryMediaType 
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
-        BlackLibraryCommon::LogError("db", "Create subtype: {} - {} failed: {}", GetMediaSubtypeString(media_subtype), GetMediaTypeString(media_type), sqlite3_errmsg(database_conn_));
+        BlackLibraryCommon::LogError("db", "Create subtype: {} - media: {} failed: {}", media_subtype_name, media_type_name, sqlite3_errmsg(database_conn_));
         ResetStatement(stmt);
         EndTransaction();
         return -1;
@@ -375,7 +389,7 @@ int SQLiteDB::CreateSubtype(DBEntryMediaSubtype media_subtype, DBEntryMediaType 
 
 int SQLiteDB::CreateSource(const DBSource &source) const
 {
-    BlackLibraryCommon::LogDebug("db", "Create source", source.name);
+    BlackLibraryCommon::LogDebug("db", "Create source: {}", source.name);
 
     if (BeginTransaction())
         return -1;
@@ -386,9 +400,9 @@ int SQLiteDB::CreateSource(const DBSource &source) const
     // bind statement variables
     if (BindText(stmt, "name", source.name))
         return -1;
-    if (BindText(stmt, "type", GetMediaTypeString(source.media_type)))
+    if (BindText(stmt, "media_type", GetMediaTypeString(source.media_type)))
         return -1;
-    if (BindText(stmt, "subtype", GetMediaSubtypeString(source.subtype)))
+    if (BindText(stmt, "media_subtype", GetMediaSubtypeString(source.subtype)))
         return -1;
 
     // run statement
@@ -414,7 +428,7 @@ int SQLiteDB::CreateSource(const DBSource &source) const
 
 int SQLiteDB::CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const
 {
-    BlackLibraryCommon::LogDebug("db", "Create {} entry for UUID: {}", GetEntryTypeString(entry_type), entry.uuid);
+    BlackLibraryCommon::LogDebug("db", "Create {} entry with UUID: {}", GetEntryTypeString(entry_type), entry.uuid);
 
     if (CheckInitialized())
         return -1;
@@ -560,7 +574,7 @@ DBEntry SQLiteDB::ReadEntry(const std::string &uuid, entry_table_rep_t entry_typ
 
 int SQLiteDB::UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const
 {
-    BlackLibraryCommon::LogDebug("db", "Update {} entry for UUID: {}", GetEntryTypeString(entry_type), entry.uuid);
+    BlackLibraryCommon::LogDebug("db", "Update {} entry with UUID: {}", GetEntryTypeString(entry_type), entry.uuid);
 
     if (CheckInitialized())
         return -1;
@@ -638,7 +652,7 @@ int SQLiteDB::UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) co
 
 int SQLiteDB::DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type) const
 {
-    BlackLibraryCommon::LogDebug("db", "Delete {} entry for UUID: {}", GetEntryTypeString(entry_type), uuid);
+    BlackLibraryCommon::LogDebug("db", "Delete {} entry with UUID: {}", GetEntryTypeString(entry_type), uuid);
 
     if (CheckInitialized())
         return -1;
@@ -655,6 +669,7 @@ int SQLiteDB::DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type)
         default:
             return -1;
     }
+
     if (BeginTransaction())
         return -1;
 
@@ -685,7 +700,177 @@ int SQLiteDB::DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type)
     return 0;
 }
 
-int SQLiteDB::CreateErrorEntry(const ErrorEntry &entry) const
+int SQLiteDB::CreateMd5Sum(const DBMd5Sum &md5) const
+{
+    BlackLibraryCommon::LogDebug("db", "Create MD5 checksum with UUID: {} index_num: {} sum: {}", md5.uuid, md5.index_num, md5.md5_sum);
+
+    if (CheckInitialized())
+        return -1;
+
+    if (BeginTransaction())
+        return -1;
+
+    int statement_id = CREATE_MD5_SUM_STATEMENT;
+    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+
+    // bind statement variables
+    if (BindText(stmt, "UUID", md5.uuid))
+        return -1;
+    if (BindInt(stmt, "index_num", md5.index_num))
+        return -1;
+    if (BindText(stmt, "md5_sum", md5.md5_sum))
+        return -1;
+
+    // run statement
+    int ret = SQLITE_OK;
+
+    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_DONE)
+    {
+        BlackLibraryCommon::LogError("db", "Create MD5 checksum failed: {}", sqlite3_errmsg(database_conn_));
+        ResetStatement(stmt);
+        EndTransaction();
+        return -1;
+    }
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return -1;
+
+    return 0;
+}
+
+DBMd5Sum SQLiteDB::ReadMd5Sum(const std::string &uuid, size_t index_num) const
+{
+    BlackLibraryCommon::LogDebug("db", "Read MD5 checksum with UUID: {} index_num: {}", uuid, index_num);
+
+    DBMd5Sum md5;
+
+    if (CheckInitialized())
+        return md5;
+
+    if (BeginTransaction())
+        return md5;
+
+    int statement_id = READ_MD5_SUM_STATEMENT;
+    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+
+    // bind statement variables
+    if (BindText(stmt, "UUID", uuid))
+        return md5;
+    if (BindInt(stmt, "index_num", index_num))
+        return md5;
+
+    // run statement
+    int ret = SQLITE_OK;
+
+    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_ROW)
+    {
+        BlackLibraryCommon::LogError("db", "Read MD5 checksum failed: {}", sqlite3_errmsg(database_conn_));
+        ResetStatement(stmt);
+        EndTransaction();
+        return md5;
+    }
+
+    md5.uuid = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+    md5.index_num = sqlite3_column_int(stmt, 1);
+    md5.md5_sum = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return md5;
+
+    return md5;
+}
+
+int SQLiteDB::UpdateMd5Sum(const DBMd5Sum &md5) const
+{
+    BlackLibraryCommon::LogDebug("db", "Update MD5 checksum with UUID: {} index_num: {} sum: {}", md5.uuid, md5.index_num, md5.md5_sum);
+
+    if (CheckInitialized())
+        return -1;
+
+    if (BeginTransaction())
+        return -1;
+
+    int statement_id = UPDATE_MD5_SUM_STATEMENT;
+    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+
+    // bind statement variables
+    if (BindText(stmt, "UUID", md5.uuid))
+        return -1;
+    if (BindInt(stmt, "index_num", md5.index_num))
+        return -1;
+    if (BindText(stmt, "md5_sum", md5.md5_sum))
+        return -1;
+
+    // run statement
+    int ret = SQLITE_OK;
+
+    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_DONE)
+    {
+        BlackLibraryCommon::LogError("db", "Update MD5 checksum failed: {}", sqlite3_errmsg(database_conn_));
+        ResetStatement(stmt);
+        EndTransaction();
+        return -1;
+    }
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return -1;
+
+    return 0;
+}
+
+int SQLiteDB::DeleteMd5Sum(const std::string &uuid, size_t index_num) const
+{
+    BlackLibraryCommon::LogDebug("db", "Delete MD5 checksum with UUID: {} index_num: {}", uuid, index_num);
+
+    if (CheckInitialized())
+        return -1;
+
+    if (BeginTransaction())
+        return -1;
+
+    int statement_id = DELETE_MD5_SUM_STATEMENT;
+    sqlite3_stmt *stmt = prepared_statements_[statement_id];
+
+    // bind statement variables
+    if (BindText(stmt, "UUID", uuid))
+        return -1;
+    if (BindInt(stmt, "index_num", index_num))
+        return -1;
+
+    // run statement
+    int ret = SQLITE_OK;
+
+    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_DONE)
+    {
+        BlackLibraryCommon::LogError("db", "Delete MD5 checksum failed: {}", sqlite3_errmsg(database_conn_));
+        ResetStatement(stmt);
+        EndTransaction();
+        return -1;
+    }
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return -1;
+
+    return 0;
+}
+
+int SQLiteDB::CreateErrorEntry(const DBErrorEntry &entry) const
 {
     BlackLibraryCommon::LogDebug("db", "Create error entry for UUID: {}", entry.uuid);
 
@@ -910,6 +1095,74 @@ DBBoolResult SQLiteDB::DoesEntryUUIDExist(const std::string &uuid, entry_table_r
     return check;
 }
 
+DBBoolResult SQLiteDB::DoesMd5SumExist(const std::string &uuid, size_t index_num) const
+{
+    BlackLibraryCommon::LogDebug("db", "Check MD5 checksum for UUID: {}, index_num: {}", uuid, index_num);
+
+    DBBoolResult check;
+
+    if (uuid.empty())
+    {
+        check.result = false;
+        return check;
+    }
+
+    if (CheckInitialized())
+    {
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+
+    if (BeginTransaction())
+    {
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+
+    sqlite3_stmt *stmt = prepared_statements_[READ_MD5_SUM_STATEMENT];
+
+    // bind statement variables
+    if (BindText(stmt, "UUID", uuid))
+    {
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+    if (BindInt(stmt, "index_num", index_num))
+    {
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+
+    // run statement
+    int ret = SQLITE_OK;
+
+    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_ROW)
+    {
+        BlackLibraryCommon::LogDebug("db", "MD5 checksum UUID: {} index_num: {} does not exist", uuid, index_num);
+        check.result = false;
+        ResetStatement(stmt);
+        EndTransaction();
+        return check;
+    }
+    else
+    {
+        check.result = true;
+    }
+    
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+    {
+        check.error = sqlite3_errcode(database_conn_);
+        return check;
+    }
+
+    return check;
+}
+
 DBBoolResult SQLiteDB::DoesErrorEntryExist(const std::string &uuid, size_t progress_num) const
 {
     BlackLibraryCommon::LogDebug("db", "Check error entries for UUID: {}, progress_num: {}", uuid, progress_num);
@@ -1107,23 +1360,28 @@ bool SQLiteDB::IsReady() const
 
 int SQLiteDB::GenerateTables()
 {
+    BlackLibraryCommon::LogDebug("db", "Setting up tables");
+
     int res = 0;
 
     res += GenerateTable(CreateUserTable);
-    res += GenerateTable(CreateEntryTypeTable);
-    res += GenerateTable(CreateEntrySubtypeTable);
+    res += GenerateTable(CreateMediaTypeTable);
+    res += GenerateTable(CreateMediaSubtypeTable);
     res += GenerateTable(CreateBookGenreTable);
     res += GenerateTable(CreateDocumentTagTable);
     res += GenerateTable(CreateSourceTable);
     res += GenerateTable(CreateStagingEntryTable);
     res += GenerateTable(CreateBlackEntryTable);
     res += GenerateTable(CreateErrorEntryTable);
+    res += GenerateTable(CreateMd5SumTable);
 
     return res;
 }
 
-int SQLiteDB::SetupDefaultTables()
+int SQLiteDB::SetupDefaultTypeTables()
 {
+    BlackLibraryCommon::LogDebug("db", "Setting up default type tables");
+
     int res = 0;
 
     res += SetupDefaultEntryTypeTable();
@@ -1137,9 +1395,9 @@ int SQLiteDB::SetupDefaultEntryTypeTable()
 {
     int res = 0;
 
-    res += CreateEntryType(GetMediaTypeString(DBEntryMediaType::Document));
-    res += CreateEntryType(GetMediaTypeString(DBEntryMediaType::ImageGallery));
-    res += CreateEntryType(GetMediaTypeString(DBEntryMediaType::Video));
+    res += CreateMediaType(GetMediaTypeString(DBEntryMediaType::Document));
+    res += CreateMediaType(GetMediaTypeString(DBEntryMediaType::ImageGallery));
+    res += CreateMediaType(GetMediaTypeString(DBEntryMediaType::Video));
 
     return res;
 }
@@ -1148,18 +1406,18 @@ int SQLiteDB::SetupDefaultSubtypeTable()
 {
     int res = 0;
 
-    res += CreateSubtype(DBEntryMediaSubtype::BLOG, DBEntryMediaType::Document);
-    res += CreateSubtype(DBEntryMediaSubtype::BOOK, DBEntryMediaType::Document);
-    res += CreateSubtype(DBEntryMediaSubtype::NEWS_ARTICLE, DBEntryMediaType::Document);
-    res += CreateSubtype(DBEntryMediaSubtype::PAPER, DBEntryMediaType::Document);
-    res += CreateSubtype(DBEntryMediaSubtype::WEBNOVEL, DBEntryMediaType::Document);
+    res += CreateMediaSubtype(GetMediaSubtypeString(DBEntryMediaSubtype::BLOG), GetMediaTypeString(DBEntryMediaType::Document));
+    res += CreateMediaSubtype(GetMediaSubtypeString(DBEntryMediaSubtype::BOOK), GetMediaTypeString(DBEntryMediaType::Document));
+    res += CreateMediaSubtype(GetMediaSubtypeString(DBEntryMediaSubtype::NEWS_ARTICLE), GetMediaTypeString(DBEntryMediaType::Document));
+    res += CreateMediaSubtype(GetMediaSubtypeString(DBEntryMediaSubtype::PAPER), GetMediaTypeString(DBEntryMediaType::Document));
+    res += CreateMediaSubtype(GetMediaSubtypeString(DBEntryMediaSubtype::WEBNOVEL), GetMediaTypeString(DBEntryMediaType::Document));
 
-    res += CreateSubtype(DBEntryMediaSubtype::MANGA, DBEntryMediaType::ImageGallery);
-    res += CreateSubtype(DBEntryMediaSubtype::PHOTO_ALBUM, DBEntryMediaType::ImageGallery);
+    res += CreateMediaSubtype(GetMediaSubtypeString(DBEntryMediaSubtype::MANGA), GetMediaTypeString(DBEntryMediaType::ImageGallery));
+    res += CreateMediaSubtype(GetMediaSubtypeString(DBEntryMediaSubtype::PHOTO_ALBUM), GetMediaTypeString(DBEntryMediaType::ImageGallery));
 
-    res += CreateSubtype(DBEntryMediaSubtype::MOVIE, DBEntryMediaType::Video);
-    res += CreateSubtype(DBEntryMediaSubtype::TV_SHOW, DBEntryMediaType::Video);
-    res += CreateSubtype(DBEntryMediaSubtype::YOUTUBE, DBEntryMediaType::Video);
+    res += CreateMediaSubtype(GetMediaSubtypeString(DBEntryMediaSubtype::MOVIE), GetMediaTypeString(DBEntryMediaType::Video));
+    res += CreateMediaSubtype(GetMediaSubtypeString(DBEntryMediaSubtype::TV_SHOW), GetMediaTypeString(DBEntryMediaType::Video));
+    res += CreateMediaSubtype(GetMediaSubtypeString(DBEntryMediaSubtype::YOUTUBE), GetMediaTypeString(DBEntryMediaType::Video));
 
     return res;
 }
@@ -1189,7 +1447,7 @@ int SQLiteDB::SetupDefaultSourceTable()
     sbf_source.media_type = DBEntryMediaType::Document;
     sbf_source.subtype = DBEntryMediaSubtype::WEBNOVEL;
 
-    svf_source.name = BlackLibraryCommon::SBF::source_name;
+    svf_source.name = BlackLibraryCommon::SVF::source_name;
     svf_source.media_type = DBEntryMediaType::Document;
     svf_source.subtype = DBEntryMediaSubtype::WEBNOVEL;
 
@@ -1221,30 +1479,31 @@ int SQLiteDB::PrepareStatements()
     int res = 0;
 
     res += PrepareStatement(CreateUserStatement, CREATE_USER_STATEMENT);
-    res += PrepareStatement(CreateEntryTypeStatement, CREATE_ENTRY_TYPE_STATEMENT);
-    res += PrepareStatement(CreateEntrySubtypeStatement, CREATE_ENTRY_SUBTYPE_STATEMENT);
+    res += PrepareStatement(CreateMediaTypeStatement, CREATE_MEDIA_TYPE_STATEMENT);
+    res += PrepareStatement(CreateMediaSubtypeStatement, CREATE_MEDIA_SUBTYPE_STATEMENT);
     res += PrepareStatement(CreateSourceStatement, CREATE_SOURCE_STATEMENT);
-
     res += PrepareStatement(CreateStagingEntryStatement, CREATE_STAGING_ENTRY_STATEMENT);
     res += PrepareStatement(CreateBlackEntryStatement, CREATE_BLACK_ENTRY_STATEMENT);
     res += PrepareStatement(CreateErrorEntryStatement, CREATE_ERROR_ENTRY_STATEMENT);
+    res += PrepareStatement(CreateMd5SumStatement, CREATE_MD5_SUM_STATEMENT);
 
     res += PrepareStatement(ReadStagingEntryStatement, READ_STAGING_ENTRY_STATEMENT);
     res += PrepareStatement(ReadStagingEntryUrlStatement, READ_STAGING_ENTRY_URL_STATEMENT);
     res += PrepareStatement(ReadStagingEntryUUIDStatement, READ_STAGING_ENTRY_UUID_STATEMENT);
-
     res += PrepareStatement(ReadBlackEntryStatement, READ_BLACK_ENTRY_STATEMENT);
     res += PrepareStatement(ReadBlackEntryUrlStatement, READ_BLACK_ENTRY_URL_STATEMENT);
     res += PrepareStatement(ReadBlackEntryUUIDStatement, READ_BLACK_ENTRY_UUID_STATEMENT);
-
     res += PrepareStatement(ReadErrorEntryStatement, READ_ERROR_ENTRY_STATEMENT);
+    res += PrepareStatement(ReadMd5SumStatement, READ_MD5_SUM_STATEMENT);
 
     res += PrepareStatement(UpdateStagingEntryStatement, UPDATE_STAGING_ENTRY_STATEMENT);
     res += PrepareStatement(UpdateBlackEntryStatement, UPDATE_BLACK_ENTRY_STATEMENT);
+    res += PrepareStatement(UpdateMd5SumStatement, UPDATE_MD5_SUM_STATEMENT);
 
     res += PrepareStatement(DeleteStagingEntryStatement, DELETE_STAGING_ENTRY_STATEMENT);
     res += PrepareStatement(DeleteBlackEntryStatement, DELETE_BLACK_ENTRY_STATEMENT);
     res += PrepareStatement(DeleteErrorEntryStatement, DELETE_ERROR_ENTRY_STATEMENT);
+    res += PrepareStatement(DeleteMd5SumStatement, DELETE_MD5_SUM_STATEMENT);
 
     res += PrepareStatement(GetStagingEntriesStatement, GET_STAGING_ENTRIES_STATEMENT);
     res += PrepareStatement(GetBlackEntriesStatement, GET_BLACK_ENTRIES_STATEMENT);
@@ -1254,6 +1513,7 @@ int SQLiteDB::PrepareStatements()
     res += PrepareStatement(GetStagingEntryUrlFromUUIDStatement, GET_STAGING_ENTRY_URL_FROM_UUID_STATEMENT);
     res += PrepareStatement(GetBlackEntryUUIDFromUrlStatement, GET_BLACK_ENTRY_UUID_FROM_URL_STATEMENT);
     res += PrepareStatement(GetBlackEntryUrlFromUUIDStatement, GET_BLACK_ENTRY_URL_FROM_UUID_STATEMENT);
+    res += PrepareStatement(GetMd5SumFromUUIDAndIndexStatment, GET_MD5_SUM_FROM_UUID_AND_INDEX_STATEMENT);
 
     return res;
 }
@@ -1303,7 +1563,7 @@ int SQLiteDB::SetupDefaultBlackLibraryUsers()
 int SQLiteDB::BeginTransaction() const
 {
     char *error_msg = 0;
-    // std::cout << "Begin transaction" << std::endl;
+    BlackLibraryCommon::LogTrace("db", "Begin transaction");
     int ret = sqlite3_exec(database_conn_, "BEGIN TRANSACTION", 0, 0, &error_msg);
     if (ret != SQLITE_OK)
     {
@@ -1328,7 +1588,7 @@ int SQLiteDB::CheckInitialized() const
 int SQLiteDB::EndTransaction() const
 {
     char *error_msg = 0;
-    // std::cout << "End transaction" << std::endl;
+    BlackLibraryCommon::LogTrace("db", "End transaction");
     int ret = sqlite3_exec(database_conn_, "END TRANSACTION", 0, 0, &error_msg);
     if (ret != SQLITE_OK)
     {
@@ -1369,7 +1629,7 @@ int SQLiteDB::PrepareStatement(const std::string &statement, int statement_id)
 int SQLiteDB::ResetStatement(sqlite3_stmt* stmt) const
 {
     int ret = sqlite3_reset(stmt);
-    // std::cout << "Reset statement: " << sqlite3_sql(stmt) << std::endl;
+    BlackLibraryCommon::LogTrace("db", "Reset statement");
     if (ret != SQLITE_OK)
     {
         BlackLibraryCommon::LogError("db", "Reset statement failed: {}", sqlite3_errmsg(database_conn_));
@@ -1381,7 +1641,7 @@ int SQLiteDB::ResetStatement(sqlite3_stmt* stmt) const
 
 int SQLiteDB::BindInt(sqlite3_stmt* stmt, const std::string &parameter_name, const int &bind_int) const
 {
-    // std::cout << "BindInt " << parameter_name << ": " << bind_int << std::endl;
+    BlackLibraryCommon::LogTrace("db", "BindInt parameter:{} with {}", parameter_name, bind_int);
     const std::string parameter_index_name = ":" + parameter_name;
     int ret = sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, parameter_index_name.c_str()), bind_int);
     if (ret != SQLITE_OK)
@@ -1397,7 +1657,7 @@ int SQLiteDB::BindInt(sqlite3_stmt* stmt, const std::string &parameter_name, con
 
 int SQLiteDB::BindText(sqlite3_stmt* stmt, const std::string &parameter_name, const std::string &bind_text) const
 {
-    // std::cout << "BindText " << parameter_name << ": " << bind_text << std::endl;
+    BlackLibraryCommon::LogTrace("db", "BindText parameter:{} with {}", parameter_name, bind_text);
     const std::string parameter_index_name = ":" + parameter_name;
     int index = sqlite3_bind_parameter_index(stmt, parameter_index_name.c_str());
     int ret = sqlite3_bind_text(stmt, index, bind_text.c_str(), bind_text.length(), SQLITE_STATIC);

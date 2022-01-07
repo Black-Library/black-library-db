@@ -23,7 +23,7 @@ public:
     virtual ~DBConnectionInterface() {}
 
     virtual std::vector<DBEntry> ListEntries(entry_table_rep_t entry_type) const = 0;
-    virtual std::vector<ErrorEntry> ListErrorEntries() const = 0;
+    virtual std::vector<DBErrorEntry> ListErrorEntries() const = 0;
 
     // virtual DBUser ReadUser();
 
@@ -32,11 +32,17 @@ public:
     virtual int UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const = 0;
     virtual int DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type) const = 0;
 
-    virtual int CreateErrorEntry(const ErrorEntry &entry) const = 0;
+    virtual int CreateMd5Sum(const DBMd5Sum &md5) const = 0;
+    virtual DBMd5Sum ReadMd5Sum(const std::string &uuid, size_t index_num) const = 0;
+    virtual int UpdateMd5Sum(const DBMd5Sum &md5) const = 0;
+    virtual int DeleteMd5Sum(const std::string &uuid, size_t index_num) const = 0;
+
+    virtual int CreateErrorEntry(const DBErrorEntry &entry) const = 0;
     virtual int DeleteErrorEntry(const std::string &uuid, size_t progress_num) const = 0;
 
     virtual DBBoolResult DoesEntryUrlExist(const std::string &url, entry_table_rep_t entry_type) const = 0;
     virtual DBBoolResult DoesEntryUUIDExist(const std::string &uuid, entry_table_rep_t entry_type) const = 0;
+    virtual DBBoolResult DoesMd5SumExist(const std::string &uuid, size_t index_num) const = 0;
     virtual DBBoolResult DoesErrorEntryExist(const std::string &uuid, size_t progress_num) const = 0;
 
     virtual DBStringResult GetEntryUUIDFromUrl(const std::string &url, entry_table_rep_t entry_type) const = 0;

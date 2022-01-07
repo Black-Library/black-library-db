@@ -133,6 +133,34 @@ enum class DBEntryColumnID : uint8_t
     _NUM_DB_ENTRY_COLUMN_ID
 };
 
+struct DBMd5Sum {
+    std::string uuid;
+    size_t index_num;
+    std::string md5_sum;
+};
+
+inline std::ostream& operator<< (std::ostream &out, const DBMd5Sum &sum)
+{
+    out << "UUID: " << sum.uuid << " ";
+    out << "index_num: " << sum.index_num << " ";
+    out << "md5_sum: " << sum.md5_sum << " ";
+
+    return out;
+}
+
+struct DBErrorEntry {
+    std::string uuid;
+    size_t progress_num;
+};
+
+inline std::ostream& operator<< (std::ostream &out, const DBErrorEntry &entry)
+{
+    out << "UUID: " << entry.uuid << " ";
+    out << "progress_num: " << entry.progress_num;
+
+    return out;
+}
+
 struct DBRating {
     std::string uuid;
     UID_rep_t uid;
@@ -158,19 +186,6 @@ struct DBBoolResult {
     bool does_not_exist = false;
     int error = 0;
 };
-
-struct ErrorEntry {
-    std::string uuid;
-    size_t progress_num;
-};
-
-inline std::ostream& operator<< (std::ostream &out, const ErrorEntry &entry)
-{
-    out << "UUID: " << entry.uuid << " ";
-    out << "progress_num: " << entry.progress_num;
-
-    return out;
-}
 
 } // namespace db
 } // namespace core

@@ -69,7 +69,7 @@ std::vector<DBEntry> BlackLibraryDB::GetBlackEntryList()
     return entry_list;
 }
 
-std::vector<ErrorEntry> BlackLibraryDB::GetErrorEntryList()
+std::vector<DBErrorEntry> BlackLibraryDB::GetErrorEntryList()
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
@@ -82,7 +82,7 @@ int BlackLibraryDB::CreateStagingEntry(const DBEntry &entry)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    if (database_connection_interface_->CreateEntry(entry, STAGING_ENTRY))
+    if (entry.uuid.empty() || database_connection_interface_->CreateEntry(entry, STAGING_ENTRY))
     {
         BlackLibraryCommon::LogError("db", "Failed to create staging entry with UUID: {}", entry.uuid);
         return -1;
@@ -97,6 +97,11 @@ DBEntry BlackLibraryDB::ReadStagingEntry(const std::string &uuid)
 
     DBEntry entry;
 
+    if (uuid.empty())
+    {
+        BlackLibraryCommon::LogError("db", "Failed to read staging entry with empty UUID");
+        return entry;
+    }
     entry = database_connection_interface_->ReadEntry(uuid, STAGING_ENTRY);
     if (entry.uuid.empty())
     {
@@ -111,7 +116,7 @@ int BlackLibraryDB::UpdateStagingEntry(const DBEntry &entry)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    if (database_connection_interface_->UpdateEntry(entry, STAGING_ENTRY))
+    if (entry.uuid.empty() || database_connection_interface_->UpdateEntry(entry, STAGING_ENTRY))
     {
         BlackLibraryCommon::LogError("db", "Failed to update staging entry with UUID: {}", entry.uuid);
         return -1;
@@ -124,6 +129,11 @@ int BlackLibraryDB::DeleteStagingEntry(const std::string &uuid)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
+    if (uuid.empty())
+    {
+        BlackLibraryCommon::LogError("db", "Failed to delete staging entry with empty UUID");
+        return -1;
+    }
     if (database_connection_interface_->DeleteEntry(uuid, STAGING_ENTRY))
     {
         BlackLibraryCommon::LogError("db", "Failed to delete staging entry with UUID: {}", uuid);
@@ -137,7 +147,7 @@ int BlackLibraryDB::CreateBlackEntry(const DBEntry &entry)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    if (database_connection_interface_->CreateEntry(entry, BLACK_ENTRY))
+    if (entry.uuid.empty() || database_connection_interface_->CreateEntry(entry, BLACK_ENTRY))
     {
         BlackLibraryCommon::LogError("db", "Failed to create black entry with UUID: {}", entry.uuid);
         return -1;
@@ -152,6 +162,11 @@ DBEntry BlackLibraryDB::ReadBlackEntry(const std::string &uuid)
 
     DBEntry entry;
 
+    if (uuid.empty())
+    {
+        BlackLibraryCommon::LogError("db", "Failed to read black entry with empty UUID");
+        return entry;
+    }
     entry = database_connection_interface_->ReadEntry(uuid, BLACK_ENTRY);
     if (entry.uuid.empty())
     {
@@ -166,7 +181,7 @@ int BlackLibraryDB::UpdateBlackEntry(const DBEntry &entry)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    if (database_connection_interface_->UpdateEntry(entry, BLACK_ENTRY))
+    if (entry.uuid.empty() || database_connection_interface_->UpdateEntry(entry, BLACK_ENTRY))
     {
         BlackLibraryCommon::LogError("db", "Failed to update black entry with UUID: {}", entry.uuid);
         return -1;
@@ -179,6 +194,11 @@ int BlackLibraryDB::DeleteBlackEntry(const std::string &uuid)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
+    if (uuid.empty())
+    {
+        BlackLibraryCommon::LogError("db", "Failed to delete black entry with empty UUID");
+        return -1;
+    }
     if (database_connection_interface_->DeleteEntry(uuid, BLACK_ENTRY))
     {
         BlackLibraryCommon::LogError("db", "Failed to delete black entry with UUID: {}", uuid);
@@ -188,11 +208,76 @@ int BlackLibraryDB::DeleteBlackEntry(const std::string &uuid)
     return 0;
 }
 
-int BlackLibraryDB::CreateErrorEntry(const ErrorEntry &entry)
+int BlackLibraryDB::CreateMd5Sum(const DBMd5Sum &md5)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    if (database_connection_interface_->CreateErrorEntry(entry))
+    if (md5.uuid.empty() || database_connection_interface_->CreateMd5Sum(md5))
+    {
+        BlackLibraryCommon::LogError("db", "Failed to create MD5 checksum with UUID: {} index_num: {} sum: {}", md5.uuid, md5.index_num, md5.md5_sum);
+        return -1;
+    }
+
+    return 0;
+}
+
+DBMd5Sum BlackLibraryDB::ReadMd5Sum(const std::string &uuid, size_t index_num)
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    DBMd5Sum md5;
+
+    if (uuid.empty())
+    {
+        BlackLibraryCommon::LogError("db", "Failed to read MD5 checksum with empty UUID");
+        return md5;
+    }
+    md5 = database_connection_interface_->ReadMd5Sum(uuid, index_num);
+    if (md5.uuid.empty())
+    {
+        BlackLibraryCommon::LogError("db", "Failed to read MD5 checksum with UUID: {} index_num: {}", uuid, index_num);
+        return md5;
+    }
+
+    return md5;
+}
+
+int BlackLibraryDB::UpdateMd5Sum(const DBMd5Sum &md5)
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    if (md5.uuid.empty() || database_connection_interface_->UpdateMd5Sum(md5))
+    {
+        BlackLibraryCommon::LogError("db", "Failed to update MD5 checksum with UUID: {} index_num: {} sum: {}", md5.uuid, md5.index_num, md5.md5_sum);
+        return -1;
+    }
+
+    return 0;
+}
+
+int BlackLibraryDB::DeleteMd5Sum(const std::string &uuid, size_t index_num)
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    if (uuid.empty())
+    {
+        BlackLibraryCommon::LogError("db", "Failed to delete MD5 checksum with empty UUID");
+        return -1;
+    }
+    if (database_connection_interface_->DeleteMd5Sum(uuid, index_num))
+    {
+        BlackLibraryCommon::LogError("db", "Failed to delete MD5 checksum with UUID: {}", uuid);
+        return -1;
+    }
+
+    return 0;
+}
+
+int BlackLibraryDB::CreateErrorEntry(const DBErrorEntry &entry)
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    if (entry.uuid.empty() || database_connection_interface_->CreateErrorEntry(entry))
     {
         BlackLibraryCommon::LogError("db", "Failed to create error entry with UUID: {}", entry.uuid);
         return -1;
@@ -205,6 +290,11 @@ int BlackLibraryDB::DeleteErrorEntry(const std::string &uuid, size_t progress_nu
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
+    if (uuid.empty())
+    {
+        BlackLibraryCommon::LogError("db", "Failed to delete error entry with empty UUID");
+        return -1;
+    }
     if (database_connection_interface_->DeleteErrorEntry(uuid, progress_num))
     {
         BlackLibraryCommon::LogError("db", "Failed to delete error entry with UUID: {} and progress number: {}", uuid, progress_num);
@@ -265,6 +355,21 @@ bool BlackLibraryDB::DoesBlackEntryUUIDExist(const std::string &uuid)
     const std::lock_guard<std::mutex> lock(mutex_);
 
     DBBoolResult check = database_connection_interface_->DoesEntryUUIDExist(uuid, BLACK_ENTRY);
+    
+    if (check.error != 0)
+    {
+        BlackLibraryCommon::LogError("db", "Database returned {}", check.error);
+        return false;
+    }
+
+    return check.result;
+}
+
+bool BlackLibraryDB::DoesMd5SumExist(const std::string &uuid, size_t index_num)
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    DBBoolResult check = database_connection_interface_->DoesMd5SumExist(uuid, index_num);
     
     if (check.error != 0)
     {
