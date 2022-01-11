@@ -123,7 +123,7 @@ SQLiteDB::SQLiteDB(const std::string &database_url) :
     }
 
     bool first_time_setup = false;
-    if (!BlackLibraryCommon::FileExists(target_url))
+    if (!BlackLibraryCommon::PathExists(target_url))
     {
         BlackLibraryCommon::LogDebug("db", "{} does not exist, first tiem setup enabled", target_url);
         first_time_setup = true;
