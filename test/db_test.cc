@@ -23,7 +23,7 @@ namespace BlackLibraryCommon = black_library::core::common;
 TEST_CASE( "Test init black library db logger (pass)", "[single-file]")
 {
     BlackLibraryCommon::InitRotatingLogger("db", "/tmp/", false);
-    BlackLibraryCommon::RemoveFile(DefaultTestDBPath);
+    BlackLibraryCommon::RemovePath(DefaultTestDBPath);
 }
 
 TEST_CASE( "Test setup black library db (pass)", "[single-file]" )
@@ -35,6 +35,7 @@ TEST_CASE( "Test setup black library db (pass)", "[single-file]" )
     BlackLibraryDB blacklibrary_db(config);
 
     REQUIRE( blacklibrary_db.IsReady() == true );
+    BlackLibraryCommon::RemovePath(DefaultTestDBPath);
 }
 
 TEST_CASE( "Test CRUD for empty entries black library (pass)", "[single-file]" )
@@ -64,6 +65,7 @@ TEST_CASE( "Test CRUD for empty entries black library (pass)", "[single-file]" )
     REQUIRE( blacklibrary_db.DeleteStagingEntry(staging_entry.uuid) == -1 );
     REQUIRE( blacklibrary_db.DeleteBlackEntry(black_entry.uuid) == -1 );
     REQUIRE( blacklibrary_db.DeleteErrorEntry(error_entry.uuid, error_entry.progress_num) == -1 );
+    BlackLibraryCommon::RemovePath(DefaultTestDBPath);
 }
 
 TEST_CASE( "Test CRUD for staging, black, and error entry tables black library (pass)", "[single-file]" )

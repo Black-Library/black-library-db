@@ -22,7 +22,7 @@ namespace BlackLibraryCommon = black_library::core::common;
 TEST_CASE( "Test init sqlite logger (pass)", "[single-file]")
 {
     BlackLibraryCommon::InitRotatingLogger("db", "/tmp/", true);
-    BlackLibraryCommon::RemoveFile(DefaultTestDBPath);
+    BlackLibraryCommon::RemovePath(DefaultTestDBPath);
 }
 
 TEST_CASE( "Test setup database sqlite (pass)", "[single-file]" )
