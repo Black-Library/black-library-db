@@ -273,6 +273,56 @@ int BlackLibraryDB::DeleteMd5Sum(const std::string &uuid, size_t index_num)
     return 0;
 }
 
+int BlackLibraryDB::CreateRefresh(const DBRefresh &refresh)
+{
+    if (refresh.uuid.empty() || database_connection_interface_->CreateRefresh(refresh))
+    {
+        BlackLibraryCommon::LogError("db", "Failed to create refresh with UUID: {} refresh_date: {}", refresh.uuid, refresh.refresh_date);
+        return -1;
+    }
+
+    return 0;
+}
+
+DBRefresh BlackLibraryDB::ReadRefresh(const std::string &uuid)
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    DBRefresh refresh;
+
+    if (uuid.empty())
+    {
+        BlackLibraryCommon::LogError("db", "Failed to read refresh with empty UUID");
+        return refresh;
+    }
+    refresh = database_connection_interface_->ReadRefresh(uuid);
+    if (refresh.uuid.empty())
+    {
+        BlackLibraryCommon::LogError("db", "Failed to read refresh with UUID: {}", uuid);
+        return refresh;
+    }
+
+    return refresh;
+}
+
+int BlackLibraryDB::DeleteRefresh(const std::string &uuid)
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    if (uuid.empty())
+    {
+        BlackLibraryCommon::LogError("db", "Failed to delete refresh with empty UUID");
+        return -1;
+    }
+    if (database_connection_interface_->DeleteRefresh(uuid))
+    {
+        BlackLibraryCommon::LogError("db", "Failed to delete refresh with UUID: {}", uuid);
+        return -1;
+    }
+
+    return 0;
+}
+
 int BlackLibraryDB::CreateErrorEntry(const DBErrorEntry &entry)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
@@ -380,6 +430,36 @@ bool BlackLibraryDB::DoesMd5SumExist(const std::string &uuid, size_t index_num)
     return check.result;
 }
 
+bool BlackLibraryDB::DoesRefreshExist(const std::string &uuid)
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    DBBoolResult check = database_connection_interface_->DoesRefreshExist(uuid);
+    
+    if (check.error != 0)
+    {
+        BlackLibraryCommon::LogError("db", "Database returned {}", check.error);
+        return false;
+    }
+
+    return check.result;
+}
+
+bool BlackLibraryDB::DoesMinRefreshExist()
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    DBBoolResult check = database_connection_interface_->DoesMinRefreshExist();
+    
+    if (check.error != 0)
+    {
+        BlackLibraryCommon::LogError("db", "Database returned {}", check.error);
+        return false;
+    }
+
+    return check.result;
+}
+
 bool BlackLibraryDB::DoesErrorEntryExist(const std::string &uuid, size_t progress_num)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
@@ -429,6 +509,13 @@ DBStringResult BlackLibraryDB::GetBlackEntryUrlFromUUID(const std::string &uuid)
     const std::lock_guard<std::mutex> lock(mutex_);
 
     return database_connection_interface_->GetEntryUrlFromUUID(uuid, BLACK_ENTRY);
+}
+
+DBRefresh BlackLibraryDB::GetRefreshFromMinDate()
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    return database_connection_interface_->GetRefreshFromMinDate();
 }
 
 bool BlackLibraryDB::IsReady()

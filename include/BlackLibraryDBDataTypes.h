@@ -38,6 +38,7 @@ struct DBUser {
 
 enum class DBEntryMediaType : uint8_t {
     DBEntryMediaTypeError = 0,
+    Audio,
     Document,
     ImageGallery,
     Video,
@@ -46,13 +47,16 @@ enum class DBEntryMediaType : uint8_t {
 
 enum class DBEntryMediaSubtype : uint8_t {
     DBEntryMediaSubtypeError = 0,
+    AUDIO_BOOK,
     BLOG,
     BOOK,
     MANGA,
     MOVIE,
+    MUSIC,
     NEWS_ARTICLE,
     PAPER,
     PHOTO_ALBUM,
+    PODCAST,
     TV_SHOW,
     WEBNOVEL,
     YOUTUBE,
@@ -137,6 +141,7 @@ struct DBMd5Sum {
     std::string uuid;
     size_t index_num;
     std::string md5_sum;
+    uint64_t version_num;
 };
 
 inline std::ostream& operator<< (std::ostream &out, const DBMd5Sum &sum)
@@ -144,6 +149,20 @@ inline std::ostream& operator<< (std::ostream &out, const DBMd5Sum &sum)
     out << "UUID: " << sum.uuid << " ";
     out << "index_num: " << sum.index_num << " ";
     out << "md5_sum: " << sum.md5_sum << " ";
+    out << "version_number" << sum.version_num;
+
+    return out;
+}
+
+struct DBRefresh {
+    std::string uuid;
+    time_t refresh_date;
+};
+
+inline std::ostream& operator<< (std::ostream &out, const DBRefresh &refresh)
+{
+    out << "UUID: " << refresh.uuid << " ";
+    out << "refresh_date: " << refresh.refresh_date;
 
     return out;
 }

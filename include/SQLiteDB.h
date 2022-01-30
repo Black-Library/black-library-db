@@ -41,16 +41,24 @@ public:
     int UpdateMd5Sum(const DBMd5Sum &md5) const override;
     int DeleteMd5Sum(const std::string &uuid, size_t index_num) const override;
 
-    int CreateErrorEntry(const DBErrorEntry &entry) const;
-    int DeleteErrorEntry(const std::string &uuid, size_t progress_num) const;
+    int CreateRefresh(const DBRefresh &refresh) const override;
+    DBRefresh ReadRefresh(const std::string &uuid) const override;
+    int DeleteRefresh(const std::string &uuid) const override;
+
+    int CreateErrorEntry(const DBErrorEntry &entry) const override;
+    int DeleteErrorEntry(const std::string &uuid, size_t progress_num) const override;
 
     DBBoolResult DoesEntryUrlExist(const std::string &url, entry_table_rep_t entry_type) const override;
     DBBoolResult DoesEntryUUIDExist(const std::string &uuid, entry_table_rep_t entry_type) const override;
     DBBoolResult DoesMd5SumExist(const std::string &uuid, size_t index_num) const override;
+    DBBoolResult DoesRefreshExist(const std::string &uuid) const override;
+    DBBoolResult DoesMinRefreshExist() const override;
     DBBoolResult DoesErrorEntryExist(const std::string &uuid, size_t progress_num) const;
 
     DBStringResult GetEntryUUIDFromUrl(const std::string &url, entry_table_rep_t entry_type) const;
     DBStringResult GetEntryUrlFromUUID(const std::string &uuid, entry_table_rep_t entry_type) const;
+
+    DBRefresh GetRefreshFromMinDate() const override;
 
     bool IsReady() const;
 

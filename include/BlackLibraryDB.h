@@ -45,12 +45,18 @@ public:
     int UpdateMd5Sum(const DBMd5Sum &md5);
     int DeleteMd5Sum(const std::string &uuid, size_t index_num);
 
+    int CreateRefresh(const DBRefresh &refresh);
+    DBRefresh ReadRefresh(const std::string &uuid);
+    int DeleteRefresh(const std::string &uuid);
+
     int CreateErrorEntry(const DBErrorEntry &entry);
     int DeleteErrorEntry(const std::string &uuid, size_t progress_num);
 
     bool DoesStagingEntryUrlExist(const std::string &url);
     bool DoesBlackEntryUrlExist(const std::string &url);
     bool DoesMd5SumExist(const std::string &uuid, size_t index_num);
+    bool DoesRefreshExist(const std::string &uuid);
+    bool DoesMinRefreshExist();
     bool DoesErrorEntryExist(const std::string &uuid, size_t progress_num);
 
     bool DoesStagingEntryUUIDExist(const std::string &uuid);
@@ -61,6 +67,8 @@ public:
 
     DBStringResult GetBlackEntryUUIDFromUrl(const std::string &url);
     DBStringResult GetBlackEntryUrlFromUUID(const std::string &uuid);
+
+    DBRefresh GetRefreshFromMinDate();
 
     bool IsReady();
 
