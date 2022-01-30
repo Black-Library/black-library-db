@@ -138,6 +138,37 @@ TEST_CASE( "Test CRUD for md5 checksum table black library (pass)", "[single-fil
     REQUIRE ( blacklibrary_db.DoesMd5SumExist(md5.uuid, md5.index_num) == false );
 }
 
+TEST_CASE( "Test basic func for refresh table sqlite (pass)", "[single-file]" )
+{
+    njson config;
+    config["config"]["db_path"] = DefaultTestDBPath;
+    config["config"]["logger_path"] = "/tmp/";
+    config["config"]["db_debug_log"] = false;
+    BlackLibraryDB blacklibrary_db(config);
+
+    DBRefresh refresh = GenerateTestRefresh();
+
+    REQUIRE ( blacklibrary_db.DoesRefreshExist(refresh.uuid) == false );
+    REQUIRE ( blacklibrary_db.DoesMinRefreshExist() == false );
+    REQUIRE ( blacklibrary_db.CreateRefresh(refresh) == 0 );
+    REQUIRE ( blacklibrary_db.DoesRefreshExist(refresh.uuid) == true );
+    REQUIRE ( blacklibrary_db.DoesMinRefreshExist() == true );
+
+    auto read_refresh = blacklibrary_db.ReadRefresh(refresh.uuid);
+    REQUIRE( read_refresh.uuid == refresh.uuid );
+    REQUIRE( read_refresh.refresh_date == refresh.refresh_date );
+
+    auto next_refresh = blacklibrary_db.GetRefreshFromMinDate();
+
+    REQUIRE ( next_refresh.uuid == refresh.uuid );
+    REQUIRE ( next_refresh.refresh_date == refresh.refresh_date );
+
+    REQUIRE ( blacklibrary_db.DeleteRefresh(refresh.uuid) == 0 );
+
+    REQUIRE ( blacklibrary_db.DoesRefreshExist(refresh.uuid) == false );
+    REQUIRE ( blacklibrary_db.DoesMinRefreshExist() == false );
+}
+
 } // namespace db
 } // namespace core
 } // namespace black_library

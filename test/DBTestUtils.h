@@ -68,8 +68,19 @@ DBMd5Sum GenerateTestMd5Sum()
     md5.uuid = "55ee59ad-2feb-4196-960b-3226c65c80d5";
     md5.index_num = 18;
     md5.md5_sum = "c1b30f495b8d0def09e0f6a25728cbfc";
+    md5.version_num = 4;
 
     return md5;
+}
+
+DBRefresh GenerateTestRefresh()
+{
+    DBRefresh refresh;
+
+    refresh.uuid = "50470924-7e39-46cb-997c-aa8d882e1c59";
+    refresh.refresh_date = 946598400;
+
+    return refresh;
 }
 
 DBErrorEntry GenerateTestErrorEntry()

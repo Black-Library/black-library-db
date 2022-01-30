@@ -98,6 +98,33 @@ TEST_CASE( "Test CRUD for md5 checksum table sqlite (pass)", "[single-file]" )
     REQUIRE ( db.DoesMd5SumExist(md5.uuid, md5.index_num).result == false );
 }
 
+TEST_CASE( "Test basic func for refresh table sqlite (pass)", "[single-file]" )
+{
+    SQLiteDB db(DefaultTestDBPath);
+
+    DBRefresh refresh = GenerateTestRefresh();
+
+    REQUIRE ( db.DoesRefreshExist(refresh.uuid).result == false );
+    REQUIRE ( db.DoesMinRefreshExist().result == false );
+    REQUIRE ( db.CreateRefresh(refresh) == 0 );
+    REQUIRE ( db.DoesRefreshExist(refresh.uuid).result == true );
+    REQUIRE ( db.DoesMinRefreshExist().result == true );
+
+    auto read_refresh = db.ReadRefresh(refresh.uuid);
+    REQUIRE( read_refresh.uuid == refresh.uuid );
+    REQUIRE( read_refresh.refresh_date == refresh.refresh_date );
+
+    auto next_refresh = db.GetRefreshFromMinDate();
+
+    REQUIRE ( next_refresh.uuid == refresh.uuid );
+    REQUIRE ( next_refresh.refresh_date == refresh.refresh_date );
+
+    REQUIRE ( db.DeleteRefresh(refresh.uuid) == 0 );
+
+    REQUIRE ( db.DoesRefreshExist(refresh.uuid).result == false );
+    REQUIRE ( db.DoesMinRefreshExist().result == false );
+}
+
 } // namespace db
 } // namespace core
 } // namespace black_library
