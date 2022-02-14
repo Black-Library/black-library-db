@@ -20,12 +20,3 @@ install(
 
 set_target_properties(blacklibrarydb PROPERTIES INSTALL_RPATH
     "$LD_LIBRARY_PATH:${CMAKE_INSTALL_PREFIX}/lib")
-
-add_executable(db_driver db_driver.cc)
-
-target_link_libraries(db_driver blacklibrarydb)
-
-set_target_properties(db_driver PROPERTIES INSTALL_RPATH
-    "$LD_LIBRARY_PATH;${CMAKE_INSTALL_PREFIX}/lib")
-
-install(TARGETS db_driver RUNTIME DESTINATION bin)

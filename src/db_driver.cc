@@ -1,5 +1,7 @@
 /**
  * db_driver.cc
+ * 
+ * deprecated 2022-02-14
  */
 
 #include <getopt.h>
