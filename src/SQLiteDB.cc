@@ -725,6 +725,8 @@ int SQLiteDB::CreateMd5Sum(const DBMd5Sum &md5) const
         return -1;
     if (BindText(stmt, "md5_sum", md5.md5_sum))
         return -1;
+    if (BindInt(stmt, "version_num", md5.version_num))
+        return -1;
 
     // run statement
     int ret = SQLITE_OK;
@@ -1578,6 +1580,49 @@ DBStringResult SQLiteDB::GetEntryUrlFromUUID(const std::string &uuid, entry_tabl
     res.error = false;
 
     return res;
+}
+
+size_t SQLiteDB::GetVersionFromMd5(const std::string &uuid, size_t index_num) const
+{
+    BlackLibraryCommon::LogDebug("db", "Get version from MD5");
+
+    size_t version_num = 0;
+
+    if (CheckInitialized())
+        return version_num;
+
+    if (BeginTransaction())
+        return version_num;
+
+    sqlite3_stmt *stmt = prepared_statements_[READ_MD5_SUM_STATEMENT];
+
+    // bind statement variables
+    if (BindText(stmt, "UUID", uuid))
+        return version_num;
+    if (BindInt(stmt, "index_num", index_num))
+        return version_num;
+
+    // run statement
+    int ret = SQLITE_OK;
+
+    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
+    ret = sqlite3_step(stmt);
+    if (ret != SQLITE_ROW)
+    {
+        BlackLibraryCommon::LogError("db", "Read MD5 checksum failed: {}", sqlite3_errmsg(database_conn_));
+        ResetStatement(stmt);
+        EndTransaction();
+        return version_num;
+    }
+
+    version_num = sqlite3_column_int(stmt, 3);
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return version_num;
+
+    return version_num;
 }
 
 DBRefresh SQLiteDB::GetRefreshFromMinDate() const

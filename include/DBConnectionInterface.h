@@ -52,6 +52,8 @@ public:
     virtual DBStringResult GetEntryUUIDFromUrl(const std::string &url, entry_table_rep_t entry_type) const = 0;
     virtual DBStringResult GetEntryUrlFromUUID(const std::string &uuid, entry_table_rep_t entry_type) const = 0;
 
+    virtual size_t GetVersionFromMd5(const std::string &uuid, size_t index_num) const = 0;
+
     virtual DBRefresh GetRefreshFromMinDate() const = 0;
 
     virtual bool IsReady() const = 0;

@@ -242,6 +242,22 @@ DBMd5Sum BlackLibraryDB::ReadMd5Sum(const std::string &uuid, size_t index_num)
     return md5;
 }
 
+size_t BlackLibraryDB::GetVersionFromMd5(const std::string &uuid, size_t index_num)
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    size_t version_num = 0;
+
+    if (uuid.empty())
+    {
+        BlackLibraryCommon::LogError("db", "Failed to get version from MD5 checksum with empty UUID");
+        return version_num;
+    }
+    version_num = database_connection_interface_->GetVersionFromMd5(uuid, index_num);
+
+    return version_num;
+}
+
 int BlackLibraryDB::UpdateMd5Sum(const DBMd5Sum &md5)
 {
     const std::lock_guard<std::mutex> lock(mutex_);

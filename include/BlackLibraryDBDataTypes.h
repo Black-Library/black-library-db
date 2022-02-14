@@ -149,7 +149,7 @@ inline std::ostream& operator<< (std::ostream &out, const DBMd5Sum &sum)
     out << "UUID: " << sum.uuid << " ";
     out << "index_num: " << sum.index_num << " ";
     out << "md5_sum: " << sum.md5_sum << " ";
-    out << "version_number" << sum.version_num;
+    out << "version_number: " << sum.version_num;
 
     return out;
 }

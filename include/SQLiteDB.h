@@ -53,10 +53,12 @@ public:
     DBBoolResult DoesMd5SumExist(const std::string &uuid, size_t index_num) const override;
     DBBoolResult DoesRefreshExist(const std::string &uuid) const override;
     DBBoolResult DoesMinRefreshExist() const override;
-    DBBoolResult DoesErrorEntryExist(const std::string &uuid, size_t progress_num) const;
+    DBBoolResult DoesErrorEntryExist(const std::string &uuid, size_t progress_num) const override;
 
-    DBStringResult GetEntryUUIDFromUrl(const std::string &url, entry_table_rep_t entry_type) const;
-    DBStringResult GetEntryUrlFromUUID(const std::string &uuid, entry_table_rep_t entry_type) const;
+    DBStringResult GetEntryUUIDFromUrl(const std::string &url, entry_table_rep_t entry_type) const override;
+    DBStringResult GetEntryUrlFromUUID(const std::string &uuid, entry_table_rep_t entry_type) const override;
+
+    size_t GetVersionFromMd5(const std::string &uuid, size_t index_num) const override;
 
     DBRefresh GetRefreshFromMinDate() const override;
 
