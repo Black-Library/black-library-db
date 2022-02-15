@@ -64,7 +64,8 @@ static constexpr const char DeleteRefreshStatement[]              = "DELETE FROM
 static constexpr const char DeleteErrorEntryStatement[]           = "DELETE FROM error_entry WHERE UUID = :UUID AND progress_num = :progress_num";
 
 static constexpr const char GetStagingEntriesStatement[]          = "SELECT * FROM staging_entry";
-static constexpr const char GetBlackEntriesStatement[]            = "SELECT * FROM black_entry"; 
+static constexpr const char GetBlackEntriesStatement[]            = "SELECT * FROM black_entry";
+static constexpr const char GetMd5sumsStatement[]                 = "SELECT * FROM md5_sum";
 static constexpr const char GetErrorEntriesStatement[]            = "SELECT * FROM error_entry";
 
 static constexpr const char DoesMinRefreshExistStatement[]        = "SELECT CASE WHEN EXISTS(SELECT 1 FROM refresh) THEN 1 ELSE 0 END";
@@ -108,6 +109,7 @@ typedef enum {
 
     GET_STAGING_ENTRIES_STATEMENT,
     GET_BLACK_ENTRIES_STATEMENT,
+    GET_CHECKSUMS_STATEMENT,
     GET_ERROR_ENTRIES_STATEMENT,
 
     DOES_MIN_REFRESH_EXIST_STATEMENT,
@@ -252,6 +254,42 @@ std::vector<DBEntry> SQLiteDB::ListEntries(entry_table_rep_t entry_type) const
         return entries;
 
     return entries;
+}
+
+std::vector<DBMd5Sum> SQLiteDB::ListChecksums() const
+{
+    BlackLibraryCommon::LogDebug("db", "List checksums");
+
+    std::vector<DBMd5Sum> checksums;
+
+    if (CheckInitialized())
+        return checksums;
+
+    if (BeginTransaction())
+        return checksums;
+
+    sqlite3_stmt *stmt = prepared_statements_[GET_CHECKSUMS_STATEMENT];
+    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
+
+    // run statement in loop until done
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        DBMd5Sum checksum;
+
+        checksum.uuid = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+        checksum.index_num = sqlite3_column_int(stmt, 1);
+        checksum.md5_sum = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+        checksum.version_num = sqlite3_column_int(stmt, 3);
+
+        checksums.emplace_back(checksum);
+    }
+
+    ResetStatement(stmt);
+
+    if (EndTransaction())
+        return checksums;
+
+    return checksums;
 }
 
 std::vector<DBErrorEntry> SQLiteDB::ListErrorEntries() const
@@ -785,6 +823,7 @@ DBMd5Sum SQLiteDB::ReadMd5Sum(const std::string &uuid, size_t index_num) const
     md5.uuid = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
     md5.index_num = sqlite3_column_int(stmt, 1);
     md5.md5_sum = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+    md5.version_num = sqlite3_column_int(stmt, 3);
 
     ResetStatement(stmt);
 
@@ -1582,11 +1621,11 @@ DBStringResult SQLiteDB::GetEntryUrlFromUUID(const std::string &uuid, entry_tabl
     return res;
 }
 
-size_t SQLiteDB::GetVersionFromMd5(const std::string &uuid, size_t index_num) const
+uint16_t SQLiteDB::GetVersionFromMd5(const std::string &uuid, size_t index_num) const
 {
     BlackLibraryCommon::LogDebug("db", "Get version from MD5");
 
-    size_t version_num = 0;
+    uint16_t version_num = 0;
 
     if (CheckInitialized())
         return version_num;
@@ -1821,6 +1860,7 @@ int SQLiteDB::PrepareStatements()
 
     res += PrepareStatement(GetStagingEntriesStatement, GET_STAGING_ENTRIES_STATEMENT);
     res += PrepareStatement(GetBlackEntriesStatement, GET_BLACK_ENTRIES_STATEMENT);
+    res += PrepareStatement(GetMd5sumsStatement, GET_CHECKSUMS_STATEMENT);
     res += PrepareStatement(GetErrorEntriesStatement, GET_ERROR_ENTRIES_STATEMENT);
 
     res += PrepareStatement(DoesMinRefreshExistStatement, DOES_MIN_REFRESH_EXIST_STATEMENT);

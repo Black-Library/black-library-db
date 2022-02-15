@@ -134,6 +134,7 @@ enum class DBEntryColumnID : uint8_t
     check_date,
     update_date,
     user_contributed,
+
     _NUM_DB_ENTRY_COLUMN_ID
 };
 
@@ -141,7 +142,7 @@ struct DBMd5Sum {
     std::string uuid;
     size_t index_num;
     std::string md5_sum;
-    uint64_t version_num;
+    size_t version_num;
 };
 
 inline std::ostream& operator<< (std::ostream &out, const DBMd5Sum &sum)
@@ -153,6 +154,16 @@ inline std::ostream& operator<< (std::ostream &out, const DBMd5Sum &sum)
 
     return out;
 }
+
+enum class DBMd5SumColumnID : uint8_t
+{
+    uuid,
+    index_num,
+    md5_sum,
+    version_num,
+
+    _NUM_DB_MD5SUM_COLUMN_ID
+};
 
 struct DBRefresh {
     std::string uuid;

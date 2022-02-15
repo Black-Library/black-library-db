@@ -24,6 +24,7 @@ public:
     ~SQLiteDB();
 
     std::vector<DBEntry> ListEntries(entry_table_rep_t entry_type) const;
+    std::vector<DBMd5Sum> ListChecksums() const;
     std::vector<DBErrorEntry> ListErrorEntries() const;
 
     int CreateUser(const DBUser &user) const;
@@ -58,7 +59,7 @@ public:
     DBStringResult GetEntryUUIDFromUrl(const std::string &url, entry_table_rep_t entry_type) const override;
     DBStringResult GetEntryUrlFromUUID(const std::string &uuid, entry_table_rep_t entry_type) const override;
 
-    size_t GetVersionFromMd5(const std::string &uuid, size_t index_num) const override;
+    uint16_t GetVersionFromMd5(const std::string &uuid, size_t index_num) const override;
 
     DBRefresh GetRefreshFromMinDate() const override;
 

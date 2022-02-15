@@ -23,6 +23,7 @@ public:
     virtual ~DBConnectionInterface() {}
 
     virtual std::vector<DBEntry> ListEntries(entry_table_rep_t entry_type) const = 0;
+    virtual std::vector<DBMd5Sum> ListChecksums() const = 0;
     virtual std::vector<DBErrorEntry> ListErrorEntries() const = 0;
 
     virtual int CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) const = 0;
@@ -52,7 +53,7 @@ public:
     virtual DBStringResult GetEntryUUIDFromUrl(const std::string &url, entry_table_rep_t entry_type) const = 0;
     virtual DBStringResult GetEntryUrlFromUUID(const std::string &uuid, entry_table_rep_t entry_type) const = 0;
 
-    virtual size_t GetVersionFromMd5(const std::string &uuid, size_t index_num) const = 0;
+    virtual uint16_t GetVersionFromMd5(const std::string &uuid, size_t index_num) const = 0;
 
     virtual DBRefresh GetRefreshFromMinDate() const = 0;
 

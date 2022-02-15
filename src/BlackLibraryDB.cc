@@ -69,6 +69,15 @@ std::vector<DBEntry> BlackLibraryDB::GetBlackEntryList()
     return entry_list;
 }
 
+std::vector<DBMd5Sum> BlackLibraryDB::GetChecksumList()
+{
+    const std::lock_guard<std::mutex> lock(mutex_);
+
+    auto checksum_list = database_connection_interface_->ListChecksums();
+
+    return checksum_list;
+}
+
 std::vector<DBErrorEntry> BlackLibraryDB::GetErrorEntryList()
 {
     const std::lock_guard<std::mutex> lock(mutex_);
@@ -242,11 +251,11 @@ DBMd5Sum BlackLibraryDB::ReadMd5Sum(const std::string &uuid, size_t index_num)
     return md5;
 }
 
-size_t BlackLibraryDB::GetVersionFromMd5(const std::string &uuid, size_t index_num)
+uint16_t BlackLibraryDB::GetVersionFromMd5(const std::string &uuid, size_t index_num)
 {
     const std::lock_guard<std::mutex> lock(mutex_);
 
-    size_t version_num = 0;
+    uint16_t version_num = 0;
 
     if (uuid.empty())
     {

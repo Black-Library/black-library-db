@@ -27,6 +27,7 @@ public:
     // front-end
     std::vector<DBEntry> GetStagingEntryList();
     std::vector<DBEntry> GetBlackEntryList();
+    std::vector<DBMd5Sum> GetChecksumList();
     std::vector<DBErrorEntry> GetErrorEntryList();
 
     // back-end
@@ -68,7 +69,7 @@ public:
     DBStringResult GetBlackEntryUUIDFromUrl(const std::string &url);
     DBStringResult GetBlackEntryUrlFromUUID(const std::string &uuid);
 
-    size_t GetVersionFromMd5(const std::string &uuid, size_t index_num);
+    uint16_t GetVersionFromMd5(const std::string &uuid, size_t index_num);
 
     DBRefresh GetRefreshFromMinDate();
 
