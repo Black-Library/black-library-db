@@ -852,6 +852,8 @@ int SQLiteDB::UpdateMd5Sum(const DBMd5Sum &md5) const
         return -1;
     if (BindText(stmt, "md5_sum", md5.md5_sum))
         return -1;
+    if (BindInt(stmt, "version_num", md5.version_num))
+        return -1;
 
     // run statement
     int ret = SQLITE_OK;
