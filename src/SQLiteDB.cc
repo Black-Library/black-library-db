@@ -222,7 +222,8 @@ std::vector<DBEntry> SQLiteDB::ListEntries(entry_table_rep_t entry_type) const
         return entries;
 
     sqlite3_stmt *stmt = prepared_statements_[statement_id];
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
+
+    LogTraceStatement(stmt);
 
     // run statement in loop until done
     while (sqlite3_step(stmt) == SQLITE_ROW)
@@ -269,7 +270,8 @@ std::vector<DBMd5Sum> SQLiteDB::ListChecksums() const
         return checksums;
 
     sqlite3_stmt *stmt = prepared_statements_[GET_CHECKSUMS_STATEMENT];
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
+
+    LogTraceStatement(stmt);
 
     // run statement in loop until done
     while (sqlite3_step(stmt) == SQLITE_ROW)
@@ -305,7 +307,8 @@ std::vector<DBErrorEntry> SQLiteDB::ListErrorEntries() const
         return entries;
 
     sqlite3_stmt *stmt = prepared_statements_[GET_ERROR_ENTRIES_STATEMENT];
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
+
+    LogTraceStatement(stmt);
 
     // run statement in loop until done
     while (sqlite3_step(stmt) == SQLITE_ROW)
@@ -374,11 +377,10 @@ int SQLiteDB::CreateMediaType(const std::string &media_type_name) const
     if (BindText(stmt, "name", media_type_name))
         return -1;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
-
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
@@ -411,10 +413,10 @@ int SQLiteDB::CreateMediaSubtype(const std::string &media_subtype_name, const st
     if (BindText(stmt, "media_type_name", media_type_name))
         return -1;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
@@ -449,10 +451,10 @@ int SQLiteDB::CreateSource(const DBSource &source) const
     if (BindText(stmt, "media_subtype", GetMediaSubtypeString(source.subtype)))
         return -1;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
@@ -527,10 +529,10 @@ int SQLiteDB::CreateEntry(const DBEntry &entry, entry_table_rep_t entry_type) co
     if (BindInt(stmt, "user_contributed", entry.user_contributed))
         return -1;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
@@ -579,10 +581,10 @@ DBEntry SQLiteDB::ReadEntry(const std::string &uuid, entry_table_rep_t entry_typ
     if (BindText(stmt, "UUID", uuid))
         return entry;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
@@ -673,10 +675,10 @@ int SQLiteDB::UpdateEntry(const DBEntry &entry, entry_table_rep_t entry_type) co
     if (BindInt(stmt, "user_contributed", entry.user_contributed))
         return -1;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
@@ -723,10 +725,10 @@ int SQLiteDB::DeleteEntry(const std::string &uuid, entry_table_rep_t entry_type)
     if (BindText(stmt, "UUID", uuid))
         return -1;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
@@ -766,10 +768,10 @@ int SQLiteDB::CreateMd5Sum(const DBMd5Sum &md5) const
     if (BindInt(stmt, "version_num", md5.version_num))
         return -1;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
@@ -807,10 +809,10 @@ DBMd5Sum SQLiteDB::ReadMd5Sum(const std::string &uuid, size_t index_num) const
     if (BindInt(stmt, "index_num", index_num))
         return md5;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
@@ -855,10 +857,10 @@ int SQLiteDB::UpdateMd5Sum(const DBMd5Sum &md5) const
     if (BindInt(stmt, "version_num", md5.version_num))
         return -1;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
@@ -894,10 +896,10 @@ int SQLiteDB::DeleteMd5Sum(const std::string &uuid, size_t index_num) const
     if (BindInt(stmt, "index_num", index_num))
         return -1;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
@@ -933,10 +935,10 @@ int SQLiteDB::CreateRefresh(const DBRefresh &refresh) const
     if (BindInt(stmt, "refresh_date", refresh.refresh_date))
         return -1;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
@@ -972,10 +974,10 @@ DBRefresh SQLiteDB::ReadRefresh(const std::string &uuid) const
     if (BindText(stmt, "UUID", uuid))
         return refresh;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
@@ -1012,10 +1014,10 @@ int SQLiteDB::DeleteRefresh(const std::string &uuid) const
     if (BindText(stmt, "UUID", uuid))
         return -1;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
@@ -1051,10 +1053,10 @@ int SQLiteDB::CreateErrorEntry(const DBErrorEntry &entry) const
     if (BindInt(stmt, "progress_num", entry.progress_num))
         return -1;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
@@ -1090,10 +1092,10 @@ int SQLiteDB::DeleteErrorEntry(const std::string &uuid, size_t progress_num) con
     if (BindInt(stmt, "progress_num", progress_num))
         return -1;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_DONE)
     {
@@ -1151,10 +1153,10 @@ DBBoolResult SQLiteDB::DoesEntryUrlExist(const std::string &url, entry_table_rep
         return check;
     }
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
@@ -1227,14 +1229,13 @@ DBBoolResult SQLiteDB::DoesEntryUUIDExist(const std::string &uuid, entry_table_r
         return check;
     }
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
-
         BlackLibraryCommon::LogDebug("db", "Entry {} UUID: {} does not exist",  GetEntryTypeString(entry_type), uuid);
         check.result = false;
         ResetStatement(stmt);
@@ -1296,10 +1297,10 @@ DBBoolResult SQLiteDB::DoesMd5SumExist(const std::string &uuid, size_t index_num
         return check;
     }
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
@@ -1358,10 +1359,10 @@ DBBoolResult SQLiteDB::DoesRefreshExist(const std::string &uuid) const
         return check;
     }
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
@@ -1425,10 +1426,10 @@ DBBoolResult SQLiteDB::DoesErrorEntryExist(const std::string &uuid, size_t progr
         return check;
     }
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
@@ -1474,10 +1475,10 @@ DBBoolResult SQLiteDB::DoesMinRefreshExist() const
 
     sqlite3_stmt *stmt = prepared_statements_[DOES_MIN_REFRESH_EXIST_STATEMENT];
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
@@ -1533,10 +1534,10 @@ DBStringResult SQLiteDB::GetEntryUUIDFromUrl(const std::string &url, entry_table
     if (BindText(stmt, "url", url))
         return res;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
@@ -1593,10 +1594,10 @@ DBStringResult SQLiteDB::GetEntryUrlFromUUID(const std::string &uuid, entry_tabl
     if (BindText(stmt, "UUID", uuid))
         return res;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
@@ -1643,10 +1644,10 @@ uint16_t SQLiteDB::GetVersionFromMd5(const std::string &uuid, size_t index_num) 
     if (BindInt(stmt, "index_num", index_num))
         return version_num;
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
@@ -1680,10 +1681,10 @@ DBRefresh SQLiteDB::GetRefreshFromMinDate() const
 
     sqlite3_stmt *stmt = prepared_statements_[GET_REFRESH_FROM_MIN_DATE_STATEMENT];
 
+    LogTraceStatement(stmt);
+
     // run statement
     int ret = SQLITE_OK;
-
-    BlackLibraryCommon::LogTrace("db", "{}", sqlite3_expanded_sql(stmt));
     ret = sqlite3_step(stmt);
     if (ret != SQLITE_ROW)
     {
@@ -2026,6 +2027,15 @@ int SQLiteDB::BindText(sqlite3_stmt* stmt, const std::string &parameter_name, co
         EndTransaction();
         return -1;
     }
+
+    return 0;
+}
+
+int SQLiteDB::LogTraceStatement(sqlite3_stmt* stmt) const
+{
+    char *trace_sql = sqlite3_expanded_sql(stmt);
+    BlackLibraryCommon::LogTrace("db", "{}", std::string(trace_sql));
+    sqlite3_free(trace_sql);
 
     return 0;
 }
