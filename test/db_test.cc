@@ -4,7 +4,6 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <ConfigOperations.h>
 #include <FileOperations.h>
 #include <LogOperations.h>
 
@@ -28,10 +27,7 @@ TEST_CASE( "Test init black library db logger (pass)", "[single-file]")
 
 TEST_CASE( "Test setup black library db (pass)", "[single-file]" )
 {
-    njson config;
-    config["config"]["db_path"] = DefaultTestDBPath;
-    config["config"]["logger_path"] = "/tmp/";
-    config["config"]["db_debug_log"] = false;
+    auto config = GenerateDBTestConfig();
     BlackLibraryDB blacklibrary_db(config);
 
     REQUIRE( blacklibrary_db.IsReady() == true );
@@ -44,10 +40,7 @@ TEST_CASE( "Test CRUD for empty entries black library (pass)", "[single-file]" )
     DBEntry black_entry;
     DBErrorEntry error_entry;
 
-    njson config;
-    config["config"]["db_path"] = DefaultTestDBPath;
-    config["config"]["logger_path"] = "/tmp/";
-    config["config"]["db_debug_log"] = false;
+    njson config = GenerateDBTestConfig();
     BlackLibraryDB blacklibrary_db(config);
 
     REQUIRE( blacklibrary_db.CreateStagingEntry(staging_entry) == -1 );
@@ -74,10 +67,7 @@ TEST_CASE( "Test CRUD for staging, black, and error entry tables black library (
     DBEntry black_entry = GenerateTestBlackEntry();
     DBErrorEntry error_entry = GenerateTestErrorEntry();
 
-    njson config;
-    config["config"]["db_path"] = DefaultTestDBPath;
-    config["config"]["logger_path"] = "/tmp/";
-    config["config"]["db_debug_log"] = false;
+    njson config = GenerateDBTestConfig();
     BlackLibraryDB blacklibrary_db(config);
 
     REQUIRE( blacklibrary_db.CreateStagingEntry(staging_entry) == 0 );
@@ -115,10 +105,7 @@ TEST_CASE( "Test CRUD for staging, black, and error entry tables black library (
 
 TEST_CASE( "Test CRUD for md5 checksum table black library (pass)", "[single-file]" )
 {
-    njson config;
-    config["config"]["db_path"] = DefaultTestDBPath;
-    config["config"]["logger_path"] = "/tmp/";
-    config["config"]["db_debug_log"] = false;
+    njson config = GenerateDBTestConfig();
     BlackLibraryDB blacklibrary_db(config);
 
     DBMd5Sum md5 = GenerateTestMd5Sum();
@@ -146,10 +133,7 @@ TEST_CASE( "Test CRUD for md5 checksum table black library (pass)", "[single-fil
 
 TEST_CASE( "Test basic func for refresh table sqlite (pass)", "[single-file]" )
 {
-    njson config;
-    config["config"]["db_path"] = DefaultTestDBPath;
-    config["config"]["logger_path"] = "/tmp/";
-    config["config"]["db_debug_log"] = false;
+    njson config = GenerateDBTestConfig();
     BlackLibraryDB blacklibrary_db(config);
 
     DBRefresh refresh = GenerateTestRefresh();

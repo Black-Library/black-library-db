@@ -5,6 +5,8 @@
 #ifndef __BLACK_LIBRARY_CORE_DB_DB_TEST_UTILS_H__
 #define __BLACK_LIBRARY_CORE_DB_DB_TEST_UTILS_H__
 
+#include <ConfigOperations.h>
+
 #include <BlackLibraryDBDataTypes.h>
 
 namespace black_library {
@@ -14,6 +16,15 @@ namespace core {
 namespace db {
 
 static constexpr const char DefaultTestDBPath[] = "/tmp/catalog.db";
+
+njson GenerateDBTestConfig()
+{
+    njson j;
+    j["config"]["db_path"] = DefaultTestDBPath;
+    j["config"]["logger_path"] = "/tmp/";
+    j["config"]["db_debug_log"] = false;
+    return j;
+}
 
 DBEntry GenerateTestBlackEntry()
 {

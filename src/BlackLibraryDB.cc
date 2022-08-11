@@ -22,7 +22,7 @@ BlackLibraryDB::BlackLibraryDB(const njson &config) :
     database_connection_interface_(nullptr),
     mutex_()
 {
-    njson nconfig = config["config"];
+    njson nconfig = BlackLibraryCommon::LoadConfig(config);
 
     std::string database_url = DefaultDBPath;
     if (nconfig.contains("db_path"))
